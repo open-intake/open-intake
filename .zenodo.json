@@ -3,9 +3,21 @@
   "upload_type": "software",
   "description": "医療機関が JSON ファイルを自分のサイトに置くだけで、患者がふだん使っている汎用 AI が、医療機関の診療内容・診療時間・予約方法・臨時の休診や当番を正しく読み取り、FHIR R4 Questionnaire の部分集合で書かれた問診票に沿って受診前の記入を手伝えるようにする形式の草案。診断はせず、患者の情報を医療機関のサーバーにためない。仕様書（CC BY 4.0）、JSON Schema と例（CC0）、作成サイトと検査器（Apache-2.0）を含む。",
   "creators": [
-    { "name": "Open Intake project" }
+    {
+      "name": "Kurihara, Taichi",
+      "orcid": "0009-0003-0369-9689"
+    }
   ],
   "license": "Apache-2.0",
-  "keywords": ["healthcare", "patient intake", "HL7 FHIR", "Questionnaire", "JSON", "AI agents", "医療情報", "問診票"],
+  "keywords": [
+    "healthcare",
+    "patient intake",
+    "HL7 FHIR",
+    "Questionnaire",
+    "JSON",
+    "AI agents",
+    "医療情報",
+    "問診票"
+  ],
   "language": "jpn"
 }

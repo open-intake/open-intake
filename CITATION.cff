@@ -3,7 +3,9 @@ message: "この形式やツールを引用するときは、次の情報を使�
 title: "オープン問診票（Open Intake）: 医療機関の情報と問診票を AI が読める形で公開するための開かれた形式"
 type: software
 authors:
-  - name: "Open Intake project"
+  - family-names: "Kurihara"
+    given-names: "Taichi"
+    orcid: "https://orcid.org/0009-0003-0369-9689"
 repository-code: "https://github.com/open-intake/open-intake"
 url: "https://open-intake.github.io/open-intake/"
 license: Apache-2.0
