@@ -1,6 +1,6 @@
 # オープン問診票（Open Intake）
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24121890.svg)](https://doi.org/10.5281/zenodo.24121890)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24121889.svg)](https://doi.org/10.5281/zenodo.24121889)
 
 **医療機関が JSON ファイルを1つ自分のサイトに置くだけで、患者さんがふだん使っている AI が受診を手伝えるようにする、簡単で開かれた形式です。**
 
@@ -16,7 +16,7 @@
 
 作者: Taichi Kurihara（[ORCID 0009-0003-0369-9689](https://orcid.org/0009-0003-0369-9689)）
 
-引用するときは DOI [10.5281/zenodo.24121890](https://doi.org/10.5281/zenodo.24121890) をお使いください（GitHub の右側の「Cite this repository」からも書式を取れます）。
+引用するときは DOI [10.5281/zenodo.24121889](https://doi.org/10.5281/zenodo.24121889) をお使いください。いつも最新版を指します。特定の版を示すときは、版ごとの DOI（v0.2.0 は [10.5281/zenodo.24121890](https://doi.org/10.5281/zenodo.24121890)）を使ってください。GitHub の右側の「Cite this repository」からも書式を取れます。
 
 **私は医療者ではありません。** ソフトウェアを作る立場から、この形式を考えました。
 
