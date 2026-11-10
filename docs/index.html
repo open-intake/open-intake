@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<title>オープン問診票メーカー</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="医療機関の情報と問診票を、AI が読める clinic-intake.json（オープン問診票 v0.1）にまとめる作成ツール">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 左に記入用紙（番号つきの欄）、右に出来上がりの JSON とチェック結果を固定表示。狭い画面では縦に積む */
+:root {
+  --paper: #EEF2F1;
+  --sheet: #FFFFFF;
+  --ink: #17242C;
+  --muted: #586A73;
+  --rule: #D3DCDB;
+  --field: #F8FAFA;
+  --accent: #0D6863;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DDEFEC;
+  --req: #B3261E;
+  --req-soft: #FBE9E7;
+  --warn: #8A5300;
+  --warn-soft: #FFF2D9;
+  --ok: #1D7238;
+  --ok-soft: #E2F3E6;
+  --code-bg: #12202A;
+  --code-fg: #DCE7EA;
+  --code-key: #7FD1C7;
+  --code-str: #F2D49B;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41; --field: #1C2930;
+    --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39;
+    --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+    --code-bg: #0A1216; --code-fg: #DCE7EA; --code-key: #7FD1C7; --code-str: #F2D49B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41; --field: #1C2930;
+  --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39;
+  --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+  --code-bg: #0A1216; --code-fg: #DCE7EA; --code-key: #7FD1C7; --code-str: #F2D49B;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.7; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+a { color: var(--accent); }
+
+header.top { padding-block: 28px 20px; display: grid; gap: 6px; }
+header.top .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--muted); }
+header.top h1 { font-size: clamp(24px, 3.4vw, 34px); }
+header.top p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.notice { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+.notice strong { font-weight: 700; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 24px; align-items: start; }
+@media (max-width: 980px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+.form { display: grid; gap: 18px; min-width: 0; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 20px 20px; display: grid; gap: 14px; min-width: 0; }
+.sheet > header { display: flex; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--rule); padding-bottom: 10px; }
+.sheet > header .no { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 14px; }
+.sheet > header h2 { font-size: 19px; }
+.sheet > header .key { margin-left: auto; color: var(--muted); }
+.sheet .lead { margin: 0; color: var(--muted); font-size: 14px; }
+
+.grid { display: grid; gap: 12px 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field > label, .field > .label { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-weight: 500; font-size: 14px; }
+.field .k { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); font-weight: 400; }
+.field .hint { font-size: 12.5px; color: var(--muted); }
+.badge { font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: 3px; letter-spacing: 0.04em; }
+.badge.req { color: var(--req); background: var(--req-soft); }
+.badge.draft { color: var(--warn); background: var(--warn-soft); }
+
+input[type="text"], input[type="url"], input[type="tel"], input[type="date"], input[type="time"], select, textarea {
+  font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 7px 9px; width: 100%; min-width: 0;
+}
+textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--rule); border-radius: 999px; padding: 3px 11px 3px 8px; font-size: 14px; cursor: pointer; background: var(--field); user-select: none; }
+.chip input { accent-color: var(--accent); margin: 0; }
+.chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+
+.rows { display: grid; gap: 10px; }
+.row { border: 1px dashed var(--rule); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px; min-width: 0; }
+.row-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row-head .spacer { flex: 1; }
+.days { display: flex; flex-wrap: wrap; gap: 4px; }
+.day { position: relative; }
+.day input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.day span { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--rule); font-weight: 500; background: var(--field); }
+.day input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.day input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.times { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.times input[type="time"] { width: 130px; }
+
+button { font: inherit; cursor: pointer; border-radius: 4px; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 6px 14px; font-weight: 500; font-size: 14px; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.small { padding: 3px 10px; font-size: 13px; }
+.icon-btn { border: 1px solid var(--rule); background: var(--field); color: var(--ink); min-width: 32px; height: 30px; padding: 0 8px; font-size: 14px; }
+.icon-btn.danger { color: var(--req); }
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.q { border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px; display: grid; gap: 12px; background: var(--sheet); }
+.q-head { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.items { display: grid; gap: 8px; counter-reset: qn; }
+.item { border-left: 3px solid var(--rule); background: var(--field); border-radius: 0 4px 4px 0; padding: 10px 12px; display: grid; gap: 8px; min-width: 0; }
+.item.cond { border-left-color: var(--accent); margin-left: 18px; }
+.item-top { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.item-top .num { font-family: var(--font-mono); font-weight: 600; color: var(--accent); min-width: 2.6em; }
+.item-top input { flex: 1; }
+.item-opts { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 14px; }
+.item-opts select { width: auto; }
+.item-opts label.check { display: inline-flex; gap: 5px; align-items: center; }
+.item-opts input[type="checkbox"] { accent-color: var(--accent); }
+.item .linkid { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+
+details.ai { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
+details.ai > summary { cursor: pointer; padding: 12px 18px; font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+details.ai .body { padding: 0 18px 18px; display: grid; gap: 12px; }
+details.ai ol { margin: 0; padding-left: 1.4em; }
+.prompt { background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; margin: 0; }
+
+aside.out { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; min-width: 0; }
+@media (max-width: 980px) { aside.out { position: static; } }
+.status { display: flex; gap: 10px; align-items: center; border-radius: var(--radius); padding: 10px 14px; font-weight: 500; }
+.status.ok { background: var(--ok-soft); color: var(--ok); }
+.status.warn { background: var(--warn-soft); color: var(--warn); }
+.status.err { background: var(--req-soft); color: var(--req); }
+.status .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--rule); }
+.tab { border: 0; background: transparent; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid transparent; border-radius: 0; font-weight: 500; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.panel { display: grid; gap: 10px; min-width: 0; }
+pre.json { background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius); padding: 14px; margin: 0; overflow: auto; max-height: 56vh; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; tab-size: 2; }
+pre.json .k { color: var(--code-key); }
+pre.json .s { color: var(--code-str); }
+.issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.issues li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 4px; }
+.issues li.e { background: var(--req-soft); }
+.issues li.w { background: var(--warn-soft); }
+.issues .code { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; }
+.issues li.e .code { color: var(--req); }
+.issues li.w .code { color: var(--warn); }
+.issues .where { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.toast { min-height: 1.4em; font-size: 13px; color: var(--ok); }
+.small { font-size: 13px; color: var(--muted); }
+footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+@media (prefers-reduced-motion: no-preference) { .status, .chip, .day span { transition: background-color 0.15s, color 0.15s; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">clinic-intake.json · オープン問診票 v0.1 草案</div>
+    <h1>オープン問診票メーカー</h1>
+    <p>医療機関の情報と問診票を入力すると、患者さんの AI が読める <code>clinic-intake.json</code> ができます。サーバーには何も送りません。入力はこのブラウザの中だけで扱います。</p>
+  </header>
+
+  <div class="notice" id="notice"></div>
+
+  <div class="layout">
+    <main class="form" id="form">
+      <details class="ai" id="aiBox">
+        <summary>別の方法：AI と会話して作る</summary>
+        <div class="body">
+          <ol>
+            <li>ChatGPT・Claude・Gemini など、ふだん使っている AI のチャットを新しく開きます。</li>
+            <li>下の指示文をコピーして貼り付け、送信します。AI の質問に順に答えます。</li>
+            <li>AI が出した JSON を、右の「チェック・読み込み」に貼り付けて確かめます。フォームに読み込んで直すこともできます。</li>
+          </ol>
+          <p class="small">⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。</p>
+          <div class="actions"><button class="btn" type="button" id="copyPrompt">指示文をコピー</button><span class="toast" id="promptToast" role="status"></span></div>
+          <pre class="prompt" id="aiPrompt">あなたは、医療機関の担当者が `clinic-intake.json`（オープン問診票 v0.1）を作るのを手伝う係です。担当者は IT に詳しくない前提で、やさしい言葉で進めてください。
+
+### 守ること
+
+1. **一度に聞くのは1つの話題だけ**。答えやすいように、例や選択肢を添える
+2. **推測で埋めない**。担当者が答えていないことは書かない。任意の項目で答えがなければ、そのキーごと省く
+3. **患者の個人情報を受け取らない**。担当者が患者の名前や病状を書いたら、入れないよう伝えて、その内容を使わない
+4. **医学的な判断をしない**。問診票の質問を勧めるのはよいが、「この症状ならこの病気」のような内容は質問文にも入れない
+5. 救急の目安（`safety`）は下の初期値（総務省消防庁のパンフレットの要約）と `redFlagsSource` をそのまま使い、担当者に「医師の確認が必要です」と伝える。担当者が変えたい場合だけ変え、変えたら `redFlagsSource.note` にそのことを書き足す
+6. 最後の出力は **JSON だけを1つのコードブロックに**。コメント（`//`）を入れない。説明はコードブロックの外に短く
+
+### 聞く順番
+
+1. 医療機関の名前、電話番号、住所（郵便番号・都道府県・市区町村・番地と建物）、ホームページの URL
+2. 診療科（例: 内科、小児科）
+3. 診療時間。曜日ごと、午前・午後ごとに聞く。休診の補足（例: 木曜午後休診）
+4. 主に診ている症状や相談、対応していないこと（例: 入院、乳児）
+5. 予約・受診の方法（Web 予約の URL、電話番号、予約なしで来院できるか）と、それぞれの注意
+6. 持ち物、対応できる言語、バリアフリー（任意）
+7. 問診票：どんな患者向けの問診票を作るか（例: 発熱・せき）。いま使っている紙の問診票があれば、その質問を書き写してもらう。なければ一般的な項目を提案し、担当者に選んでもらう
+8. AI へのお願い（任意。例: 発熱の方は来院前に電話してほしい）
+9. 最後に全体を表にして見せ、「これで作ってよいか」を確かめてから JSON を出す
+
+### 出力の形（このとおりに作る）
+
+```json
+{
+  "spec": "open-intake",
+  "specVersion": "0.1",
+  "updated": "今日の日付 YYYY-MM-DD",
+  "clinic": {
+    "name": "名前",
+    "url": "https://...",
+    "telephone": "03-0000-0000",
+    "address": {
+      "postalCode": "100-0000",
+      "addressRegion": "都道府県",
+      "addressLocality": "市区町村",
+      "streetAddress": "番地・建物"
+    },
+    "departments": ["内科"],
+    "openingHours": [
+      { "days": ["Mo","Tu","We","Th","Fr"], "opens": "09:00", "closes": "12:00" }
+    ],
+    "closedNote": "休診の補足",
+    "handles": ["主に診ている症状"],
+    "notHandled": ["対応していないこと"],
+    "booking": [
+      { "method": "web", "url": "https://...", "note": "注意" },
+      { "method": "phone", "telephone": "03-0000-0000" },
+      { "method": "walk-in", "note": "注意" }
+    ],
+    "bring": ["持ち物"],
+    "languages": ["ja"],
+    "accessibility": ["バリアフリーの情報"]
+  },
+  "safety": {
+    "noDiagnosis": true,
+    "emergency": "命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。",
+    "redFlags": [
+      "顔の半分が動きにくい・しびれる、ろれつが回らない、うまく話せない",
+      "見える範囲が急に狭くなる・ものが二重に見える",
+      "突然の激しい頭痛",
+      "支えなしで立てないほど急にふらつく",
+      "胸や背中の突然の激痛、胸が締めつけられるような痛みが2〜3分続く",
+      "急な息切れ・呼吸が苦しい",
+      "突然の激しい腹痛・続く激しい腹痛、吐血や下血",
+      "手足の突然のしびれ、片方の腕や足に急に力が入らない",
+      "意識がない・もうろうとしている・ぐったりしている",
+      "冷や汗を伴う強い吐き気",
+      "物をのどに詰まらせて呼吸が苦しい",
+      "けいれんが止まらない・止まっても意識が戻らない",
+      "大量の出血を伴うけが・広い範囲のやけど",
+      "交通事故で強い衝撃を受けた・おぼれた・高いところから落ちた",
+      "いつもと様子が明らかに違う"
+    ],
+    "redFlagsSource": {"publisher": "総務省消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese.pdf", "note": "大人の項目を要約したもの。原文との照合と医師の確認が済んでいない。子ども・高齢者の項目は含まない。"}
+  },
+  "aiNotes": "AI へのお願い",
+  "questionnaires": [
+    {
+      "resourceType": "Questionnaire",
+      "id": "fever",
+      "status": "draft",
+      "title": "問診票の名前",
+      "purpose": "どんな人向けか",
+      "item": [
+        { "linkId": "q1", "text": "質問文", "type": "boolean", "required": true }
+      ]
+    }
+  ]
+}
+```
+
+### 細かい決まり
+
+- 曜日は `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`、祝日は `PH`。午前と午後は別の行にする
+- 時刻は `"09:00"` のように24時間・2桁。`opens` は `closes` より前
+- `method` は `web`・`phone`・`walk-in`・`other` のどれか。`web` には `url`、`phone` には `telephone` が必須
+- 言語は `ja`・`en`・`zh`・`ko` などの言語コード
+- 問診票の `id` は半角英数字とハイフン（例: `fever`、`stomach`）。`status` は医師の確認前なので **`"draft"`**
+- 質問の `linkId` は `q1`, `q2`… と順に振り、重ねない
+- 質問の `type`:
+  - `boolean`（はい／いいえ）・`choice`（選ぶ）・`open-choice`（選ぶか書く）・`string`（短い文）・`text`（長い文）・`integer`（整数）・`decimal`（小数）・`date`（日付）・`display`（説明文だけ）
+  - `choice` と `open-choice` には `"answerOption": [{"valueString":"選択肢"}]` を必ず付ける。複数選べるなら `"repeats": true`
+  - 単位は質問文に入れる（例: `"いまの体温（℃）"`）
+- 「はい」のときだけ聞く質問には、表示の条件を付ける。`question` はそれより前の `linkId`:
+  `"enableWhen": [ { "question": "q5", "operator": "=", "answerBoolean": true } ]`
+- `safety.noDiagnosis` は必ず `true`。`safety` は省略しない
+- 質問文は200字まで、`aiNotes` は500字まで
+
+### 出力の前の自己点検
+
+JSON を出す前に、次を自分で確かめ、直してから出す:
+
+- [ ] `spec` が `"open-intake"`、`specVersion` が `"0.1"`、`updated` が今日の日付
+- [ ] 必須（名前・電話・都道府県・市区町村・診療科・診療時間・予約方法・safety）がそろっている
+- [ ] 担当者が答えていない内容を足していない
+- [ ] `linkId` が重なっていない。`enableWhen` が前の質問を指している
+- [ ] JSON として正しい（末尾のカンマなし、コメントなし、ダブルクォート）
+
+JSON のあとに、次の2行を添える:
+
+&gt; 作成サイト（https://open-intake.github.io/open-intake/）の「チェック・読み込み」に貼り付けて、エラーがないか確かめてください。
+&gt; 問診票と救急の目安は、公開の前に医師に確認してもらってください（確認が済んだら status を "active" にします）。
+
+それでは、最初の質問から始めてください。</pre>
+        </div>
+      </details>
+
+      <section class="sheet" id="sec-clinic"></section>
+      <section class="sheet" id="sec-hours"></section>
+      <section class="sheet" id="sec-booking"></section>
+      <section class="sheet" id="sec-safety"></section>
+      <section class="sheet" id="sec-q"></section>
+      <section class="sheet" id="sec-notes"></section>
+    </main>
+
+    <aside class="out" aria-label="できあがり">
+      <div class="status" id="status" role="status"></div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-json" aria-selected="true" aria-controls="panel-json" type="button">できあがり</button>
+        <button class="tab" role="tab" id="tab-issues" aria-selected="false" aria-controls="panel-issues" type="button">チェック結果</button>
+        <button class="tab" role="tab" id="tab-load" aria-selected="false" aria-controls="panel-load" type="button">チェック・読み込み</button>
+      </div>
+      <div class="panel" id="panel-json" role="tabpanel">
+        <div class="actions">
+          <button class="btn" type="button" id="copyJson">JSON をコピー</button>
+          <button class="btn ghost" type="button" id="saveJson">clinic-intake.json を保存</button>
+          <span class="toast" id="jsonToast" role="status"></span>
+        </div>
+        <pre class="json" id="json" tabindex="0"></pre>
+        <p class="small">できたファイルは <code>clinic-intake.json</code> という名前で、ホームページのいちばん上（例: <code>https://あなたのサイト/clinic-intake.json</code>）に置きます。</p>
+      </div>
+      <div class="panel" id="panel-issues" role="tabpanel" hidden>
+        <ul class="issues" id="issues"></ul>
+      </div>
+      <div class="panel" id="panel-load" role="tabpanel" hidden>
+        <p class="small">AI が作った JSON や、前に作ったファイルを貼り付けて確かめます。</p>
+        <div class="field">
+          <label for="pasteBox">JSON を貼り付け</label>
+          <textarea id="pasteBox" rows="9" spellcheck="false" placeholder='{ "spec": "open-intake", ... }'></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" id="checkPaste">チェックする</button>
+          <button class="btn ghost" type="button" id="loadPaste">フォームに読み込む</button>
+          <label class="btn ghost" for="fileIn" style="display:inline-flex;align-items:center">ファイルを開く</label>
+          <input type="file" id="fileIn" accept=".json,application/json" hidden>
+        </div>
+        <div class="toast" id="pasteToast" role="status"></div>
+        <ul class="issues" id="pasteIssues"></ul>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <div>仕様: オープン問診票（Open Intake）v0.1 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0</div>
+    <div>このツールは診断をしません。問診票と救急の目安は、公開の前に必ず医師に確認してもらってください。</div>
+  </footer>
+</div>
+
+<script>/*
+ * オープン問診票（Open Intake）の検査器 — SPEC.md §7 の規則をそのまま書いたもの。
+ * ブラウザでは作成サイトに埋め込まれ（グローバル OpenIntakeValidate）、node では require で読める。
+ * 互換の決まり（SPEC.md §8）: 知らないキーは見ない。古い版のファイルもエラーにしない。
+ * License: Apache-2.0
+ */
+var OpenIntakeValidate = (function () {
+"use strict";
+const SUPPORTED_VERSIONS = ["0.1"];
+const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
+const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
+const CHOICE = new Set(["choice","open-choice"]);
+function validate(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!isObj(o)) { err("E1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (o.spec !== "open-intake") err("E1", "spec は \"open-intake\" にしてください。", "spec");
+  if (!isStr(o.specVersion)) err("E1", "specVersion（例: \"0.1\"）がありません。", "specVersion");
+  else if (!/^\d+\.\d+$/.test(o.specVersion)) err("E1", "specVersion は \"0.1\" のような形にしてください。", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器（${SUPPORTED_VERSIONS.join("・")} に対応）より新しい版です。知らないキーは無視して検査しました。`, "specVersion");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(o.updated || "")) err("E2", "updated は YYYY-MM-DD の形の日付にしてください。", "updated");
+  else { const age = (Date.now() - new Date(o.updated + "T00:00:00").getTime()) / 864e5; if (age > 365) warn("W2", "最後に確かめた日（updated）が1年以上前です。内容を確かめて日付を新しくしてください。", "updated"); }
+  const c = o.clinic;
+  if (!isObj(c)) err("E3", "clinic（医療機関の情報）がありません。", "clinic");
+  else {
+    if (!isStr(c.name)) err("E3", "医療機関の名前が空です。", "clinic.name");
+    if (!isStr(c.telephone)) err("E3", "電話番号が空です。", "clinic.telephone");
+    else if (!/^[0-9+()\- ]{6,}$/.test(c.telephone)) warn("W1", "電話番号に数字・ハイフン以外の文字が入っています。", "clinic.telephone");
+    if (isStr(c.url) && !/^https:\/\//.test(c.url)) warn("W1", "ホームページの URL が https で始まっていません。", "clinic.url");
+    const a = c.address;
+    if (!isObj(a) || !isStr(a.addressRegion)) err("E3", "都道府県が空です。", "clinic.address.addressRegion");
+    if (!isObj(a) || !isStr(a.addressLocality)) err("E3", "市区町村が空です。", "clinic.address.addressLocality");
+    if (isObj(a) && isStr(a.postalCode) && !/^\d{3}-?\d{4}$/.test(a.postalCode)) warn("W1", "郵便番号は 100-0000 の形にしてください。", "clinic.address.postalCode");
+    if (!Array.isArray(c.departments) || !c.departments.filter(isStr).length) err("E4", "診療科を1つ以上選んでください。", "clinic.departments");
+    if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "診療時間を1つ以上入れてください。", "clinic.openingHours");
+    else c.openingHours.forEach((h, i) => {
+      const w = `clinic.openingHours[${i}]`;
+      if (!Array.isArray(h.days) || !h.days.length) err("E5", `診療時間 ${i+1} 行目: 曜日を選んでください。`, w + ".days");
+      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `診療時間 ${i+1} 行目: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
+      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `診療時間 ${i+1} 行目: 時刻を 09:00 の形で入れてください。`, w);
+      else if (h.opens >= h.closes) err("E5", `診療時間 ${i+1} 行目: 始まり（${h.opens}）が終わり（${h.closes}）より後になっています。`, w);
+    });
+    if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "予約・受診の方法を1つ以上入れてください。", "clinic.booking");
+    else c.booking.forEach((b, i) => {
+      const w = `clinic.booking[${i}]`;
+      if (!["web","phone","walk-in","other"].includes(b.method)) err("E6", `予約の方法 ${i+1}: method が決まった値（web / phone / walk-in / other）ではありません。`, w + ".method");
+      if (b.method === "web" && !isStr(b.url)) err("E6", `予約の方法 ${i+1}: Web 予約のページの URL を入れてください。`, w + ".url");
+      if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `予約の方法 ${i+1}: 予約ページの URL が https で始まっていません。`, w + ".url");
+      if (b.method === "phone" && !isStr(b.telephone)) err("E6", `予約の方法 ${i+1}: 予約用の電話番号を入れてください。`, w + ".telephone");
+    });
+  }
+  const s = o.safety;
+  if (!isObj(s)) err("E7", "safety（安全のための決まり）がありません。省略できません。", "safety");
+  else {
+    if (s.noDiagnosis !== true) err("E7", "safety.noDiagnosis は true にしてください。", "safety.noDiagnosis");
+    if (!isStr(s.emergency)) err("E7", "緊急時の案内文が空です。", "safety.emergency");
+    if (!Array.isArray(s.redFlags) || !s.redFlags.filter(isStr).length) err("E7", "救急の目安になる症状を1つ以上入れてください。", "safety.redFlags");
+  }
+  if (typeof o.aiNotes === "string" && o.aiNotes.length > 500) warn("W5", `AI へのお願いが長すぎます（${o.aiNotes.length} 字・500 字まで）。`, "aiNotes");
+  if (!Array.isArray(o.questionnaires)) err("E8", "questionnaires（問診票の並び）がありません。空なら [] にしてください。", "questionnaires");
+  else {
+    if (!o.questionnaires.length) warn("W4", "問診票が1つもありません。医院の情報だけでも使えますが、問診票があると受診前の記入に役立ちます。", "questionnaires");
+    const qids = new Set();
+    o.questionnaires.forEach((q, qi) => {
+      const w = `questionnaires[${qi}]`, name = (isObj(q) && isStr(q.title)) ? `「${q.title}」` : `${qi+1} 番目の問診票`;
+      if (!isObj(q)) { err("E8", `${name} の形が正しくありません。`, w); return; }
+      if (q.resourceType !== "Questionnaire") err("E8", `${name}: resourceType は "Questionnaire" にしてください。`, w + ".resourceType");
+      if (!/^[A-Za-z0-9\-.]{1,64}$/.test(q.id || "")) err("E8", `${name}: id は半角英数字とハイフンにしてください（例: fever）。`, w + ".id");
+      else if (qids.has(q.id)) err("E8", `${name}: id「${q.id}」がほかの問診票と重なっています。`, w + ".id");
+      else qids.add(q.id);
+      if (!["draft","active"].includes(q.status)) err("E8", `${name}: status は draft か active にしてください。`, w + ".status");
+      else if (q.status === "draft") warn("W3", `${name} は医師の確認前（draft）です。確認が済んだら「使用中」にしてください。`, w + ".status");
+      if (!isStr(q.title)) err("E8", `${name}: 問診票の名前が空です。`, w + ".title");
+      if (!Array.isArray(q.item) || !q.item.length) { err("E8", `${name}: 質問が1つもありません。`, w + ".item"); return; }
+      const seen = new Map();
+      const walk = (items, path, depth) => items.forEach((it, i) => {
+        const p = `${path}[${i}]`, label = `${name} Q${i+1}`;
+        if (!isObj(it)) { err("E8", `${label}: 質問の形が正しくありません。`, p); return; }
+        if (!/^[A-Za-z0-9\-._]{1,64}$/.test(it.linkId || "")) err("E9", `${label}: linkId は半角英数字にしてください。`, p + ".linkId");
+        else if (seen.has(it.linkId)) err("E9", `${label}: linkId「${it.linkId}」が重なっています。`, p + ".linkId");
+        if (!isStr(it.text)) err("E8", `${label}: 質問文が空です。`, p + ".text");
+        else if (it.text.length > 200) warn("W5", `${label}: 質問文が長すぎます（${it.text.length} 字・200 字まで）。`, p + ".text");
+        if (!TYPE_KEYS.includes(it.type)) err("E10", `${label}: 答え方（type）「${it.type}」は使えません。`, p + ".type");
+        if (CHOICE.has(it.type) && (!Array.isArray(it.answerOption) || !it.answerOption.filter(x => isStr(x?.valueString)).length)) err("E10", `${label}: 選択肢を1つ以上入れてください。`, p + ".answerOption");
+        if (Array.isArray(it.enableWhen)) it.enableWhen.forEach((ew, k) => {
+          const target = seen.get(ew?.question);
+          if (!target) err("E11", `${label}: 表示の条件が、それより前にない質問（${ew?.question || "空"}）を指しています。`, `${p}.enableWhen[${k}]`);
+          if (!["=","exists"].includes(ew?.operator)) err("E11", `${label}: 表示の条件の operator は "=" か "exists" にしてください。`, `${p}.enableWhen[${k}].operator`);
+        });
+        if (isStr(it.linkId)) seen.set(it.linkId, it);
+        if (Array.isArray(it.item)) { if (depth >= 2) err("E8", `${label}: グループの入れ子は2段までです。`, p + ".item"); walk(it.item, p + ".item", depth + 1); }
+      });
+      walk(q.item, w + ".item", 1);
+    });
+  }
+  return { E, W };
+}
+return { validate, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+})();
+if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
+</script>
+<script>
+(() => {
+"use strict";
+
+// ---------- 定数 ----------
+const DAYS = [["Mo","月"],["Tu","火"],["We","水"],["Th","木"],["Fr","金"],["Sa","土"],["Su","日"],["PH","祝"]];
+const DAY_KEYS = DAYS.map(d => d[0]);
+const DEPTS = ["内科","小児科","外科","整形外科","皮膚科","耳鼻咽喉科","眼科","産婦人科","泌尿器科","精神科","心療内科","循環器内科","消化器内科","呼吸器内科","リハビリテーション科","歯科"];
+const LANGS = [["ja","日本語"],["en","英語"],["zh","中国語"],["ko","韓国語"],["vi","ベトナム語"],["pt","ポルトガル語"]];
+const METHODS = [["web","Web 予約"],["phone","電話"],["walk-in","予約なしで来院"],["other","その他"]];
+const TYPES = [["boolean","はい／いいえ"],["choice","選ぶ"],["open-choice","選ぶか書く"],["string","短い文"],["text","長い文"],["integer","整数"],["decimal","小数"],["date","日付"],["display","説明文（答えなし）"]];
+const TYPE_KEYS = ["group", ...TYPES.map(t => t[0])];
+const CHOICE = new Set(["choice","open-choice"]);
+const DEFAULT_EMERGENCY = "命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。";
+const DEFAULT_RED = ["顔の半分が動きにくい・しびれる、ろれつが回らない、うまく話せない", "見える範囲が急に狭くなる・ものが二重に見える", "突然の激しい頭痛", "支えなしで立てないほど急にふらつく", "胸や背中の突然の激痛、胸が締めつけられるような痛みが2〜3分続く", "急な息切れ・呼吸が苦しい", "突然の激しい腹痛・続く激しい腹痛、吐血や下血", "手足の突然のしびれ、片方の腕や足に急に力が入らない", "意識がない・もうろうとしている・ぐったりしている", "冷や汗を伴う強い吐き気", "物をのどに詰まらせて呼吸が苦しい", "けいれんが止まらない・止まっても意識が戻らない", "大量の出血を伴うけが・広い範囲のやけど", "交通事故で強い衝撃を受けた・おぼれた・高いところから落ちた", "いつもと様子が明らかに違う"];
+const DEFAULT_RED_SOURCE = {"publisher": "総務省消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese.pdf", "note": "大人の項目を要約したもの。原文との照合と医師の確認が済んでいない。子ども・高齢者の項目は含まない。"};
+const STORE_KEY = "open-intake-draft-v1";
+
+const today = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const opt = s => ({ valueString: s });
+
+function feverQuestionnaire() {
+  return {
+    resourceType: "Questionnaire", id: "fever", status: "draft", title: "発熱・せきの問診票", purpose: "発熱・せき・のどの痛みで受診する方",
+    item: [
+      { linkId: "q1", text: "いつから症状がありますか", type: "choice", required: true, answerOption: ["今日","1〜2日前","3〜6日前","1週間以上前"].map(opt) },
+      { linkId: "q2", text: "いまの体温（℃）", type: "decimal" },
+      { linkId: "q3", text: "当てはまる症状をすべて選んでください", type: "open-choice", repeats: true, answerOption: ["せき","のどの痛み","鼻水","頭痛","体のだるさ","吐き気・おう吐","下痢","味やにおいがわからない"].map(opt) },
+      { linkId: "q4", text: "家族や周りに同じ症状の人はいますか", type: "boolean" },
+      { linkId: "q5", text: "持病はありますか", type: "boolean", required: true },
+      { linkId: "q6", text: "持病の名前", type: "string", enableWhen: [{ question: "q5", operator: "=", answerBoolean: true }] },
+      { linkId: "q7", text: "いま飲んでいる薬はありますか", type: "boolean", required: true },
+      { linkId: "q8", text: "薬の名前（わからなければ、お薬手帳を持ってきてください）", type: "text", enableWhen: [{ question: "q7", operator: "=", answerBoolean: true }] },
+      { linkId: "q9", text: "薬や食べ物のアレルギーはありますか", type: "boolean", required: true },
+      { linkId: "q10", text: "アレルギーの内容", type: "string", enableWhen: [{ question: "q9", operator: "=", answerBoolean: true }] },
+      { linkId: "q11", text: "妊娠している、またはその可能性がありますか", type: "choice", answerOption: ["はい","いいえ","あてはまらない"].map(opt) },
+      { linkId: "q12", text: "そのほか、医師に伝えたいこと", type: "text" }
+    ]
+  };
+}
+function blankSafety() { return { noDiagnosis: true, emergency: DEFAULT_EMERGENCY, redFlags: DEFAULT_RED.slice(), redFlagsSource: { ...DEFAULT_RED_SOURCE } }; }
+function exampleDoc() {
+  return {
+    spec: "open-intake", specVersion: "0.1", updated: today(),
+    clinic: {
+      name: "みどり台内科クリニック（架空の例）", url: "https://example.com/", telephone: "03-0000-0000",
+      address: { postalCode: "100-0000", addressRegion: "東京都", addressLocality: "千代田区", streetAddress: "みどり台1-2-3 2階" },
+      departments: ["内科","小児科"],
+      openingHours: [
+        { days: ["Mo","Tu","We","Th","Fr","Sa"], opens: "09:00", closes: "12:30", note: "受付は12:00まで" },
+        { days: ["Mo","Tu","We","Fr"], opens: "15:00", closes: "18:30" }
+      ],
+      closedNote: "木曜午後・土曜午後・日曜・祝日は休診",
+      handles: ["発熱","せき","のどの痛み","腹痛・下痢","高血圧・糖尿病の相談","予防接種"],
+      notHandled: ["入院","6か月未満の乳児"],
+      booking: [
+        { method: "web", url: "https://example.com/reserve", note: "当日の順番予約もできます" },
+        { method: "phone", telephone: "03-0000-0000", note: "診療時間内のみ" },
+        { method: "walk-in", note: "発熱のある方は来院前に電話してください" }
+      ],
+      bring: ["マイナ保険証または保険証","お薬手帳","医療証（お持ちの方）"],
+      languages: ["ja","en"], accessibility: ["エレベーターあり","車椅子で入れる"]
+    },
+    safety: blankSafety(),
+    aiNotes: "発熱のある方は、来院の前に必ず電話で到着時刻を伝えるよう案内してください。",
+    questionnaires: [feverQuestionnaire()]
+  };
+}
+function blankDoc() {
+  return {
+    spec: "open-intake", specVersion: "0.1", updated: today(),
+    clinic: { name: "", url: "", telephone: "", address: { postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" },
+      departments: [], openingHours: [{ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "12:00" }], closedNote: "",
+      handles: [], notHandled: [], booking: [{ method: "phone", telephone: "" }], bring: [], languages: ["ja"], accessibility: [] },
+    safety: blankSafety(), aiNotes: "", questionnaires: []
+  };
+}
+
+// ---------- 状態 ----------
+let S;          // 編集中の文書（仕様の形のまま持つ）
+let origin = ""; // "example" | "draft" | "blank" | "loaded"
+
+function normalize(doc) {
+  const d = (doc && typeof doc === "object") ? JSON.parse(JSON.stringify(doc)) : {};
+  const notes = [];
+  d.spec = "open-intake"; d.specVersion = typeof d.specVersion === "string" ? d.specVersion : "0.1";
+  if (typeof d.updated !== "string") d.updated = today();
+  const c = d.clinic = (d.clinic && typeof d.clinic === "object") ? d.clinic : {};
+  for (const k of ["name","url","telephone","closedNote"]) if (typeof c[k] !== "string") c[k] = "";
+  c.address = (c.address && typeof c.address === "object") ? c.address : {};
+  for (const k of ["postalCode","addressRegion","addressLocality","streetAddress"]) if (typeof c.address[k] !== "string") c.address[k] = "";
+  for (const k of ["departments","handles","notHandled","bring","languages","accessibility"]) c[k] = Array.isArray(c[k]) ? c[k].filter(x => typeof x === "string") : [];
+  c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.map(h => ({ days: Array.isArray(h?.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h?.opens || "", closes: h?.closes || "", ...(h?.note ? { note: h.note } : {}) })) : [];
+  c.booking = Array.isArray(c.booking) ? c.booking.map(b => ({ method: b?.method || "other", url: b?.url || "", telephone: b?.telephone || "", note: b?.note || "" })) : [];
+  const s = d.safety = (d.safety && typeof d.safety === "object") ? d.safety : {};
+  s.noDiagnosis = true;
+  if (typeof s.emergency !== "string") s.emergency = DEFAULT_EMERGENCY;
+  s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : DEFAULT_RED.slice();
+  if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
+  if (typeof d.aiNotes !== "string") d.aiNotes = "";
+  d.questionnaires = Array.isArray(d.questionnaires) ? d.questionnaires : [];
+  for (const q of d.questionnaires) {
+    q.resourceType = "Questionnaire";
+    for (const k of ["id","title","purpose"]) if (typeof q[k] !== "string") q[k] = "";
+    if (q.status !== "active") q.status = "draft";
+    const flat = [];
+    const walk = (arr) => { for (const it of (Array.isArray(arr) ? arr : [])) {
+      if (it?.type === "group") { notes.push(`「${q.title || q.id}」のグループ「${it.text || it.linkId}」は、平らな並びにして読み込みました。`); walk(it.item); continue; }
+      if (it && typeof it === "object") { const x = { ...it }; delete x.item; flat.push(x); }
+    } };
+    walk(q.item);
+    q.item = flat.map(it => ({ ...it, linkId: String(it.linkId ?? ""), text: String(it.text ?? ""), type: TYPE_KEYS.includes(it.type) ? it.type : "string",
+      answerOption: Array.isArray(it.answerOption) ? it.answerOption.filter(o => typeof o?.valueString === "string") : undefined }));
+  }
+  return { doc: d, notes };
+}
+
+// ---------- 出力（仕様どおりに整えた JSON） ----------
+const clean = s => (typeof s === "string" ? s.trim() : s);
+const cleanList = a => (a || []).map(clean).filter(Boolean);
+function build(d) {
+  const c = d.clinic, out = { spec: "open-intake", specVersion: d.specVersion || "0.1", updated: d.updated };
+  const clinic = { name: clean(c.name) };
+  if (clean(c.url)) clinic.url = clean(c.url);
+  clinic.telephone = clean(c.telephone);
+  const a = {}; for (const k of ["postalCode","addressRegion","addressLocality","streetAddress"]) { const v = clean(c.address[k]); if (v || k === "addressRegion" || k === "addressLocality") a[k] = v; }
+  clinic.address = a;
+  clinic.departments = cleanList(c.departments);
+  clinic.openingHours = c.openingHours.map(h => { const o = { days: DAY_KEYS.filter(k => h.days.includes(k)), opens: h.opens, closes: h.closes }; if (clean(h.note)) o.note = clean(h.note); return o; });
+  if (clean(c.closedNote)) clinic.closedNote = clean(c.closedNote);
+  for (const k of ["handles","notHandled"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
+  clinic.booking = c.booking.map(b => { const o = { method: b.method }; if (b.method === "web" || (b.method === "other" && clean(b.url))) o.url = clean(b.url); if (b.method === "phone" || (b.method === "other" && clean(b.telephone))) o.telephone = clean(b.telephone); if (clean(b.note)) o.note = clean(b.note); return o; });
+  for (const k of ["bring","languages","accessibility"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
+  out.clinic = clinic;
+  out.safety = { noDiagnosis: true, emergency: clean(d.safety.emergency), redFlags: cleanList(d.safety.redFlags) };
+  if (d.safety.redFlagsSource) out.safety.redFlagsSource = d.safety.redFlagsSource;
+  if (clean(d.aiNotes)) out.aiNotes = clean(d.aiNotes);
+  out.questionnaires = d.questionnaires.map(q => {
+    const o = { resourceType: "Questionnaire", id: clean(q.id), status: q.status, title: clean(q.title) };
+    if (clean(q.purpose)) o.purpose = clean(q.purpose);
+    o.item = q.item.map(it => {
+      const x = { linkId: it.linkId, text: clean(it.text), type: it.type };
+      if (it.required && it.type !== "display") x.required = true;
+      if (it.repeats && CHOICE.has(it.type)) x.repeats = true;
+      if (CHOICE.has(it.type)) x.answerOption = (it.answerOption || []).map(o => ({ valueString: clean(o.valueString) })).filter(o => o.valueString);
+      if (Array.isArray(it.enableWhen) && it.enableWhen.length) { x.enableWhen = it.enableWhen; if (it.enableWhen.length > 1 && it.enableBehavior) x.enableBehavior = it.enableBehavior; }
+      return x;
+    });
+    return o;
+  });
+  return out;
+}
+
+const { validate } = OpenIntakeValidate;
+
+// ---------- DOM の小道具 ----------
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag); let value, checked;
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k === "value") value = v;
+    else if (k === "checked") checked = v;
+    else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  if (value !== undefined) el.value = value;
+  if (checked !== undefined) el.checked = checked;
+  return el;
+}
+const $ = id => document.getElementById(id);
+const fid = (...p) => "f-" + p.join("-");
+function field(id, label, key, control, { req, hint } = {}) {
+  return h("div", { class: "field" },
+    h("label", { for: id }, label, req && h("span", { class: "badge req", text: "必須" }), key && h("span", { class: "k", text: key })),
+    control, hint && h("div", { class: "hint", text: hint }));
+}
+function text(id, get, set, attrs = {}) { return h("input", { type: "text", id, value: get() ?? "", oninput: e => { set(e.target.value); changed(); }, ...attrs }); }
+function lines(id, get, set, attrs = {}) { return h("textarea", { id, rows: 4, value: (get() || []).join("\n"), oninput: e => { set(e.target.value.split("\n").map(s => s.trim()).filter(Boolean)); changed(); }, ...attrs }); }
+function sheetHead(no, title, key) { return h("header", {}, h("span", { class: "no", text: no }), h("h2", { text: title }), key && h("code", { class: "key", text: key })); }
+
+// ---------- 各欄の描画 ----------
+function renderClinic() {
+  const c = S.clinic, a = c.address, el = $("sec-clinic"); el.replaceChildren();
+  const others = c.departments.filter(x => !DEPTS.includes(x));
+  const setDepts = () => {
+    const picked = DEPTS.filter(dp => el.querySelector(`[data-dept="${dp}"]`)?.checked);
+    const extra = $("f-dept-other").value.split(/[、,，\s]+/).map(s => s.trim()).filter(Boolean);
+    c.departments = [...picked, ...extra.filter(x => !picked.includes(x))]; changed();
+  };
+  const langOthers = c.languages.filter(x => !LANGS.some(l => l[0] === x));
+  const setLangs = () => {
+    const picked = LANGS.map(l => l[0]).filter(k => el.querySelector(`[data-lang="${k}"]`)?.checked);
+    const extra = $("f-lang-other").value.split(/[、,，\s]+/).map(s => s.trim()).filter(Boolean);
+    c.languages = [...picked, ...extra]; changed();
+  };
+  el.append(
+    sheetHead("1", "医療機関の情報", "clinic"),
+    h("div", { class: "grid" },
+      field("f-name", "名前", "name", text("f-name", () => c.name, v => c.name = v, { placeholder: "みどり台内科クリニック" }), { req: true }),
+      field("f-tel", "電話番号", "telephone", text("f-tel", () => c.telephone, v => c.telephone = v, { type: "tel", placeholder: "03-0000-0000" }), { req: true }),
+      field("f-url", "ホームページ", "url", text("f-url", () => c.url, v => c.url = v, { type: "url", placeholder: "https://" }))),
+    h("div", { class: "grid" },
+      field("f-zip", "郵便番号", "postalCode", text("f-zip", () => a.postalCode, v => a.postalCode = v, { placeholder: "100-0000", inputmode: "numeric" })),
+      field("f-pref", "都道府県", "addressRegion", text("f-pref", () => a.addressRegion, v => a.addressRegion = v, { placeholder: "東京都" }), { req: true }),
+      field("f-city", "市区町村", "addressLocality", text("f-city", () => a.addressLocality, v => a.addressLocality = v, { placeholder: "千代田区" }), { req: true }),
+      field("f-street", "町名・番地・建物", "streetAddress", text("f-street", () => a.streetAddress, v => a.streetAddress = v))),
+    h("div", { class: "field" },
+      h("div", { class: "label" }, "診療科", h("span", { class: "badge req", text: "必須" }), h("span", { class: "k", text: "departments" })),
+      h("div", { class: "chips" }, DEPTS.map(dp => h("label", { class: "chip" }, h("input", { type: "checkbox", id: fid("dept", DEPTS.indexOf(dp)), "data-dept": dp, checked: c.departments.includes(dp), onchange: setDepts }), dp))),
+      h("input", { type: "text", id: "f-dept-other", value: others.join("、"), placeholder: "そのほかの診療科（読点で区切る）", oninput: setDepts, "aria-label": "そのほかの診療科" })),
+    h("div", { class: "grid" },
+      field("f-handles", "主に診ている症状・相談", "handles", lines("f-handles", () => c.handles, v => c.handles = v, { placeholder: "発熱\nせき\n高血圧の相談" }), { hint: "1行に1つ。患者さんの AI が「この医院が合いそうか」を判断する手がかりになります。" }),
+      field("f-nothandled", "対応していないこと", "notHandled", lines("f-nothandled", () => c.notHandled, v => c.notHandled = v, { placeholder: "入院\n6か月未満の乳児" }), { hint: "1行に1つ。" })),
+    h("div", { class: "grid" },
+      field("f-bring", "持ち物", "bring", lines("f-bring", () => c.bring, v => c.bring = v, { placeholder: "マイナ保険証\nお薬手帳" })),
+      field("f-access", "バリアフリー・設備", "accessibility", lines("f-access", () => c.accessibility, v => c.accessibility = v, { placeholder: "車椅子で入れる\n駐車場あり" }))),
+    h("div", { class: "field" },
+      h("div", { class: "label" }, "対応できる言語", h("span", { class: "k", text: "languages" })),
+      h("div", { class: "chips" }, LANGS.map(([k, n]) => h("label", { class: "chip" }, h("input", { type: "checkbox", id: fid("lang", k), "data-lang": k, checked: c.languages.includes(k), onchange: setLangs }), n))),
+      h("input", { type: "text", id: "f-lang-other", value: langOthers.join(", "), placeholder: "そのほか（言語コード: th, ne など）", oninput: setLangs, "aria-label": "そのほかの言語コード" }))
+  );
+}
+
+function renderHours() {
+  const c = S.clinic, el = $("sec-hours"); el.replaceChildren();
+  el.append(sheetHead("2", "診療時間", "openingHours"),
+    h("p", { class: "lead", text: "午前と午後で分かれるときは、行を分けてください。" }),
+    h("div", { class: "rows" }, c.openingHours.map((hr, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("div", { class: "days", role: "group", "aria-label": `${i+1} 行目の曜日` }, DAYS.map(([k, n]) => h("label", { class: "day", title: k },
+          h("input", { type: "checkbox", id: fid("hr", i, k), checked: hr.days.includes(k), "aria-label": n, onchange: e => { hr.days = e.target.checked ? DAY_KEYS.filter(x => x === k || hr.days.includes(x)) : hr.days.filter(x => x !== k); changed(); } }),
+          h("span", { text: n })))),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", "aria-label": `${i+1} 行目を消す`, onclick: () => { c.openingHours.splice(i, 1); renderHours(); changed(); } }, "×")),
+      h("div", { class: "times" },
+        h("input", { type: "time", id: fid("hr", i, "o"), value: hr.opens, "aria-label": "始まり", oninput: e => { hr.opens = e.target.value; changed(); } }),
+        h("span", { text: "〜" }),
+        h("input", { type: "time", id: fid("hr", i, "c"), value: hr.closes, "aria-label": "終わり", oninput: e => { hr.closes = e.target.value; changed(); } }),
+        h("input", { type: "text", id: fid("hr", i, "n"), value: hr.note || "", placeholder: "補足（例: 受付は30分前まで）", style: "flex:1;min-width:160px", oninput: e => { hr.note = e.target.value; changed(); } }))))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.openingHours.push({ days: [], opens: "15:00", closes: "18:00" }); renderHours(); changed(); } }, "＋ 行を足す")),
+    field("f-closed", "休診の補足", "closedNote", text("f-closed", () => c.closedNote, v => c.closedNote = v, { placeholder: "木曜午後・日曜・祝日は休診" })));
+}
+
+function renderBooking() {
+  const c = S.clinic, el = $("sec-booking"); el.replaceChildren();
+  el.append(sheetHead("3", "予約・受診の方法", "booking"),
+    h("div", { class: "rows" }, c.booking.map((b, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("bk", i, "m"), value: b.method, style: "width:auto", "aria-label": "方法", onchange: e => { b.method = e.target.value; renderBooking(); changed(); } }, METHODS.map(([k, n]) => h("option", { value: k, text: n }))),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", "aria-label": `方法 ${i+1} を消す`, onclick: () => { c.booking.splice(i, 1); renderBooking(); changed(); } }, "×")),
+      h("div", { class: "grid" },
+        (b.method === "web" || b.method === "other") && field(fid("bk", i, "u"), "予約ページの URL", "url", text(fid("bk", i, "u"), () => b.url, v => b.url = v, { type: "url", placeholder: "https://" }), { req: b.method === "web" }),
+        (b.method === "phone" || b.method === "other") && field(fid("bk", i, "t"), "予約用の電話番号", "telephone", text(fid("bk", i, "t"), () => b.telephone, v => b.telephone = v, { type: "tel", placeholder: "03-0000-0000" }), { req: b.method === "phone" }),
+        field(fid("bk", i, "n"), "注意", "note", text(fid("bk", i, "n"), () => b.note, v => b.note = v, { placeholder: "初診は電話のみ など" })))))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.booking.push({ method: "web", url: "", telephone: "", note: "" }); renderBooking(); changed(); } }, "＋ 方法を足す")));
+}
+
+function renderSafety() {
+  const s = S.safety, el = $("sec-safety"); el.replaceChildren();
+  el.append(sheetHead("4", "安全のための決まり", "safety"),
+    h("p", { class: "lead" }, "患者さんの AI は、問診の前にここを確かめます。初期値は総務省消防庁のパンフレット（大人の項目）を要約した草案で、原文との照合と医師の確認がまだです。", h("strong", { text: "公開の前に必ず医師に見てもらってください。" })),
+    h("div", { class: "field" }, h("div", { class: "label" }, "診断をしない", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "この欄は変えられません。このファイルを読む AI は、病名の推定や診断をしません。" })),
+    field("f-emerg", "緊急時の案内", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
+    field("f-red", "予約より先に救急へ（目安の症状）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。減らすときは医師に確認してください。" }),
+    s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "目安の出典", h("span", { class: "k", text: "redFlagsSource" })),
+      h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}「${s.redFlagsSource.title || ""}」`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "原文（PDF）" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { S.safety = blankSafety(); renderSafety(); changed(); } }, "初期値に戻す")));
+}
+
+function nextLinkId(q) { let m = 0; for (const it of q.item) { const n = /^q(\d+)$/.exec(it.linkId); if (n) m = Math.max(m, +n[1]); } return "q" + (m + 1); }
+function renderQuestionnaires() {
+  const el = $("sec-q"); el.replaceChildren();
+  el.append(sheetHead("5", "問診票", "questionnaires"),
+    h("p", { class: "lead", text: "受診の理由ごとに作れます。患者さんの AI はこの質問に沿って会話し、答えをまとめます。" }));
+  S.questionnaires.forEach((q, qi) => {
+    const items = q.item;
+    el.append(h("div", { class: "q" },
+      h("div", { class: "row-head" },
+        h("h3", { id: fid("q", qi, "h"), text: q.title || "（名前のない問診票）", style: "font-size:16px" }),
+        q.status === "draft" && h("span", { class: "badge draft", text: "医師確認前" }),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", onclick: () => { S.questionnaires.splice(qi, 1); renderQuestionnaires(); changed(); } }, "この問診票を消す")),
+      h("div", { class: "q-head" },
+        field(fid("q", qi, "title"), "問診票の名前", "title", text(fid("q", qi, "title"), () => q.title, v => { q.title = v; const t = $(fid("q", qi, "h")); if (t) t.textContent = v || "（名前のない問診票）"; }), { req: true }),
+        field(fid("q", qi, "id"), "ID（半角英数）", "id", text(fid("q", qi, "id"), () => q.id, v => q.id = v, { placeholder: "fever" }), { req: true }),
+        field(fid("q", qi, "status"), "状態", "status", h("select", { id: fid("q", qi, "status"), value: q.status, onchange: e => { q.status = e.target.value; renderQuestionnaires(); changed(); } },
+          h("option", { value: "draft", text: "医師確認前（draft）" }), h("option", { value: "active", text: "使用中（active）" })))),
+      field(fid("q", qi, "purpose"), "どんな人向けか", "purpose", text(fid("q", qi, "purpose"), () => q.purpose, v => q.purpose = v, { placeholder: "発熱・せきで受診する方" })),
+      h("div", { class: "items" }, items.map((it, i) => renderItem(q, qi, it, i))),
+      h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { items.push({ linkId: nextLinkId(q), text: "", type: "boolean" }); renderQuestionnaires(); changed(); } }, "＋ 質問を足す"))));
+  });
+  el.append(h("div", { class: "actions" },
+    h("button", { type: "button", class: "btn small", onclick: () => { const ids = new Set(S.questionnaires.map(q => q.id)); let id = "intake", n = 1; while (ids.has(id)) id = "intake" + (++n); S.questionnaires.push({ resourceType: "Questionnaire", id, status: "draft", title: "", purpose: "", item: [{ linkId: "q1", text: "", type: "text" }] }); renderQuestionnaires(); changed(); } }, "＋ 空の問診票"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { const q = feverQuestionnaire(); const ids = new Set(S.questionnaires.map(x => x.id)); let n = 1; while (ids.has(q.id)) q.id = "fever" + (++n); S.questionnaires.push(q); renderQuestionnaires(); changed(); } }, "＋ 発熱・せきの例")));
+}
+
+function renderItem(q, qi, it, i) {
+  const items = q.item, isChoice = CHOICE.has(it.type);
+  const ew = Array.isArray(it.enableWhen) ? it.enableWhen[0] : null;
+  const earlier = items.slice(0, i).filter(x => x.type === "boolean" || CHOICE.has(x.type));
+  const target = ew ? items.find(x => x.linkId === ew.question) : null;
+  const condValue = () => {
+    if (!target) return null;
+    if (target.type === "boolean") return h("select", { id: fid("q", qi, it.linkId, "cv"), value: ew.answerBoolean === false ? "false" : "true", "aria-label": "条件の答え", onchange: e => { it.enableWhen = [{ question: target.linkId, operator: "=", answerBoolean: e.target.value === "true" }]; changed(); } }, h("option", { value: "true", text: "はい" }), h("option", { value: "false", text: "いいえ" }));
+    const opts = (target.answerOption || []).map(o => o.valueString).filter(Boolean);
+    return h("select", { id: fid("q", qi, it.linkId, "cv"), value: ew.answerString ?? opts[0] ?? "", "aria-label": "条件の答え", onchange: e => { it.enableWhen = [{ question: target.linkId, operator: "=", answerString: e.target.value }]; changed(); } }, opts.map(v => h("option", { value: v, text: v })));
+  };
+  const move = d => { const j = i + d; [items[i], items[j]] = [items[j], items[i]]; renderQuestionnaires(); changed(); };
+  return h("div", { class: "item" + (ew ? " cond" : "") },
+    h("div", { class: "item-top" },
+      h("span", { class: "num", text: "Q" + (i + 1) }),
+      h("input", { type: "text", id: fid("q", qi, it.linkId, "t"), value: it.text, placeholder: "質問文（単位は文に入れる。例: いまの体温（℃））", "aria-label": `Q${i+1} の質問文`, oninput: e => { it.text = e.target.value; changed(); } }),
+      h("button", { type: "button", class: "icon-btn", "aria-label": "上へ", disabled: i === 0, onclick: () => move(-1) }, "↑"),
+      h("button", { type: "button", class: "icon-btn", "aria-label": "下へ", disabled: i === items.length - 1, onclick: () => move(1) }, "↓"),
+      h("button", { type: "button", class: "icon-btn danger", "aria-label": `Q${i+1} を消す`, onclick: () => {
+        items.splice(i, 1);
+        for (const x of items) if (Array.isArray(x.enableWhen)) { x.enableWhen = x.enableWhen.filter(w => w.question !== it.linkId); if (!x.enableWhen.length) delete x.enableWhen; }
+        renderQuestionnaires(); changed(); } }, "×")),
+    h("div", { class: "item-opts" },
+      h("label", { class: "check" }, "答え方",
+        h("select", { id: fid("q", qi, it.linkId, "ty"), value: it.type, onchange: e => { it.type = e.target.value; if (CHOICE.has(it.type) && !it.answerOption?.length) it.answerOption = [opt("選択肢1"), opt("選択肢2")]; renderQuestionnaires(); changed(); } },
+          TYPES.map(([k, n]) => h("option", { value: k, text: n })), it.type === "group" && h("option", { value: "group", text: "グループ" }))),
+      it.type !== "display" && h("label", { class: "check" }, h("input", { type: "checkbox", id: fid("q", qi, it.linkId, "rq"), checked: !!it.required, onchange: e => { it.required = e.target.checked; changed(); } }), "必須"),
+      isChoice && h("label", { class: "check" }, h("input", { type: "checkbox", id: fid("q", qi, it.linkId, "rp"), checked: !!it.repeats, onchange: e => { it.repeats = e.target.checked; changed(); } }), "複数選べる"),
+      i > 0 && h("label", { class: "check" }, "聞くとき",
+        h("select", { id: fid("q", qi, it.linkId, "cq"), value: target ? target.linkId : "", onchange: e => {
+          const t = items.find(x => x.linkId === e.target.value);
+          if (!t) delete it.enableWhen;
+          else if (t.type === "boolean") it.enableWhen = [{ question: t.linkId, operator: "=", answerBoolean: true }];
+          else it.enableWhen = [{ question: t.linkId, operator: "=", answerString: t.answerOption?.[0]?.valueString || "" }];
+          renderQuestionnaires(); changed(); } },
+          h("option", { value: "", text: "いつも聞く" }),
+          earlier.map(x => h("option", { value: x.linkId, text: `Q${items.indexOf(x) + 1} の答えが…` })),
+          ew && !target && h("option", { value: ew.question, text: `（見つからない: ${ew.question}）` }))),
+      condValue(), target && h("span", { text: "のとき" }),
+      h("span", { class: "linkid", text: it.linkId })),
+    isChoice && h("textarea", { id: fid("q", qi, it.linkId, "op"), rows: Math.min(8, Math.max(3, (it.answerOption || []).length + 1)), value: (it.answerOption || []).map(o => o.valueString).join("\n"), placeholder: "選択肢を1行に1つ", "aria-label": `Q${i+1} の選択肢`,
+      oninput: e => { it.answerOption = e.target.value.split("\n").map(s => s.trim()).filter(Boolean).map(opt); changed(); },
+      onchange: () => { if (items.some(x => x.enableWhen?.some(w => w.question === it.linkId))) renderQuestionnaires(); } }));
+}
+
+function renderNotes() {
+  const el = $("sec-notes"); el.replaceChildren();
+  el.append(sheetHead("6", "仕上げ", "aiNotes · updated"),
+    field("f-notes", "AI へのお願い（任意）", "aiNotes", h("textarea", { id: "f-notes", rows: 3, maxlength: 500, value: S.aiNotes, placeholder: "例: 発熱のある方は、来院の前に電話するよう案内してください。", oninput: e => { S.aiNotes = e.target.value; changed(); } }), { hint: "500字まで。患者さんの AI への補足です。" }),
+    h("div", { class: "grid" }, field("f-updated", "内容を確かめた日", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "1年以上たつと、AI は「情報が古いかもしれない」と伝えます。" })));
+}
+
+function renderAll() { renderClinic(); renderHours(); renderBooking(); renderSafety(); renderQuestionnaires(); renderNotes(); renderNotice(); changed(true); }
+
+// ---------- 上の帯 ----------
+function renderNotice(extra) {
+  const el = $("notice"); el.replaceChildren();
+  const msg = { example: ["架空の医院の例が入っています。", "書き換えて使うか、空にして始めてください。"], draft: ["前回の下書きを開きました。", "このブラウザの中だけに保存されています。"], blank: ["空の用紙です。", "必須の欄から埋めてください。"], loaded: ["貼り付けた JSON を読み込みました。", ""] }[origin] || ["", ""];
+  el.append(h("span", {}, h("strong", { text: msg[0] }), " ", msg[1]), extra && h("span", { text: extra }),
+    h("span", { style: "flex:1" }),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { S = normalize(exampleDoc()).doc; origin = "example"; renderAll(); } }, "架空の例を入れる"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { S = normalize(blankDoc()).doc; origin = "blank"; renderAll(); } }, "空にする"));
+}
+
+// ---------- 出力の更新 ----------
+let saveTimer = 0, lastOut = null;
+function highlight(json) {
+  const esc = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return esc.replace(/("(?:\\.|[^"\\])*")(\s*:)?/g, (m, s, colon) => colon ? `<span class="k">${s}</span>${colon}` : `<span class="s">${s}</span>`);
+}
+function renderIssues(list, res) {
+  list.replaceChildren();
+  if (!res.E.length && !res.W.length) { list.append(h("li", { class: "w", style: "background:var(--ok-soft)" }, h("span", { class: "code", style: "color:var(--ok)", text: "OK" }), h("span", { text: "エラーも注意もありません。" }))); return; }
+  for (const [arr, cls] of [[res.E, "e"], [res.W, "w"]]) for (const x of arr)
+    list.append(h("li", { class: cls }, h("span", { class: "code", text: x.code }), h("span", {}, x.msg, h("span", { class: "where", text: x.where }))));
+}
+function statusOf(res) {
+  const st = $("status"); st.replaceChildren(h("span", { class: "dot" }));
+  if (res.E.length) { st.className = "status err"; st.append(`エラー ${res.E.length} 件${res.W.length ? `・注意 ${res.W.length} 件` : ""}。直すと公開できる形になります。`); }
+  else if (res.W.length) { st.className = "status warn"; st.append(`公開できる形です。注意が ${res.W.length} 件あります。`); }
+  else { st.className = "status ok"; st.append("公開できる形です。"); }
+}
+function changed(immediate) {
+  lastOut = build(S);
+  const json = JSON.stringify(lastOut, null, 2);
+  $("json").innerHTML = highlight(json);
+  const res = validate(lastOut);
+  statusOf(res); renderIssues($("issues"), res);
+  $("tab-issues").textContent = `チェック結果（${res.E.length + res.W.length}）`;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (_) {} }, immediate ? 0 : 400);
+}
+
+// ---------- タブ・コピー・保存・読み込み ----------
+function selectTab(name) {
+  for (const t of ["json","issues","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
+}
+for (const t of ["json","issues","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
+$("status").addEventListener("click", () => selectTab("issues"));
+
+function copyText(textValue, toastEl, fallbackEl) {
+  const done = m => { toastEl.textContent = m; setTimeout(() => { toastEl.textContent = ""; }, 3000); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents(fallbackEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("選択しました。Ctrl+C（⌘+C）でコピーしてください。"); };
+  try { navigator.clipboard.writeText(textValue).then(() => done("コピーしました。"), fallback); } catch (_) { fallback(); }
+}
+$("copyJson").addEventListener("click", () => copyText(JSON.stringify(lastOut, null, 2) + "\n", $("jsonToast"), $("json")));
+$("copyPrompt").addEventListener("click", () => copyText($("aiPrompt").textContent.trim() + "\n", $("promptToast"), $("aiPrompt")));
+
+let framed = true; try { framed = window.self !== window.top; } catch (_) { framed = true; }
+if (framed) $("saveJson").hidden = true;
+$("saveJson").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(lastOut, null, 2) + "\n"], { type: "application/json" });
+  const a = h("a", { href: URL.createObjectURL(blob), download: "clinic-intake.json" }); document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+
+function parsePaste() {
+  const raw = $("pasteBox").value.trim(), toast = $("pasteToast"), list = $("pasteIssues");
+  list.replaceChildren(); toast.textContent = "";
+  if (!raw) { toast.textContent = "JSON を貼り付けてください。"; return null; }
+  const body = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
+  try { return JSON.parse(body); }
+  catch (e) { list.append(h("li", { class: "e" }, h("span", { class: "code", text: "JSON" }), h("span", { text: "JSON として読めません: " + e.message + "。末尾のカンマやコメント（//）がないか確かめてください。" }))); return null; }
+}
+$("checkPaste").addEventListener("click", () => { const o = parsePaste(); if (o) renderIssues($("pasteIssues"), validate(o)); });
+$("loadPaste").addEventListener("click", () => {
+  const o = parsePaste(); if (!o) return;
+  const { doc, notes } = normalize(o); S = doc; origin = "loaded"; renderAll(); renderNotice(notes.join(" "));
+  renderIssues($("pasteIssues"), validate(o)); $("pasteToast").textContent = "フォームに読み込みました。";
+});
+$("fileIn").addEventListener("change", e => {
+  const f = e.target.files?.[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => { $("pasteBox").value = String(r.result); const o = parsePaste(); if (o) renderIssues($("pasteIssues"), validate(o)); }; r.readAsText(f, "utf-8");
+  e.target.value = "";
+});
+
+// ---------- 起動 ----------
+let draft = null; try { const s = localStorage.getItem(STORE_KEY); if (s) draft = JSON.parse(s); } catch (_) {}
+if (draft) { S = normalize(draft).doc; origin = "draft"; } else { S = normalize(exampleDoc()).doc; origin = "example"; }
+renderAll();
+window.OpenIntake = { validate, build, normalize };
+})();
+</script>
+
+</body>
+</html>

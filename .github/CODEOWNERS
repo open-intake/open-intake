@@ -1,0 +1,9 @@
+# 変更の承認者（GitHub の CODEOWNERS）
+# 医療レビュー担当が決まったら、下の行の # を外して担当のアカウントかチーム名を入れる。
+# あわせて main ブランチの保護で「Require review from Code Owners」をオンにすると、
+# 救急の目安と問診票の例の変更は、担当の承認なしには入らなくなる。
+#
+# /examples/                     @open-intake/medical-reviewers
+# /SPEC.md                       @open-intake/medical-reviewers
+# /src/generator.src.html        @open-intake/medical-reviewers
+# /AI_INSTRUCTIONS.md            @open-intake/medical-reviewers

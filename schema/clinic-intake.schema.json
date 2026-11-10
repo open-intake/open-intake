@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-intake.github.io/open-intake/schema/clinic-intake.schema.json",
+  "title": "Open Intake clinic-intake.json v0.1 (draft)",
+  "description": "医療機関の情報と問診票（FHIR R4 Questionnaire の部分集合）。SPEC.md の §7 のうち、JSON Schema で書けない規則（opens < closes、linkId の重複、enableWhen が前の質問を指す）は作成サイトの検査で見る。",
+  "type": "object",
+  "required": [
+    "spec",
+    "specVersion",
+    "updated",
+    "clinic",
+    "safety",
+    "questionnaires"
+  ],
+  "properties": {
+    "spec": {
+      "const": "open-intake"
+    },
+    "specVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "updated": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "clinic": {
+      "$ref": "#/$defs/clinic"
+    },
+    "safety": {
+      "$ref": "#/$defs/safety"
+    },
+    "aiNotes": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "questionnaires": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/questionnaire"
+      }
+    }
+  },
+  "$defs": {
+    "nonEmpty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "strList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "clinic": {
+      "type": "object",
+      "required": [
+        "name",
+        "telephone",
+        "address",
+        "departments",
+        "openingHours",
+        "booking"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://"
+        },
+        "telephone": {
+          "type": "string",
+          "pattern": "^[0-9+()\\- ]{6,}$"
+        },
+        "address": {
+          "type": "object",
+          "required": [
+            "addressRegion",
+            "addressLocality"
+          ],
+          "properties": {
+            "postalCode": {
+              "type": "string",
+              "pattern": "^[0-9]{3}-?[0-9]{4}$"
+            },
+            "addressRegion": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "addressLocality": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "streetAddress": {
+              "type": "string"
+            }
+          }
+        },
+        "departments": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/strList"
+            },
+            {
+              "type": "array",
+              "minItems": 1
+            }
+          ]
+        },
+        "openingHours": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "days",
+              "opens",
+              "closes"
+            ],
+            "properties": {
+              "days": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "Mo",
+                    "Tu",
+                    "We",
+                    "Th",
+                    "Fr",
+                    "Sa",
+                    "Su",
+                    "PH"
+                  ]
+                }
+              },
+              "opens": {
+                "$ref": "#/$defs/time"
+              },
+              "closes": {
+                "$ref": "#/$defs/time"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "closedNote": {
+          "type": "string"
+        },
+        "handles": {
+          "$ref": "#/$defs/strList"
+        },
+        "notHandled": {
+          "$ref": "#/$defs/strList"
+        },
+        "booking": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "method"
+            ],
+            "properties": {
+              "method": {
+                "enum": [
+                  "web",
+                  "phone",
+                  "walk-in",
+                  "other"
+                ]
+              },
+              "url": {
+                "type": "string",
+                "pattern": "^https?://"
+              },
+              "telephone": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "method": {
+                      "const": "web"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "url"
+                  ]
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "method": {
+                      "const": "phone"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "telephone"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "bring": {
+          "$ref": "#/$defs/strList"
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)*$"
+          }
+        },
+        "accessibility": {
+          "$ref": "#/$defs/strList"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "noDiagnosis",
+        "emergency",
+        "redFlags"
+      ],
+      "properties": {
+        "noDiagnosis": {
+          "const": true
+        },
+        "emergency": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "redFlags": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/strList"
+            },
+            {
+              "type": "array",
+              "minItems": 1
+            }
+          ]
+        },
+        "redFlagsSource": {
+          "type": "object",
+          "properties": {
+            "publisher": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string",
+              "pattern": "^https?://"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "questionnaire": {
+      "type": "object",
+      "required": [
+        "resourceType",
+        "id",
+        "status",
+        "title",
+        "item"
+      ],
+      "properties": {
+        "resourceType": {
+          "const": "Questionnaire"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9\\-.]{1,64}$"
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "active"
+          ]
+        },
+        "title": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "item": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "linkId",
+        "text",
+        "type"
+      ],
+      "properties": {
+        "linkId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9\\-._]{1,64}$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "type": {
+          "enum": [
+            "group",
+            "display",
+            "boolean",
+            "choice",
+            "open-choice",
+            "string",
+            "text",
+            "integer",
+            "decimal",
+            "date"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "repeats": {
+          "type": "boolean"
+        },
+        "answerOption": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "valueString"
+            ],
+            "properties": {
+              "valueString": {
+                "$ref": "#/$defs/nonEmpty"
+              }
+            }
+          }
+        },
+        "enableWhen": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "question",
+              "operator"
+            ],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "operator": {
+                "enum": [
+                  "=",
+                  "exists"
+                ]
+              },
+              "answerBoolean": {
+                "type": "boolean"
+              },
+              "answerString": {
+                "type": "string"
+              },
+              "answerInteger": {
+                "type": "integer"
+              },
+              "answerDecimal": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "enableBehavior": {
+          "enum": [
+            "all",
+            "any"
+          ]
+        },
+        "item": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "choice",
+                  "open-choice"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "answerOption"
+            ],
+            "properties": {
+              "answerOption": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

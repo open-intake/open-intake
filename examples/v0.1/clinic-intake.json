@@ -1,0 +1,84 @@
+{
+  "spec": "open-intake",
+  "specVersion": "0.1",
+  "updated": "2026-11-10",
+  "clinic": {
+    "name": "みどり台内科クリニック（架空の例）",
+    "url": "https://example.com/",
+    "telephone": "03-0000-0000",
+    "address": {
+      "postalCode": "100-0000",
+      "addressRegion": "東京都",
+      "addressLocality": "千代田区",
+      "streetAddress": "みどり台1-2-3 2階"
+    },
+    "departments": ["内科", "小児科"],
+    "openingHours": [
+      { "days": ["Mo", "Tu", "We", "Th", "Fr", "Sa"], "opens": "09:00", "closes": "12:30", "note": "受付は12:00まで" },
+      { "days": ["Mo", "Tu", "We", "Fr"], "opens": "15:00", "closes": "18:30" }
+    ],
+    "closedNote": "木曜午後・土曜午後・日曜・祝日は休診",
+    "handles": ["発熱", "せき", "のどの痛み", "腹痛・下痢", "高血圧・糖尿病の相談", "予防接種"],
+    "notHandled": ["入院", "6か月未満の乳児"],
+    "booking": [
+      { "method": "web", "url": "https://example.com/reserve", "note": "当日の順番予約もできます" },
+      { "method": "phone", "telephone": "03-0000-0000", "note": "診療時間内のみ" },
+      { "method": "walk-in", "note": "発熱のある方は来院前に電話してください" }
+    ],
+    "bring": ["マイナ保険証または保険証", "お薬手帳", "医療証（お持ちの方）"],
+    "languages": ["ja", "en"],
+    "accessibility": ["エレベーターあり", "車椅子で入れる"]
+  },
+  "safety": {
+    "noDiagnosis": true,
+    "emergency": "命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。",
+    "redFlags": [
+      "顔の半分が動きにくい・しびれる、ろれつが回らない、うまく話せない",
+      "見える範囲が急に狭くなる・ものが二重に見える",
+      "突然の激しい頭痛",
+      "支えなしで立てないほど急にふらつく",
+      "胸や背中の突然の激痛、胸が締めつけられるような痛みが2〜3分続く",
+      "急な息切れ・呼吸が苦しい",
+      "突然の激しい腹痛・続く激しい腹痛、吐血や下血",
+      "手足の突然のしびれ、片方の腕や足に急に力が入らない",
+      "意識がない・もうろうとしている・ぐったりしている",
+      "冷や汗を伴う強い吐き気",
+      "物をのどに詰まらせて呼吸が苦しい",
+      "けいれんが止まらない・止まっても意識が戻らない",
+      "大量の出血を伴うけが・広い範囲のやけど",
+      "交通事故で強い衝撃を受けた・おぼれた・高いところから落ちた",
+      "いつもと様子が明らかに違う"
+    ],
+    "redFlagsSource": {"publisher": "総務省消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese.pdf", "note": "大人の項目を要約したもの。原文との照合と医師の確認が済んでいない。子ども・高齢者の項目は含まない。"}
+  },
+  "aiNotes": "発熱のある方は、来院の前に必ず電話で到着時刻を伝えるよう案内してください。",
+  "questionnaires": [
+    {
+      "resourceType": "Questionnaire",
+      "id": "fever",
+      "status": "draft",
+      "title": "発熱・せきの問診票",
+      "purpose": "発熱・せき・のどの痛みで受診する方",
+      "item": [
+        { "linkId": "q1", "text": "いつから症状がありますか", "type": "choice", "required": true,
+          "answerOption": [ { "valueString": "今日" }, { "valueString": "1〜2日前" }, { "valueString": "3〜6日前" }, { "valueString": "1週間以上前" } ] },
+        { "linkId": "q2", "text": "いまの体温（℃）", "type": "decimal" },
+        { "linkId": "q3", "text": "当てはまる症状をすべて選んでください", "type": "open-choice", "repeats": true,
+          "answerOption": [ { "valueString": "せき" }, { "valueString": "のどの痛み" }, { "valueString": "鼻水" }, { "valueString": "頭痛" }, { "valueString": "体のだるさ" }, { "valueString": "吐き気・おう吐" }, { "valueString": "下痢" }, { "valueString": "味やにおいがわからない" } ] },
+        { "linkId": "q4", "text": "家族や周りに同じ症状の人はいますか", "type": "boolean" },
+        { "linkId": "q5", "text": "持病はありますか", "type": "boolean", "required": true },
+        { "linkId": "q6", "text": "持病の名前", "type": "string",
+          "enableWhen": [ { "question": "q5", "operator": "=", "answerBoolean": true } ] },
+        { "linkId": "q7", "text": "いま飲んでいる薬はありますか", "type": "boolean", "required": true },
+        { "linkId": "q8", "text": "薬の名前（わからなければ、お薬手帳を持ってきてください）", "type": "text",
+          "enableWhen": [ { "question": "q7", "operator": "=", "answerBoolean": true } ] },
+        { "linkId": "q9", "text": "薬や食べ物のアレルギーはありますか", "type": "boolean", "required": true },
+        { "linkId": "q10", "text": "アレルギーの内容", "type": "string",
+          "enableWhen": [ { "question": "q9", "operator": "=", "answerBoolean": true } ] },
+        { "linkId": "q11", "text": "妊娠している、またはその可能性がありますか", "type": "choice",
+          "answerOption": [ { "valueString": "はい" }, { "valueString": "いいえ" }, { "valueString": "あてはまらない" } ] },
+        { "linkId": "q12", "text": "そのほか、医師に伝えたいこと", "type": "text" }
+      ]
+    }
+  ]
+}
