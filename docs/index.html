@@ -8,7 +8,7 @@
 <body>
 <title>オープン問診票メーカー</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="医療機関の情報と問診票を、AI が読める clinic-intake.json（オープン問診票 v0.1）にまとめる作成ツール">
+<meta name="description" content="医療機関の情報と問診票を、AI が読める clinic-intake.json・clinic-schedule.json（オープン問診票 v0.2）にまとめる作成ツール">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -112,6 +112,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .day input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 .times { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .times input[type="time"] { width: 130px; }
+.times input[type="date"], .row-head input[type="date"] { width: 170px; }
 
 button { font: inherit; cursor: pointer; border-radius: 4px; }
 .btn { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 6px 14px; font-weight: 500; font-size: 14px; }
@@ -166,17 +167,26 @@ pre.json .s { color: var(--code-str); }
 .issues .where { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
 .toast { min-height: 1.4em; font-size: 13px; color: var(--ok); }
 .small { font-size: 13px; color: var(--muted); }
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.mode { text-align: left; display: grid; gap: 2px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); padding: 10px 14px; border-radius: var(--radius); }
+.mode strong { font-family: var(--font-display); font-size: 16px; }
+.mode .mono { color: var(--accent); }
+.mode[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
 footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
 @media (prefers-reduced-motion: no-preference) { .status, .chip, .day span { transition: background-color 0.15s, color 0.15s; } }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">clinic-intake.json · オープン問診票 v0.1 草案</div>
+    <div class="eyebrow">clinic-intake.json · clinic-schedule.json · オープン問診票 v0.2 草案</div>
     <h1>オープン問診票メーカー</h1>
     <p>医療機関の情報と問診票を入力すると、患者さんの AI が読める <code>clinic-intake.json</code> ができます。サーバーには何も送りません。入力はこのブラウザの中だけで扱います。</p>
   </header>
 
+  <div class="modes" role="tablist" aria-label="作るファイル">
+    <button class="mode" role="tab" id="mode-intake" aria-selected="true" type="button"><strong>固定の情報</strong><span class="mono">clinic-intake.json</span><span class="small">名前・ふだんの診療時間・予約方法・問診票。年に数回の更新</span></button>
+    <button class="mode" role="tab" id="mode-schedule" aria-selected="false" type="button"><strong>臨時の情報</strong><span class="mono">clinic-schedule.json</span><span class="small">臨時の休診・担当医・当番・お知らせ。受付の方が毎週〜毎日更新</span></button>
+  </div>
   <div class="notice" id="notice"></div>
 
   <div class="layout">
@@ -191,7 +201,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
           </ol>
           <p class="small">⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。</p>
           <div class="actions"><button class="btn" type="button" id="copyPrompt">指示文をコピー</button><span class="toast" id="promptToast" role="status"></span></div>
-          <pre class="prompt" id="aiPrompt">あなたは、医療機関の担当者が `clinic-intake.json`（オープン問診票 v0.1）を作るのを手伝う係です。担当者は IT に詳しくない前提で、やさしい言葉で進めてください。
+          <pre class="prompt" id="aiPrompt">あなたは、医療機関の担当者が `clinic-intake.json`（オープン問診票 v0.2）を作るのを手伝う係です。担当者は IT に詳しくない前提で、やさしい言葉で進めてください。
 
 ### 守ること
 
@@ -219,7 +229,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 ```json
 {
   "spec": "open-intake",
-  "specVersion": "0.1",
+  "specVersion": "0.2",
   "updated": "今日の日付 YYYY-MM-DD",
   "clinic": {
     "name": "名前",
@@ -306,7 +316,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 
 JSON を出す前に、次を自分で確かめ、直してから出す:
 
-- [ ] `spec` が `"open-intake"`、`specVersion` が `"0.1"`、`updated` が今日の日付
+- [ ] `spec` が `"open-intake"`、`specVersion` が `"0.2"`、`updated` が今日の日付
 - [ ] 必須（名前・電話・都道府県・市区町村・診療科・診療時間・予約方法・safety）がそろっている
 - [ ] 担当者が答えていない内容を足していない
 - [ ] `linkId` が重なっていない。`enableWhen` が前の質問を指している
@@ -328,6 +338,13 @@ JSON のあとに、次の2行を添える:
       <section class="sheet" id="sec-q"></section>
       <section class="sheet" id="sec-notes"></section>
     </main>
+    <main class="form" id="form-schedule" hidden>
+      <section class="sheet" id="sec-s-meta"></section>
+      <section class="sheet" id="sec-s-exc"></section>
+      <section class="sheet" id="sec-s-doc"></section>
+      <section class="sheet" id="sec-s-oncall"></section>
+      <section class="sheet" id="sec-s-notice"></section>
+    </main>
 
     <aside class="out" aria-label="できあがり">
       <div class="status" id="status" role="status"></div>
@@ -343,7 +360,7 @@ JSON のあとに、次の2行を添える:
           <span class="toast" id="jsonToast" role="status"></span>
         </div>
         <pre class="json" id="json" tabindex="0"></pre>
-        <p class="small">できたファイルは <code>clinic-intake.json</code> という名前で、ホームページのいちばん上（例: <code>https://あなたのサイト/clinic-intake.json</code>）に置きます。</p>
+        <p class="small" id="fileHint"></p>
       </div>
       <div class="panel" id="panel-issues" role="tabpanel" hidden>
         <ul class="issues" id="issues"></ul>
@@ -367,7 +384,7 @@ JSON のあとに、次の2行を添える:
   </div>
 
   <footer class="foot">
-    <div>仕様: オープン問診票（Open Intake）v0.1 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0</div>
+    <div>仕様: オープン問診票（Open Intake）v0.2 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0</div>
     <div>このツールは診断をしません。問診票と救急の目安は、公開の前に必ず医師に確認してもらってください。</div>
   </footer>
 </div>
@@ -380,11 +397,16 @@ JSON のあとに、次の2行を添える:
  */
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2"];
+const KNOWN_ROLES = ["schedule"];
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+const todayStr = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 864e5);
 const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
 const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
 const CHOICE = new Set(["choice","open-choice"]);
-function validate(o) {
+function validateIntake(o) {
   const E = [], W = [];
   const err = (code, msg, where) => E.push({ code, msg, where });
   const warn = (code, msg, where) => W.push({ code, msg, where });
@@ -426,6 +448,25 @@ function validate(o) {
       if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `予約の方法 ${i+1}: 予約ページの URL が https で始まっていません。`, w + ".url");
       if (b.method === "phone" && !isStr(b.telephone)) err("E6", `予約の方法 ${i+1}: 予約用の電話番号を入れてください。`, w + ".telephone");
     });
+  }
+  if (o.files !== undefined) {
+    if (!Array.isArray(o.files)) err("E12", "files（正規のファイルの一覧）は配列（[ ]）にしてください。", "files");
+    else {
+      const roles = new Map();
+      o.files.forEach((f, i) => {
+        const w = `files[${i}]`;
+        if (!isObj(f)) { err("E12", `ファイルの一覧 ${i+1}: 形が正しくありません。`, w); return; }
+        if (!isStr(f.role)) err("E12", `ファイルの一覧 ${i+1}: 役割（role）が空です（例: schedule）。`, w + ".role");
+        else if (!KNOWN_ROLES.includes(f.role)) warn("W11", `ファイルの一覧 ${i+1}: 役割「${f.role}」は、この検査器が知らないものです（読む側は無視します）。`, w + ".role");
+        else if (roles.has(f.role)) err("E12", `ファイルの一覧 ${i+1}: 役割「${f.role}」のファイルが2つあります。1つにしてください。`, w + ".role");
+        if (isStr(f.role)) roles.set(f.role, true);
+        if (typeof f.url !== "string" || !f.url.trim() || /\s/.test(f.url)) err("E12", `ファイルの一覧 ${i+1}: url は空白を含まない URL にしてください（例: /clinic-schedule.json）。`, w + ".url");
+        else if (/^http:\/\//.test(f.url)) warn("W1", `ファイルの一覧 ${i+1}: URL が https で始まっていません。`, w + ".url");
+        else if (/^https?:\/\//.test(f.url) && isStr(o.clinic?.url)) {
+          try { if (new URL(f.url).host !== new URL(o.clinic.url).host) warn("W12", `ファイルの一覧 ${i+1}: 医療機関のサイトと別のサイトにあります。AI が正規のファイルと確かめにくくなります。`, w + ".url"); } catch (_) {}
+        }
+      });
+    }
   }
   const s = o.safety;
   if (!isObj(s)) err("E7", "safety（安全のための決まり）がありません。省略できません。", "safety");
@@ -473,7 +514,81 @@ function validate(o) {
   }
   return { E, W };
 }
-return { validate, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+
+// ---------- 臨時の情報（clinic-schedule.json・v0.2 から） ----------
+function validateSchedule(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const isDate = v => typeof v === "string" && DATE.test(v) && !isNaN(Date.parse(v + "T00:00:00Z"));
+  const today = todayStr();
+  if (!isObj(o)) { err("S1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (o.spec !== "open-intake-schedule") err("S1", "spec は \"open-intake-schedule\" にしてください。", "spec");
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("S1", "specVersion（例: \"0.2\"）がありません。", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器（${SUPPORTED_VERSIONS.join("・")} に対応）より新しい版です。知らないキーは無視して検査しました。`, "specVersion");
+  if (!isDate(o.updated)) err("S2", "updated（更新した日）は YYYY-MM-DD の形にしてください。", "updated");
+  if (!isDate(o.validUntil)) err("S3", "validUntil（この情報の有効期限）は YYYY-MM-DD の形で必ず入れてください。", "validUntil");
+  else {
+    if (isDate(o.updated) && o.validUntil < o.updated) err("S3", "有効期限（validUntil）が更新日より前になっています。", "validUntil");
+    if (o.validUntil < today) warn("W7", `有効期限（${o.validUntil}）が過ぎています。AI はこのファイルを使いません。内容を確かめて期限を延ばしてください。`, "validUntil");
+    if (isDate(o.updated) && dayDiff(o.updated, o.validUntil) > 180) warn("W8", "有効期限が更新日から半年以上先です。臨時の情報は、短めの期限にして、こまめに見直すことを勧めます。", "validUntil");
+  }
+  const old = (end, where, label) => { if (isDate(end) && end < today) warn("W9", `${label}は、もう終わった予定です。消してよいか確かめてください。`, where); };
+  const hoursOk = (opens, closes, where, label, overnightOk) => {
+    if (!TIME_RE.test(opens || "") || !TIME_RE.test(closes || "")) { err("S4", `${label}: 時刻を 09:00 の形で入れてください。`, where); return; }
+    if (!overnightOk && opens >= closes) err("S4", `${label}: 始まり（${opens}）が終わり（${closes}）より後になっています。`, where);
+  };
+  const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} は配列（[ ]）にしてください。`, k); return []; } return o[k]; };
+  list("exceptions").forEach((x, i) => {
+    const w = `exceptions[${i}]`, label = `臨時の休診・変更 ${i+1}`;
+    if (!isObj(x)) { err("S4", `${label}: 形が正しくありません。`, w); return; }
+    if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: 期間（from・to）を YYYY-MM-DD で入れてください。`, w);
+    else { if (x.from > x.to) err("S4", `${label}: 始まりの日が終わりの日より後になっています。`, w); old(x.to, w, label); }
+    if (!["closed","open","changed"].includes(x.status)) err("S4", `${label}: status は closed（休診）・open（臨時に診療）・changed（時間の変更）のどれかにしてください。`, w + ".status");
+    if (x.status === "open" || x.status === "changed") {
+      if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: 診療する時間（hours）を入れてください。`, w + ".hours");
+      else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label} の時間 ${k+1}`, false));
+    }
+  });
+  list("doctorSchedule").forEach((x, i) => {
+    const w = `doctorSchedule[${i}]`, label = `担当医の予定 ${i+1}`;
+    if (!isObj(x)) { err("S5", `${label}: 形が正しくありません。`, w); return; }
+    if (!isStr(x.department) && !isStr(x.name)) err("S5", `${label}: 診療科か担当医のどちらかを入れてください。`, w);
+    const hasDays = Array.isArray(x.days) && x.days.length, hasDate = isDate(x.date);
+    if (!hasDays && !hasDate) err("S5", `${label}: 曜日（days）か日付（date）を入れてください。`, w);
+    if (hasDays && x.days.some(d => !DAY_KEYS.includes(d))) err("S5", `${label}: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
+    hoursOk(x.opens, x.closes, w, label, false);
+    if (x.from !== undefined && !isDate(x.from)) err("S5", `${label}: from は YYYY-MM-DD にしてください。`, w + ".from");
+    if (x.to !== undefined && !isDate(x.to)) err("S5", `${label}: to は YYYY-MM-DD にしてください。`, w + ".to");
+    old(hasDate ? x.date : x.to, w, label);
+  });
+  list("onCall").forEach((x, i) => {
+    const w = `onCall[${i}]`, label = `当番 ${i+1}`;
+    if (!isObj(x)) { err("S6", `${label}: 形が正しくありません。`, w); return; }
+    if (!isDate(x.date)) err("S6", `${label}: 日付（date）を YYYY-MM-DD で入れてください。`, w + ".date");
+    if (!["holiday","night","other"].includes(x.kind)) err("S6", `${label}: kind は holiday（休日の当番）・night（夜間の当番）・other のどれかにしてください。`, w + ".kind");
+    hoursOk(x.opens, x.closes, w, label, true);
+    old(x.date, w, label);
+  });
+  list("notices").forEach((x, i) => {
+    const w = `notices[${i}]`, label = `お知らせ ${i+1}`;
+    if (!isObj(x) || !isStr(x.text)) { err("S7", `${label}: 本文（text）が空です。`, w); return; }
+    if (x.text.length > 200) warn("W5", `${label}: 本文が長すぎます（${x.text.length} 字・200 字まで）。`, w + ".text");
+    for (const k of ["from","to"]) if (x[k] !== undefined && !isDate(x[k])) err("S7", `${label}: ${k} は YYYY-MM-DD にしてください。`, `${w}.${k}`);
+    if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: 始まりの日が終わりの日より後になっています。`, w);
+    old(x.to, w, label);
+  });
+  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+    warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定はない」と AI に伝わります。", "$");
+  return { E, W };
+}
+
+// 中身を見て、どちらのファイルかを判断して検査する
+function kindOf(o) { return (o && typeof o === "object" && o.spec === "open-intake-schedule") ? "schedule" : "intake"; }
+function validate(o) { return kindOf(o) === "schedule" ? validateSchedule(o) : validateIntake(o); }
+return { KNOWN_ROLES, validate, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
 </script>
@@ -494,6 +609,8 @@ const DEFAULT_EMERGENCY = "命に関わるかもしれない症状があると�
 const DEFAULT_RED = ["顔の半分が動きにくい・しびれる、ろれつが回らない、うまく話せない", "見える範囲が急に狭くなる・ものが二重に見える", "突然の激しい頭痛", "支えなしで立てないほど急にふらつく", "胸や背中の突然の激痛、胸が締めつけられるような痛みが2〜3分続く", "急な息切れ・呼吸が苦しい", "突然の激しい腹痛・続く激しい腹痛、吐血や下血", "手足の突然のしびれ、片方の腕や足に急に力が入らない", "意識がない・もうろうとしている・ぐったりしている", "冷や汗を伴う強い吐き気", "物をのどに詰まらせて呼吸が苦しい", "けいれんが止まらない・止まっても意識が戻らない", "大量の出血を伴うけが・広い範囲のやけど", "交通事故で強い衝撃を受けた・おぼれた・高いところから落ちた", "いつもと様子が明らかに違う"];
 const DEFAULT_RED_SOURCE = {"publisher": "総務省消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese.pdf", "note": "大人の項目を要約したもの。原文との照合と医師の確認が済んでいない。子ども・高齢者の項目は含まない。"};
 const STORE_KEY = "open-intake-draft-v1";
+const STORE_KEY_S = "open-intake-schedule-draft-v1";
+const addDays = (d, n) => { const t = new Date(d + "T00:00:00"); t.setDate(t.getDate() + n); const p = x => String(x).padStart(2, "0"); return `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`; };
 
 const today = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
 const opt = s => ({ valueString: s });
@@ -520,7 +637,8 @@ function feverQuestionnaire() {
 function blankSafety() { return { noDiagnosis: true, emergency: DEFAULT_EMERGENCY, redFlags: DEFAULT_RED.slice(), redFlagsSource: { ...DEFAULT_RED_SOURCE } }; }
 function exampleDoc() {
   return {
-    spec: "open-intake", specVersion: "0.1", updated: today(),
+    spec: "open-intake", specVersion: "0.2", updated: today(),
+    files: [{ role: "schedule", url: "/clinic-schedule.json", note: "臨時の休診・担当医・当番・お知らせ" }],
     clinic: {
       name: "みどり台内科クリニック（架空の例）", url: "https://example.com/", telephone: "03-0000-0000",
       address: { postalCode: "100-0000", addressRegion: "東京都", addressLocality: "千代田区", streetAddress: "みどり台1-2-3 2階" },
@@ -547,7 +665,7 @@ function exampleDoc() {
 }
 function blankDoc() {
   return {
-    spec: "open-intake", specVersion: "0.1", updated: today(),
+    spec: "open-intake", specVersion: "0.2", updated: today(), files: [],
     clinic: { name: "", url: "", telephone: "", address: { postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" },
       departments: [], openingHours: [{ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "12:00" }], closedNote: "",
       handles: [], notHandled: [], booking: [{ method: "phone", telephone: "" }], bring: [], languages: ["ja"], accessibility: [] },
@@ -564,6 +682,7 @@ function normalize(doc) {
   const notes = [];
   d.spec = "open-intake"; d.specVersion = typeof d.specVersion === "string" ? d.specVersion : "0.1";
   if (typeof d.updated !== "string") d.updated = today();
+  d.files = Array.isArray(d.files) ? d.files.filter(f => f && typeof f === "object").map(f => ({ ...f, role: String(f.role ?? ""), url: String(f.url ?? "") })) : [];
   const c = d.clinic = (d.clinic && typeof d.clinic === "object") ? d.clinic : {};
   for (const k of ["name","url","telephone","closedNote"]) if (typeof c[k] !== "string") c[k] = "";
   c.address = (c.address && typeof c.address === "object") ? c.address : {};
@@ -598,7 +717,9 @@ function normalize(doc) {
 const clean = s => (typeof s === "string" ? s.trim() : s);
 const cleanList = a => (a || []).map(clean).filter(Boolean);
 function build(d) {
-  const c = d.clinic, out = { spec: "open-intake", specVersion: d.specVersion || "0.1", updated: d.updated };
+  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.2", updated: d.updated };
+  const files = (d.files || []).map(f => { const o = { ...f, role: clean(f.role), url: clean(f.url) }; if (!clean(o.note)) delete o.note; return o; }).filter(f => f.role || f.url);
+  if (files.length) out.files = files;
   const clinic = { name: clean(c.name) };
   if (clean(c.url)) clinic.url = clean(c.url);
   clinic.telephone = clean(c.telephone);
@@ -822,23 +943,165 @@ function renderItem(q, qi, it, i) {
       onchange: () => { if (items.some(x => x.enableWhen?.some(w => w.question === it.linkId))) renderQuestionnaires(); } }));
 }
 
+function renderFiles() {
+  const sch = S.files.find(f => f.role === "schedule"), others = S.files.filter(f => f.role !== "schedule");
+  return h("div", { class: "field" },
+    h("div", { class: "label" }, "正規のファイルの一覧", h("span", { class: "k", text: "files" })),
+    h("label", { class: "chip", style: "justify-self:start" }, h("input", { type: "checkbox", id: "f-files-sch", checked: !!sch, onchange: e => {
+      if (e.target.checked) S.files.push({ role: "schedule", url: "/clinic-schedule.json", note: "臨時の休診・担当医・当番・お知らせ" });
+      else S.files = S.files.filter(f => f.role !== "schedule");
+      renderNotes(); changed(); } }), "臨時の情報（clinic-schedule.json）を別のファイルで出す"),
+    sch && h("input", { type: "text", id: "f-files-sch-url", value: sch.url, "aria-label": "臨時の情報のファイルの URL", oninput: e => { sch.url = e.target.value; changed(); } }),
+    others.length > 0 && h("div", { class: "hint", text: `ほかに ${others.length} 件のファイル（${others.map(f => f.role).join("・")}）が一覧にあります。そのまま残します。` }),
+    h("div", { class: "hint", text: "ここに載せたファイルだけを、AI は正規の情報として扱います。同じサイトに置くことを勧めます。ファイルごとに編集できる人を分けることもできます。" }));
+}
 function renderNotes() {
   const el = $("sec-notes"); el.replaceChildren();
-  el.append(sheetHead("6", "仕上げ", "aiNotes · updated"),
+  el.append(sheetHead("6", "仕上げ", "aiNotes · files · updated"),
     field("f-notes", "AI へのお願い（任意）", "aiNotes", h("textarea", { id: "f-notes", rows: 3, maxlength: 500, value: S.aiNotes, placeholder: "例: 発熱のある方は、来院の前に電話するよう案内してください。", oninput: e => { S.aiNotes = e.target.value; changed(); } }), { hint: "500字まで。患者さんの AI への補足です。" }),
+    renderFiles(),
     h("div", { class: "grid" }, field("f-updated", "内容を確かめた日", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "1年以上たつと、AI は「情報が古いかもしれない」と伝えます。" })));
 }
 
 function renderAll() { renderClinic(); renderHours(); renderBooking(); renderSafety(); renderQuestionnaires(); renderNotes(); renderNotice(); changed(true); }
 
+// ---------- 臨時の情報（clinic-schedule.json） ----------
+let SC, originS = "";
+const EXC_STATUS = [["closed","休診"],["open","臨時に診療"],["changed","時間の変更"]];
+const ONCALL_KIND = [["holiday","休日の当番"],["night","夜間の当番"],["other","その他"]];
+function exampleSchedule() {
+  const t = today();
+  return { spec: "open-intake-schedule", specVersion: "0.2", updated: t, validUntil: addDays(t, 60), main: "/clinic-intake.json",
+    exceptions: [
+      { from: addDays(t, 13), to: addDays(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日ですが、午前のみ診療します" },
+      { from: addDays(t, 30), to: addDays(t, 31), status: "closed", note: "院内研修のため休診" }],
+    doctorSchedule: [{ department: "小児科", name: "佐藤医師（架空）", days: ["Tu","Th"], opens: "15:00", closes: "18:30", note: "小児科専門の外来" }],
+    onCall: [{ date: addDays(t, 13), kind: "holiday", opens: "09:00", closes: "17:00", department: "内科", note: "地域の休日当番医（午後も受け付けます）" }],
+    notices: [{ from: t, to: addDays(t, 30), text: "インフルエンザの予防接種は予約制です。Web か電話で予約してください。" }] };
+}
+function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.2", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
+function normalizeSchedule(o) {
+  const d = (o && typeof o === "object") ? JSON.parse(JSON.stringify(o)) : {};
+  d.spec = "open-intake-schedule"; d.specVersion = "0.2";
+  for (const k of ["updated","validUntil","main"]) if (typeof d[k] !== "string") d[k] = k === "updated" ? today() : k === "validUntil" ? addDays(today(), 30) : "";
+  for (const k of ["exceptions","doctorSchedule","onCall","notices"]) d[k] = Array.isArray(d[k]) ? d[k].filter(x => x && typeof x === "object") : [];
+  for (const x of d.exceptions) { x.hours = Array.isArray(x.hours) ? x.hours : []; for (const k of ["from","to","note"]) x[k] = x[k] || ""; if (!x.status) x.status = "closed"; }
+  for (const x of d.doctorSchedule) { x.days = Array.isArray(x.days) ? x.days.filter(k => DAY_KEYS.includes(k)) : []; x._byDate = !!x.date && !x.days.length; for (const k of ["department","name","date","opens","closes","note"]) x[k] = x[k] || ""; }
+  for (const x of d.onCall) { for (const k of ["date","opens","closes","department","note"]) x[k] = x[k] || ""; if (!x.kind) x.kind = "holiday"; }
+  for (const x of d.notices) for (const k of ["text","from","to"]) x[k] = x[k] || "";
+  return d;
+}
+function buildSchedule(d) {
+  const keep = (o, keys) => { const r = {}; for (const k of keys) { const v = clean(o[k]); if (v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)) r[k] = v; } return r; };
+  const out = { spec: "open-intake-schedule", specVersion: "0.2", updated: d.updated, validUntil: d.validUntil };
+  if (clean(d.main)) out.main = clean(d.main);
+  if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]); if (x.status !== "closed") r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes })); if (clean(x.note)) r.note = clean(x.note); return r; });
+  if (d.doctorSchedule.length) out.doctorSchedule = d.doctorSchedule.map(x => { const r = keep(x, ["department","name"]); if (x._byDate) r.date = x.date; else r.days = DAY_KEYS.filter(k => x.days.includes(k)); r.opens = x.opens; r.closes = x.closes; if (clean(x.note)) r.note = clean(x.note); return r; });
+  if (d.onCall.length) out.onCall = d.onCall.map(x => ({ ...keep(x, ["date","kind","opens","closes","department","note"]) }));
+  if (d.notices.length) out.notices = d.notices.map(x => keep(x, ["text","from","to"]));
+  return out;
+}
+const dateIn = (id, get, set, label) => h("input", { type: "date", id, value: get() || "", "aria-label": label, oninput: e => { set(e.target.value); changed(); } });
+const timeIn = (id, get, set, label) => h("input", { type: "time", id, value: get() || "", "aria-label": label, oninput: e => { set(e.target.value); changed(); } });
+const delBtn = (arr, i, rerender, label) => h("button", { type: "button", class: "icon-btn danger", "aria-label": label, onclick: () => { arr.splice(i, 1); rerender(); changed(); } }, "×");
+const addBtn = (label, fn) => h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { fn(); changed(); } }, label));
+const empty = text => h("p", { class: "lead", text });
+
+function renderScheduleMeta() {
+  const el = $("sec-s-meta"); el.replaceChildren();
+  const ext = n => h("button", { type: "button", class: "btn ghost small", onclick: () => { SC.validUntil = addDays(today(), n); renderScheduleMeta(); changed(); } }, `今日から${n === 14 ? "2週間" : n === 30 ? "1か月" : "2か月"}`);
+  el.append(sheetHead("1", "有効期限", "validUntil"),
+    h("p", { class: "lead", text: "期限を過ぎると、AI はこのファイルを使わず「臨時の予定は確かめられない」と伝えます。古い休診のお知らせで患者さんが迷わないための決まりです。" }),
+    h("div", { class: "grid" },
+      field("s-updated", "更新した日", "updated", dateIn("s-updated", () => SC.updated, v => SC.updated = v, "更新した日"), { req: true }),
+      field("s-valid", "この情報の有効期限", "validUntil", dateIn("s-valid", () => SC.validUntil, v => SC.validUntil = v, "有効期限"), { req: true }),
+      field("s-main", "メインのファイル", "main", text("s-main", () => SC.main, v => SC.main = v, { placeholder: "/clinic-intake.json" }), { hint: "メインのファイルの「正規のファイルの一覧」に、このファイルを載せてください。" })),
+    h("div", { class: "actions" }, ext(14), ext(30), ext(60)));
+}
+function renderExceptions() {
+  const el = $("sec-s-exc"), A = SC.exceptions; el.replaceChildren();
+  el.append(sheetHead("2", "臨時の休診・診療時間の変更", "exceptions"),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("s-exc", i, "st"), value: x.status, style: "width:auto", "aria-label": "種類", onchange: e => { x.status = e.target.value; if (x.status !== "closed" && !x.hours.length) x.hours.push({ opens: "09:00", closes: "12:00" }); renderExceptions(); changed(); } }, EXC_STATUS.map(([k, n]) => h("option", { value: k, text: n }))),
+        h("span", { class: "spacer" }), delBtn(A, i, renderExceptions, `${i+1} 件目を消す`)),
+      h("div", { class: "times" }, dateIn(fid("s-exc", i, "f"), () => x.from, v => { x.from = v; if (!x.to || x.to < v) { x.to = v; const t = $(fid("s-exc", i, "t")); if (t) t.value = v; } }, "始まりの日"), h("span", { text: "〜" }), dateIn(fid("s-exc", i, "t"), () => x.to, v => x.to = v, "終わりの日")),
+      x.status !== "closed" && h("div", { class: "rows" }, x.hours.map((hr, k) => h("div", { class: "times" },
+        h("span", { class: "small", text: "診療する時間" }), timeIn(fid("s-exc", i, "o", k), () => hr.opens, v => hr.opens = v, "始まり"), h("span", { text: "〜" }), timeIn(fid("s-exc", i, "c", k), () => hr.closes, v => hr.closes = v, "終わり"),
+        x.hours.length > 1 && delBtn(x.hours, k, renderExceptions, "この時間を消す"))),
+        addBtn("＋ 時間を足す（午前と午後など）", () => { x.hours.push({ opens: "15:00", closes: "18:00" }); renderExceptions(); })),
+      text(fid("s-exc", i, "n"), () => x.note, v => x.note = v, { placeholder: "理由や補足（例: 年末年始の休診）", "aria-label": "補足" })))) : empty("臨時の休診や、祝日の臨時診療などを入れます。"),
+    addBtn("＋ 休診・変更を足す", () => { const t = today(); A.push({ from: t, to: t, status: "closed", hours: [], note: "" }); renderExceptions(); }));
+}
+function renderDoctors() {
+  const el = $("sec-s-doc"), A = SC.doctorSchedule; el.replaceChildren();
+  el.append(sheetHead("3", "担当医の予定", "doctorSchedule"),
+    h("p", { class: "lead", text: "専門外来や代診など。担当医の名前は任意です。サイトですでに公開している範囲で入れてください。" }),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("s-doc", i, "mode"), value: x._byDate ? "date" : "days", style: "width:auto", "aria-label": "曜日か日付か", onchange: e => { x._byDate = e.target.value === "date"; renderDoctors(); changed(); } }, h("option", { value: "days", text: "毎週の曜日" }), h("option", { value: "date", text: "日付を指定" })),
+        h("span", { class: "spacer" }), delBtn(A, i, renderDoctors, `${i+1} 件目を消す`)),
+      h("div", { class: "grid" },
+        field(fid("s-doc", i, "dep"), "診療科", "department", text(fid("s-doc", i, "dep"), () => x.department, v => x.department = v, { placeholder: "小児科" })),
+        field(fid("s-doc", i, "name"), "担当医（任意）", "name", text(fid("s-doc", i, "name"), () => x.name, v => x.name = v, { placeholder: "佐藤医師" }))),
+      x._byDate ? h("div", { class: "times" }, dateIn(fid("s-doc", i, "date"), () => x.date, v => x.date = v, "日付"))
+        : h("div", { class: "days", role: "group", "aria-label": "曜日" }, DAYS.map(([k, n]) => h("label", { class: "day" },
+            h("input", { type: "checkbox", id: fid("s-doc", i, k), checked: x.days.includes(k), "aria-label": n, onchange: e => { x.days = e.target.checked ? DAY_KEYS.filter(y => y === k || x.days.includes(y)) : x.days.filter(y => y !== k); changed(); } }), h("span", { text: n })))),
+      h("div", { class: "times" }, timeIn(fid("s-doc", i, "o"), () => x.opens, v => x.opens = v, "始まり"), h("span", { text: "〜" }), timeIn(fid("s-doc", i, "c"), () => x.closes, v => x.closes = v, "終わり"),
+        h("input", { type: "text", id: fid("s-doc", i, "n"), value: x.note, placeholder: "補足（例: 第2・第4週のみ）", style: "flex:1;min-width:160px", oninput: e => { x.note = e.target.value; changed(); } }))))) : empty("曜日ごとの専門外来や、代診の予定を入れます。"),
+    addBtn("＋ 担当医の予定を足す", () => { A.push({ department: "", name: "", days: [], date: "", _byDate: false, opens: "09:00", closes: "12:00", note: "" }); renderDoctors(); }));
+}
+function renderOnCall() {
+  const el = $("sec-s-oncall"), A = SC.onCall; el.replaceChildren();
+  el.append(sheetHead("4", "当番（休日・夜間）", "onCall"),
+    h("p", { class: "lead", text: "地域の休日当番医・夜間の当番など。終わりの時刻が始まりより早いときは、翌朝までと読みます。" }),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("s-on", i, "k"), value: x.kind, style: "width:auto", "aria-label": "種類", onchange: e => { x.kind = e.target.value; changed(); } }, ONCALL_KIND.map(([k, n]) => h("option", { value: k, text: n }))),
+        dateIn(fid("s-on", i, "d"), () => x.date, v => x.date = v, "日付"),
+        h("span", { class: "spacer" }), delBtn(A, i, renderOnCall, `${i+1} 件目を消す`)),
+      h("div", { class: "times" }, timeIn(fid("s-on", i, "o"), () => x.opens, v => x.opens = v, "始まり"), h("span", { text: "〜" }), timeIn(fid("s-on", i, "c"), () => x.closes, v => x.closes = v, "終わり"),
+        h("input", { type: "text", id: fid("s-on", i, "dep"), value: x.department, placeholder: "診療科（例: 内科）", style: "width:160px", oninput: e => { x.department = e.target.value; changed(); } })),
+      text(fid("s-on", i, "n"), () => x.note, v => x.note = v, { placeholder: "補足（例: 電話してから来院してください）", "aria-label": "補足" })))) : empty("当番の予定がなければ空のままで構いません。"),
+    addBtn("＋ 当番を足す", () => { A.push({ date: today(), kind: "holiday", opens: "09:00", closes: "17:00", department: "", note: "" }); renderOnCall(); }));
+}
+function renderNotices() {
+  const el = $("sec-s-notice"), A = SC.notices; el.replaceChildren();
+  el.append(sheetHead("5", "お知らせ", "notices"),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" }, h("span", { class: "small", text: "載せる期間（任意）" }), dateIn(fid("s-no", i, "f"), () => x.from, v => x.from = v, "始まりの日"), h("span", { text: "〜" }), dateIn(fid("s-no", i, "t"), () => x.to, v => x.to = v, "終わりの日"),
+        h("span", { class: "spacer" }), delBtn(A, i, renderNotices, `${i+1} 件目を消す`)),
+      h("textarea", { id: fid("s-no", i, "x"), rows: 2, maxlength: 200, value: x.text, placeholder: "例: 発熱外来は予約制です。", "aria-label": "お知らせの本文", oninput: e => { x.text = e.target.value; changed(); } })))) : empty("一時的なお知らせ（予約制の変更、混雑など）を入れます。"),
+    addBtn("＋ お知らせを足す", () => { A.push({ text: "", from: today(), to: addDays(today(), 14) }); renderNotices(); }));
+}
+function renderSchedule() { renderScheduleMeta(); renderExceptions(); renderDoctors(); renderOnCall(); renderNotices(); renderNotice(); changed(true); }
+
+// ---------- 作るファイルの切り替え ----------
+let mode = "intake";
+const FILE = { intake: "clinic-intake.json", schedule: "clinic-schedule.json" };
+function setMode(m) {
+  mode = m;
+  $("mode-intake").setAttribute("aria-selected", String(m === "intake"));
+  $("mode-schedule").setAttribute("aria-selected", String(m === "schedule"));
+  $("form").hidden = m !== "intake"; $("form-schedule").hidden = m !== "schedule";
+  $("saveJson").textContent = `${FILE[m]} を保存`;
+  const hint = $("fileHint"); hint.replaceChildren();
+  if (m === "intake") hint.append("できたファイルは ", h("code", { text: FILE.intake }), " という名前で、ホームページのいちばん上（例: ", h("code", { text: "https://あなたのサイト/clinic-intake.json" }), "）に置きます。");
+  else hint.append("できたファイルは ", h("code", { text: FILE.schedule }), " という名前で、メインのファイルの「正規のファイルの一覧」に書いた場所に置きます。");
+  renderNotice(); changed(true);
+}
+$("mode-intake").addEventListener("click", () => setMode("intake"));
+$("mode-schedule").addEventListener("click", () => setMode("schedule"));
+
 // ---------- 上の帯 ----------
 function renderNotice(extra) {
   const el = $("notice"); el.replaceChildren();
-  const msg = { example: ["架空の医院の例が入っています。", "書き換えて使うか、空にして始めてください。"], draft: ["前回の下書きを開きました。", "このブラウザの中だけに保存されています。"], blank: ["空の用紙です。", "必須の欄から埋めてください。"], loaded: ["貼り付けた JSON を読み込みました。", ""] }[origin] || ["", ""];
+  const o = mode === "schedule" ? originS : origin, what = mode === "schedule" ? "臨時の情報" : "架空の医院";
+  const msg = { example: [`${what}の例が入っています。`, "書き換えて使うか、空にして始めてください。"], draft: ["前回の下書きを開きました。", "このブラウザの中だけに保存されています。"], blank: ["空の用紙です。", "必須の欄から埋めてください。"], loaded: ["貼り付けた JSON を読み込みました。", ""] }[o] || ["", ""];
   el.append(h("span", {}, h("strong", { text: msg[0] }), " ", msg[1]), extra && h("span", { text: extra }),
     h("span", { style: "flex:1" }),
-    h("button", { type: "button", class: "btn ghost small", onclick: () => { S = normalize(exampleDoc()).doc; origin = "example"; renderAll(); } }, "架空の例を入れる"),
-    h("button", { type: "button", class: "btn ghost small", onclick: () => { S = normalize(blankDoc()).doc; origin = "blank"; renderAll(); } }, "空にする"));
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { if (mode === "schedule") { SC = normalizeSchedule(exampleSchedule()); originS = "example"; renderSchedule(); } else { S = normalize(exampleDoc()).doc; origin = "example"; renderAll(); } } }, "例を入れる"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { if (mode === "schedule") { SC = normalizeSchedule(blankSchedule()); originS = "blank"; renderSchedule(); } else { S = normalize(blankDoc()).doc; origin = "blank"; renderAll(); } } }, "空にする"));
 }
 
 // ---------- 出力の更新 ----------
@@ -860,14 +1123,15 @@ function statusOf(res) {
   else { st.className = "status ok"; st.append("公開できる形です。"); }
 }
 function changed(immediate) {
-  lastOut = build(S);
+  if (!S || !SC) return;
+  lastOut = mode === "schedule" ? buildSchedule(SC) : build(S);
   const json = JSON.stringify(lastOut, null, 2);
   $("json").innerHTML = highlight(json);
   const res = validate(lastOut);
   statusOf(res); renderIssues($("issues"), res);
   $("tab-issues").textContent = `チェック結果（${res.E.length + res.W.length}）`;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (_) {} }, immediate ? 0 : 400);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); localStorage.setItem(STORE_KEY_S, JSON.stringify(SC)); } catch (_) {} }, immediate ? 0 : 400);
 }
 
 // ---------- タブ・コピー・保存・読み込み ----------
@@ -889,7 +1153,7 @@ let framed = true; try { framed = window.self !== window.top; } catch (_) { fram
 if (framed) $("saveJson").hidden = true;
 $("saveJson").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(lastOut, null, 2) + "\n"], { type: "application/json" });
-  const a = h("a", { href: URL.createObjectURL(blob), download: "clinic-intake.json" }); document.body.append(a); a.click();
+  const a = h("a", { href: URL.createObjectURL(blob), download: FILE[mode] }); document.body.append(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 });
 
@@ -904,7 +1168,8 @@ function parsePaste() {
 $("checkPaste").addEventListener("click", () => { const o = parsePaste(); if (o) renderIssues($("pasteIssues"), validate(o)); });
 $("loadPaste").addEventListener("click", () => {
   const o = parsePaste(); if (!o) return;
-  const { doc, notes } = normalize(o); S = doc; origin = "loaded"; renderAll(); renderNotice(notes.join(" "));
+  if (OpenIntakeValidate.kindOf(o) === "schedule") { SC = normalizeSchedule(o); originS = "loaded"; renderSchedule(); setMode("schedule"); }
+  else { const { doc, notes } = normalize(o); S = doc; origin = "loaded"; renderAll(); setMode("intake"); renderNotice(notes.join(" ")); }
   renderIssues($("pasteIssues"), validate(o)); $("pasteToast").textContent = "フォームに読み込みました。";
 });
 $("fileIn").addEventListener("change", e => {
@@ -914,10 +1179,13 @@ $("fileIn").addEventListener("change", e => {
 });
 
 // ---------- 起動 ----------
-let draft = null; try { const s = localStorage.getItem(STORE_KEY); if (s) draft = JSON.parse(s); } catch (_) {}
+const loadDraft = k => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : null; } catch (_) { return null; } };
+const draft = loadDraft(STORE_KEY), draftS = loadDraft(STORE_KEY_S);
 if (draft) { S = normalize(draft).doc; origin = "draft"; } else { S = normalize(exampleDoc()).doc; origin = "example"; }
-renderAll();
-window.OpenIntake = { validate, build, normalize };
+if (draftS) { SC = normalizeSchedule(draftS); originS = "draft"; } else { SC = normalizeSchedule(exampleSchedule()); originS = "example"; }
+renderAll(); renderScheduleMeta(); renderExceptions(); renderDoctors(); renderOnCall(); renderNotices();
+setMode("intake");
+window.OpenIntake = { validate, build, normalize, buildSchedule, normalizeSchedule, setMode };
 })();
 </script>
 

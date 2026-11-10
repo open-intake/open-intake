@@ -6,7 +6,9 @@
 - 医院の問診票に沿って会話し、受診の前に問診票を埋める手伝いができます
 - 医療機関の側には AI もサーバーも要りません。患者さんの情報をためることもありません
 
-状態: **v0.1 草案**（2026-11）
+状態: **v0.2 草案**（2026-11）
+
+情報は2つ以上のファイルに分けられます。ほぼ変わらない **固定の情報**（`clinic-intake.json`）と、受付の方が毎週〜毎日直す **臨時の情報**（`clinic-schedule.json`：臨時休診・担当医・当番・お知らせ）です。ファイルごとに編集する人を分けられ、臨時の情報には有効期限があります。
 
 ## 作者からのお願い
 
@@ -31,7 +33,7 @@
 | ファイル | 中身 |
 |---|---|
 | [SPEC.md](SPEC.md) | 仕様書（形式、必須の項目、安全の決まり、検査の規則、版と互換の決まり） |
-| [schema/clinic-intake.schema.json](schema/clinic-intake.schema.json) | JSON Schema（draft 2020-12） |
+| [schema/](schema/) | JSON Schema（draft 2020-12）。固定の情報と臨時の情報の2つ |
 | [examples/](examples/) | 各版の例（架空の医院） |
 | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) | AI と会話してファイルを作るための指示書 |
 | `src/` | 作成サイトの原稿（`generator.src.html`）と検査器（`validate.js`） |

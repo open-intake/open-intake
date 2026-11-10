@@ -6,11 +6,16 @@
  */
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2"];
+const KNOWN_ROLES = ["schedule"];
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+const todayStr = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 864e5);
 const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
 const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
 const CHOICE = new Set(["choice","open-choice"]);
-function validate(o) {
+function validateIntake(o) {
   const E = [], W = [];
   const err = (code, msg, where) => E.push({ code, msg, where });
   const warn = (code, msg, where) => W.push({ code, msg, where });
@@ -52,6 +57,25 @@ function validate(o) {
       if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `予約の方法 ${i+1}: 予約ページの URL が https で始まっていません。`, w + ".url");
       if (b.method === "phone" && !isStr(b.telephone)) err("E6", `予約の方法 ${i+1}: 予約用の電話番号を入れてください。`, w + ".telephone");
     });
+  }
+  if (o.files !== undefined) {
+    if (!Array.isArray(o.files)) err("E12", "files（正規のファイルの一覧）は配列（[ ]）にしてください。", "files");
+    else {
+      const roles = new Map();
+      o.files.forEach((f, i) => {
+        const w = `files[${i}]`;
+        if (!isObj(f)) { err("E12", `ファイルの一覧 ${i+1}: 形が正しくありません。`, w); return; }
+        if (!isStr(f.role)) err("E12", `ファイルの一覧 ${i+1}: 役割（role）が空です（例: schedule）。`, w + ".role");
+        else if (!KNOWN_ROLES.includes(f.role)) warn("W11", `ファイルの一覧 ${i+1}: 役割「${f.role}」は、この検査器が知らないものです（読む側は無視します）。`, w + ".role");
+        else if (roles.has(f.role)) err("E12", `ファイルの一覧 ${i+1}: 役割「${f.role}」のファイルが2つあります。1つにしてください。`, w + ".role");
+        if (isStr(f.role)) roles.set(f.role, true);
+        if (typeof f.url !== "string" || !f.url.trim() || /\s/.test(f.url)) err("E12", `ファイルの一覧 ${i+1}: url は空白を含まない URL にしてください（例: /clinic-schedule.json）。`, w + ".url");
+        else if (/^http:\/\//.test(f.url)) warn("W1", `ファイルの一覧 ${i+1}: URL が https で始まっていません。`, w + ".url");
+        else if (/^https?:\/\//.test(f.url) && isStr(o.clinic?.url)) {
+          try { if (new URL(f.url).host !== new URL(o.clinic.url).host) warn("W12", `ファイルの一覧 ${i+1}: 医療機関のサイトと別のサイトにあります。AI が正規のファイルと確かめにくくなります。`, w + ".url"); } catch (_) {}
+        }
+      });
+    }
   }
   const s = o.safety;
   if (!isObj(s)) err("E7", "safety（安全のための決まり）がありません。省略できません。", "safety");
@@ -99,6 +123,80 @@ function validate(o) {
   }
   return { E, W };
 }
-return { validate, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+
+// ---------- 臨時の情報（clinic-schedule.json・v0.2 から） ----------
+function validateSchedule(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const isDate = v => typeof v === "string" && DATE.test(v) && !isNaN(Date.parse(v + "T00:00:00Z"));
+  const today = todayStr();
+  if (!isObj(o)) { err("S1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (o.spec !== "open-intake-schedule") err("S1", "spec は \"open-intake-schedule\" にしてください。", "spec");
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("S1", "specVersion（例: \"0.2\"）がありません。", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器（${SUPPORTED_VERSIONS.join("・")} に対応）より新しい版です。知らないキーは無視して検査しました。`, "specVersion");
+  if (!isDate(o.updated)) err("S2", "updated（更新した日）は YYYY-MM-DD の形にしてください。", "updated");
+  if (!isDate(o.validUntil)) err("S3", "validUntil（この情報の有効期限）は YYYY-MM-DD の形で必ず入れてください。", "validUntil");
+  else {
+    if (isDate(o.updated) && o.validUntil < o.updated) err("S3", "有効期限（validUntil）が更新日より前になっています。", "validUntil");
+    if (o.validUntil < today) warn("W7", `有効期限（${o.validUntil}）が過ぎています。AI はこのファイルを使いません。内容を確かめて期限を延ばしてください。`, "validUntil");
+    if (isDate(o.updated) && dayDiff(o.updated, o.validUntil) > 180) warn("W8", "有効期限が更新日から半年以上先です。臨時の情報は、短めの期限にして、こまめに見直すことを勧めます。", "validUntil");
+  }
+  const old = (end, where, label) => { if (isDate(end) && end < today) warn("W9", `${label}は、もう終わった予定です。消してよいか確かめてください。`, where); };
+  const hoursOk = (opens, closes, where, label, overnightOk) => {
+    if (!TIME_RE.test(opens || "") || !TIME_RE.test(closes || "")) { err("S4", `${label}: 時刻を 09:00 の形で入れてください。`, where); return; }
+    if (!overnightOk && opens >= closes) err("S4", `${label}: 始まり（${opens}）が終わり（${closes}）より後になっています。`, where);
+  };
+  const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} は配列（[ ]）にしてください。`, k); return []; } return o[k]; };
+  list("exceptions").forEach((x, i) => {
+    const w = `exceptions[${i}]`, label = `臨時の休診・変更 ${i+1}`;
+    if (!isObj(x)) { err("S4", `${label}: 形が正しくありません。`, w); return; }
+    if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: 期間（from・to）を YYYY-MM-DD で入れてください。`, w);
+    else { if (x.from > x.to) err("S4", `${label}: 始まりの日が終わりの日より後になっています。`, w); old(x.to, w, label); }
+    if (!["closed","open","changed"].includes(x.status)) err("S4", `${label}: status は closed（休診）・open（臨時に診療）・changed（時間の変更）のどれかにしてください。`, w + ".status");
+    if (x.status === "open" || x.status === "changed") {
+      if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: 診療する時間（hours）を入れてください。`, w + ".hours");
+      else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label} の時間 ${k+1}`, false));
+    }
+  });
+  list("doctorSchedule").forEach((x, i) => {
+    const w = `doctorSchedule[${i}]`, label = `担当医の予定 ${i+1}`;
+    if (!isObj(x)) { err("S5", `${label}: 形が正しくありません。`, w); return; }
+    if (!isStr(x.department) && !isStr(x.name)) err("S5", `${label}: 診療科か担当医のどちらかを入れてください。`, w);
+    const hasDays = Array.isArray(x.days) && x.days.length, hasDate = isDate(x.date);
+    if (!hasDays && !hasDate) err("S5", `${label}: 曜日（days）か日付（date）を入れてください。`, w);
+    if (hasDays && x.days.some(d => !DAY_KEYS.includes(d))) err("S5", `${label}: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
+    hoursOk(x.opens, x.closes, w, label, false);
+    if (x.from !== undefined && !isDate(x.from)) err("S5", `${label}: from は YYYY-MM-DD にしてください。`, w + ".from");
+    if (x.to !== undefined && !isDate(x.to)) err("S5", `${label}: to は YYYY-MM-DD にしてください。`, w + ".to");
+    old(hasDate ? x.date : x.to, w, label);
+  });
+  list("onCall").forEach((x, i) => {
+    const w = `onCall[${i}]`, label = `当番 ${i+1}`;
+    if (!isObj(x)) { err("S6", `${label}: 形が正しくありません。`, w); return; }
+    if (!isDate(x.date)) err("S6", `${label}: 日付（date）を YYYY-MM-DD で入れてください。`, w + ".date");
+    if (!["holiday","night","other"].includes(x.kind)) err("S6", `${label}: kind は holiday（休日の当番）・night（夜間の当番）・other のどれかにしてください。`, w + ".kind");
+    hoursOk(x.opens, x.closes, w, label, true);
+    old(x.date, w, label);
+  });
+  list("notices").forEach((x, i) => {
+    const w = `notices[${i}]`, label = `お知らせ ${i+1}`;
+    if (!isObj(x) || !isStr(x.text)) { err("S7", `${label}: 本文（text）が空です。`, w); return; }
+    if (x.text.length > 200) warn("W5", `${label}: 本文が長すぎます（${x.text.length} 字・200 字まで）。`, w + ".text");
+    for (const k of ["from","to"]) if (x[k] !== undefined && !isDate(x[k])) err("S7", `${label}: ${k} は YYYY-MM-DD にしてください。`, `${w}.${k}`);
+    if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: 始まりの日が終わりの日より後になっています。`, w);
+    old(x.to, w, label);
+  });
+  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+    warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定はない」と AI に伝わります。", "$");
+  return { E, W };
+}
+
+// 中身を見て、どちらのファイルかを判断して検査する
+function kindOf(o) { return (o && typeof o === "object" && o.spec === "open-intake-schedule") ? "schedule" : "intake"; }
+function validate(o) { return kindOf(o) === "schedule" ? validateSchedule(o) : validateIntake(o); }
+return { KNOWN_ROLES, validate, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;

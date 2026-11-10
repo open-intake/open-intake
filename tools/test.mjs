@@ -42,6 +42,30 @@ const broken = [
 ];
 for (const [code, breakIt] of broken) { const d = base(); breakIt(d); const r = validate(d); ok(codes(r).includes(code), `${code} で止まる`, JSON.stringify(codes(r))); }
 
+// 臨時の情報（v0.2）を壊す
+const sbase = () => JSON.parse(fs.readFileSync("examples/v0.2/clinic-schedule.json", "utf8"));
+const sbroken = [
+  ["S1", d => { d.specVersion = "two"; }],
+  ["S3", d => { delete d.validUntil; }],
+  ["S3", d => { d.validUntil = "2026-01-01"; }],
+  ["S4", d => { d.exceptions[0].from = "2026-12-31"; d.exceptions[0].to = "2026-12-01"; }],
+  ["S4", d => { d.exceptions[0].hours = []; }],
+  ["S4", d => { d.exceptions[2].status = "holiday"; }],
+  ["S5", d => { delete d.doctorSchedule[0].department; delete d.doctorSchedule[0].name; }],
+  ["S5", d => { delete d.doctorSchedule[0].days; }],
+  ["S6", d => { d.onCall[0].kind = "day"; }],
+  ["S7", d => { d.notices[0].text = ""; }],
+];
+for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r = validate(d); ok(codes(r).includes(code), `臨時の情報: ${code} で止まる`, JSON.stringify(codes(r))); }
+{ const d = sbase(); d.onCall[0].opens = "18:00"; d.onCall[0].closes = "08:00"; ok(validate(d).E.length === 0, "当番は翌朝までの時間を書ける"); }
+{ const d = sbase(); d.validUntil = "2020-01-01"; d.updated = "2019-12-01"; ok(validate(d).W.some(w => w.code === "W7"), "期限切れは W7"); }
+
+// 正規のファイルの一覧（files）
+{ const d = JSON.parse(fs.readFileSync("examples/v0.2/clinic-intake.json", "utf8"));
+  d.files.push({ role: "schedule", url: "/b.json" }); ok(codes(validate(d)).includes("E12"), "同じ役割のファイルが2つなら E12");
+  d.files = [{ role: "future-role", url: "/x.json" }]; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W11"), "知らない役割は注意（W11）だけ");
+  d.files = [{ role: "schedule", url: "/a b.json" }]; ok(codes(validate(d)).includes("E12"), "空白を含む URL は E12"); }
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }

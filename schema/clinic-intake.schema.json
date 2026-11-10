@@ -39,6 +39,31 @@
       "items": {
         "$ref": "#/$defs/questionnaire"
       }
+    },
+    "files": {
+      "description": "この医療機関の正規のファイルの一覧（v0.2 から）。ここに載っていないファイルは、読む側が正規のものとして扱わない",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "url"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "description": "schedule（臨時の情報）など。知らない役割は無視する"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^\\S+$"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "$defs": {
