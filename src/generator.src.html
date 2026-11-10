@@ -143,12 +143,24 @@ aside.out { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); d
 .status.err { background: var(--req-soft); color: var(--req); }
 .status .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--rule); }
-.tab { border: 0; background: transparent; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid transparent; border-radius: 0; font-weight: 500; }
+.tabs { flex-wrap: wrap; }
+.tab { white-space: nowrap; border: 0; background: transparent; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid transparent; border-radius: 0; font-weight: 500; }
 .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
 .panel { display: grid; gap: 10px; min-width: 0; }
 pre.json { background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius); padding: 14px; margin: 0; overflow: auto; max-height: 56vh; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; tab-size: 2; }
 pre.json .k { color: var(--code-key); }
 pre.json .s { color: var(--code-str); }
+.view { display: grid; gap: 14px; font-size: 14px; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px; max-height: 64vh; overflow: auto; }
+.view h3 { font-size: 17px; }
+.view h4 { font-family: var(--font-display); font-size: 14px; margin: 0 0 4px; color: var(--accent); }
+.view dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.view dt { color: var(--muted); }
+.view dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.view ul, .view ol { margin: 0; padding-left: 1.3em; }
+.view .tag { display: inline-block; font-size: 11.5px; border: 1px solid var(--rule); border-radius: 3px; padding: 0 5px; margin-left: 4px; color: var(--muted); }
+.view .tag.alert { color: var(--req); border-color: currentColor; }
+.view .tag.good { color: var(--ok); border-color: currentColor; }
+.view .sub { color: var(--muted); font-size: 12.5px; }
 .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
 .issues li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 4px; }
 .issues li.e { background: var(--req-soft); }
@@ -189,7 +201,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
           <ol>
             <li>ChatGPT・Claude・Gemini など、ふだん使っている AI のチャットを新しく開きます。</li>
             <li>下の指示文をコピーして貼り付け、送信します。AI の質問に順に答えます。</li>
-            <li>AI が出した JSON を、右の「チェック・読み込み」に貼り付けて確かめます。フォームに読み込んで直すこともできます。</li>
+            <li>AI が出した JSON を、右の「貼り付けて確認」に貼り付けて確かめます。フォームに読み込んで直すこともできます。</li>
           </ol>
           <p class="small">⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。</p>
           <div class="actions"><button class="btn" type="button" id="copyPrompt">指示文をコピー</button><span class="toast" id="promptToast" role="status"></span></div>
@@ -215,9 +227,10 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
     <aside class="out" aria-label="できあがり">
       <div class="status" id="status" role="status"></div>
       <div class="tabs" role="tablist">
-        <button class="tab" role="tab" id="tab-json" aria-selected="true" aria-controls="panel-json" type="button">できあがり</button>
-        <button class="tab" role="tab" id="tab-issues" aria-selected="false" aria-controls="panel-issues" type="button">チェック結果</button>
-        <button class="tab" role="tab" id="tab-load" aria-selected="false" aria-controls="panel-load" type="button">チェック・読み込み</button>
+        <button class="tab" role="tab" id="tab-json" aria-selected="true" aria-controls="panel-json" type="button">JSON</button>
+        <button class="tab" role="tab" id="tab-view" aria-selected="false" aria-controls="panel-view" type="button">表示</button>
+        <button class="tab" role="tab" id="tab-issues" aria-selected="false" aria-controls="panel-issues" type="button">チェック</button>
+        <button class="tab" role="tab" id="tab-load" aria-selected="false" aria-controls="panel-load" type="button">貼り付けて確認</button>
       </div>
       <div class="panel" id="panel-json" role="tabpanel">
         <div class="actions">
@@ -228,11 +241,15 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
         <pre class="json" id="json" tabindex="0"></pre>
         <p class="small" id="fileHint"></p>
       </div>
+      <div class="panel" id="panel-view" role="tabpanel" hidden>
+        <p class="small">できあがりの JSON を、担当者が読みやすい形で表示します。公開の前に、書いた内容が意図どおりかを確かめてください。</p>
+        <div class="view" id="view"></div>
+      </div>
       <div class="panel" id="panel-issues" role="tabpanel" hidden>
         <ul class="issues" id="issues"></ul>
       </div>
       <div class="panel" id="panel-load" role="tabpanel" hidden>
-        <p class="small">AI が作った JSON や、前に作ったファイルを貼り付けて確かめます。</p>
+        <p class="small">AI が作った JSON や、公開中のファイルの中身を貼り付けて確かめます。チェックの結果と、読みやすく表示した内容が下に出ます。</p>
         <div class="field">
           <label for="pasteBox">JSON を貼り付け</label>
           <textarea id="pasteBox" rows="9" spellcheck="false" placeholder='{ "spec": "open-intake", ... }'></textarea>
@@ -245,6 +262,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
         </div>
         <div class="toast" id="pasteToast" role="status"></div>
         <ul class="issues" id="pasteIssues"></ul>
+        <div class="view" id="pasteView" hidden></div>
       </div>
     </aside>
   </div>
@@ -762,10 +780,70 @@ function renderNotice(extra) {
   const el = $("notice"); el.replaceChildren();
   const o = mode === "schedule" ? originS : origin, what = mode === "schedule" ? "臨時の情報" : "架空の医院";
   const msg = { example: [`${what}の例が入っています。`, "書き換えて使うか、空にして始めてください。"], draft: ["前回の下書きを開きました。", "このブラウザの中だけに保存されています。"], blank: ["空の用紙です。", "必須の欄から埋めてください。"], loaded: ["貼り付けた JSON を読み込みました。", ""] }[o] || ["", ""];
-  el.append(h("span", {}, h("strong", { text: msg[0] }), " ", msg[1]), extra && h("span", { text: extra }),
+  el.append(h("span", {}, h("strong", { text: msg[0] }), " ", msg[1]), extra ? h("span", { text: extra }) : "",
     h("span", { style: "flex:1" }),
     h("button", { type: "button", class: "btn ghost small", onclick: () => { if (mode === "schedule") { SC = normalizeSchedule(exampleSchedule()); originS = "example"; renderSchedule(); } else { S = normalize(exampleDoc()).doc; origin = "example"; renderAll(); } } }, "例を入れる"),
     h("button", { type: "button", class: "btn ghost small", onclick: () => { if (mode === "schedule") { SC = normalizeSchedule(blankSchedule()); originS = "blank"; renderSchedule(); } else { S = normalize(blankDoc()).doc; origin = "blank"; renderAll(); } } }, "空にする"));
+}
+
+// ---------- 読みやすく表示（ビューア） ----------
+const DAY_JA = Object.fromEntries(DAYS);
+const METHOD_JA = Object.fromEntries(METHODS), TYPE_JA = Object.fromEntries(TYPES), STATUS_JA = { closed: "休診", open: "臨時に診療", changed: "時間の変更" }, KIND_JA = { holiday: "休日の当番", night: "夜間の当番", other: "その他の当番" };
+const arr = v => Array.isArray(v) ? v : [];
+const str = v => (typeof v === "string" || typeof v === "number") ? String(v) : "";
+const days = ds => arr(ds).map(d => DAY_JA[d] || d).join("・");
+const span = (a, b) => (b && b !== a) ? `${a} 〜 ${b}` : (a || "");
+const hm = (o, c) => (c && o && c <= o) ? `${o}〜翌${c}` : `${o || "?"}〜${c || "?"}`;
+function dl(rows) { return h("dl", {}, rows.filter(r => r && r[1] !== "" && r[1] != null && !(Array.isArray(r[1]) && !r[1].length)).map(([k, v]) => [h("dt", { text: k }), h("dd", {}, Array.isArray(v) ? v.join("、") : v)])); }
+function block(title, ...kids) { const c = kids.flat().filter(Boolean); return c.length ? h("section", {}, h("h4", { text: title }), c) : null; }
+function list(items, tag = "ul") { const it = items.filter(Boolean); return it.length ? h(tag, {}, it.map(x => h("li", {}, x))) : null; }
+function viewIntake(o) {
+  const c = o.clinic || {}, a = c.address || {}, s = o.safety || {};
+  const qs = arr(o.questionnaires);
+  return [
+    h("h3", { text: str(c.name) || "（名前が空です）" }),
+    dl([["電話", str(c.telephone)], ["住所", [a.postalCode && "〒" + a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["サイト", str(c.url)], ["診療科", arr(c.departments)], ["内容を確かめた日", str(o.updated)]]),
+    block("ふだんの診療時間", list(arr(c.openingHours).map(x => `${days(x.days)}　${hm(x.opens, x.closes)}${x.note ? "（" + x.note + "）" : ""}`)), c.closedNote && h("div", { class: "sub", text: c.closedNote })),
+    block("予約・受診の方法", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "　" + b.url }), b.telephone && h("span", { text: "　" + b.telephone }), b.note && h("span", { class: "sub", text: "（" + b.note + "）" }))))),
+    block("主に診ている症状・相談", list(arr(c.handles))),
+    block("対応していないこと", list(arr(c.notHandled))),
+    block("持ち物・言語・設備", dl([["持ち物", arr(c.bring)], ["言語", arr(c.languages)], ["設備", arr(c.accessibility)]])),
+    block("安全のための決まり",
+      h("div", {}, s.noDiagnosis === true ? h("span", { class: "tag good", text: "診断をしない" }) : h("span", { class: "tag alert", text: "noDiagnosis が true ではありません" })),
+      s.emergency && h("p", { style: "margin:0", text: s.emergency }),
+      h("div", { class: "sub", text: "予約より先に救急へ（目安）:" }), list(arr(s.redFlags)),
+      s.redFlagsSource && h("div", { class: "sub", text: `出典: ${str(s.redFlagsSource.publisher)}「${str(s.redFlagsSource.title)}」${s.redFlagsSource.note ? "　" + s.redFlagsSource.note : ""}` })),
+    o.aiNotes && block("AI へのお願い", h("p", { style: "margin:0", text: str(o.aiNotes) })),
+    block("正規のファイルの一覧", list(arr(o.files).map(f => h("span", {}, h("strong", { text: f.role === "schedule" ? "臨時の情報" : str(f.role) }), "　" + str(f.url), f.note && h("span", { class: "sub", text: "（" + f.note + "）" }))))),
+    ...qs.map(q => block(`問診票: ${str(q.title) || str(q.id)}`,
+      h("div", {}, h("span", { class: "tag" + (q.status === "active" ? " good" : " alert"), text: q.status === "active" ? "使用中" : "医師の確認前" }), q.purpose && h("span", { class: "sub", text: "　" + q.purpose })),
+      list(arr(q.item).map(it => {
+        const ew = arr(it.enableWhen)[0], idx = arr(q.item).findIndex(x => x.linkId === ew?.question);
+        const cond = ew ? `Q${idx + 1} の答えが「${ew.answerBoolean === true ? "はい" : ew.answerBoolean === false ? "いいえ" : str(ew.answerString)}」のときだけ聞く` : "";
+        return h("span", {}, str(it.text), it.required && h("span", { class: "tag alert", text: "必須" }), h("span", { class: "tag", text: TYPE_JA[it.type] || str(it.type) }), it.repeats && h("span", { class: "tag", text: "複数選べる" }),
+          arr(it.answerOption).length > 0 && h("div", { class: "sub", text: "選択肢: " + arr(it.answerOption).map(x => x.valueString).join(" / ") }),
+          cond && h("div", { class: "sub", text: cond }));
+      }), "ol")))
+  ];
+}
+function viewSchedule(o) {
+  const t = today(), expired = str(o.validUntil) && o.validUntil < t;
+  const past = end => end && end < t ? h("span", { class: "tag", text: "終わった予定" }) : null;
+  return [
+    h("h3", { text: "臨時の情報" }),
+    h("div", {}, expired ? h("span", { class: "tag alert", text: `有効期限切れ（${o.validUntil}）: AI はこのファイルを使いません` }) : h("span", { class: "tag good", text: `有効: ${str(o.validUntil)} まで` })),
+    dl([["更新した日", str(o.updated)], ["メインのファイル", str(o.main)]]),
+    block("臨時の休診・診療時間の変更", list(arr(o.exceptions).map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "　" + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "　" + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join("・") }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.to))))),
+    block("担当医の予定", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("　") }), "　" + (x.date ? x.date : "毎週 " + days(x.days)) + "　" + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date || x.to))))),
+    block("当番", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "　" + (KIND_JA[x.kind] || str(x.kind)) + "　" + hm(x.opens, x.closes), x.department && h("span", { text: "　" + x.department }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date))))),
+    block("お知らせ", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), past(x.to))))),
+    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "臨時の予定はありません。" })
+  ];
+}
+function renderView(el, o) {
+  el.replaceChildren();
+  try { el.append(...(OpenIntakeValidate.kindOf(o) === "schedule" ? viewSchedule(o) : viewIntake(o)).filter(Boolean)); }
+  catch (e) { el.append(h("p", { class: "sub", text: "この JSON は表示できませんでした: " + e.message })); }
 }
 
 // ---------- 出力の更新 ----------
@@ -792,17 +870,17 @@ function changed(immediate) {
   const json = JSON.stringify(lastOut, null, 2);
   $("json").innerHTML = highlight(json);
   const res = validate(lastOut);
-  statusOf(res); renderIssues($("issues"), res);
-  $("tab-issues").textContent = `チェック結果（${res.E.length + res.W.length}）`;
+  statusOf(res); renderIssues($("issues"), res); renderView($("view"), lastOut);
+  $("tab-issues").textContent = `チェック（${res.E.length + res.W.length}）`;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); localStorage.setItem(STORE_KEY_S, JSON.stringify(SC)); } catch (_) {} }, immediate ? 0 : 400);
 }
 
 // ---------- タブ・コピー・保存・読み込み ----------
 function selectTab(name) {
-  for (const t of ["json","issues","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
+  for (const t of ["json","view","issues","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
 }
-for (const t of ["json","issues","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
+for (const t of ["json","view","issues","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
 $("status").addEventListener("click", () => selectTab("issues"));
 
 function copyText(textValue, toastEl, fallbackEl) {
@@ -829,16 +907,17 @@ function parsePaste() {
   try { return JSON.parse(body); }
   catch (e) { list.append(h("li", { class: "e" }, h("span", { class: "code", text: "JSON" }), h("span", { text: "JSON として読めません: " + e.message + "。末尾のカンマやコメント（//）がないか確かめてください。" }))); return null; }
 }
-$("checkPaste").addEventListener("click", () => { const o = parsePaste(); if (o) renderIssues($("pasteIssues"), validate(o)); });
+const showPaste = o => { renderIssues($("pasteIssues"), validate(o)); renderView($("pasteView"), o); $("pasteView").hidden = false; };
+$("checkPaste").addEventListener("click", () => { $("pasteView").hidden = true; const o = parsePaste(); if (o) showPaste(o); });
 $("loadPaste").addEventListener("click", () => {
   const o = parsePaste(); if (!o) return;
   if (OpenIntakeValidate.kindOf(o) === "schedule") { SC = normalizeSchedule(o); originS = "loaded"; renderSchedule(); setMode("schedule"); }
   else { const { doc, notes } = normalize(o); S = doc; origin = "loaded"; renderAll(); setMode("intake"); renderNotice(notes.join(" ")); }
-  renderIssues($("pasteIssues"), validate(o)); $("pasteToast").textContent = "フォームに読み込みました。";
+  showPaste(o); $("pasteToast").textContent = "フォームに読み込みました。";
 });
 $("fileIn").addEventListener("change", e => {
   const f = e.target.files?.[0]; if (!f) return;
-  const r = new FileReader(); r.onload = () => { $("pasteBox").value = String(r.result); const o = parsePaste(); if (o) renderIssues($("pasteIssues"), validate(o)); }; r.readAsText(f, "utf-8");
+  const r = new FileReader(); r.onload = () => { $("pasteBox").value = String(r.result); $("pasteView").hidden = true; const o = parsePaste(); if (o) showPaste(o); }; r.readAsText(f, "utf-8");
   e.target.value = "";
 });
 
