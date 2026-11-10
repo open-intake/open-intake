@@ -3,7 +3,7 @@ const fs = require('fs'), path = require('path');
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-  await p.goto('file://' + path.resolve('docs/index.html'));
+  await p.goto('file://' + path.resolve('docs/maker/index.html'));
   await p.waitForTimeout(500);
   const r = {};
   r.status = await p.textContent('#status');

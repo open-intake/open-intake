@@ -1,0 +1,236 @@
+<title>オープン問診票</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="医療機関がホームページに小さなファイルを1つ置くだけで、患者さんがふだん使っている AI が、正しい情報で受診を手伝えるようにする開かれた仕組み。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 1段組みの読み物。課題 → 仕組み → 5つの利点 → 原則 → 始め方 → 運営。作成ツールと同じ色と書体 */
+:root {
+  --paper: #EEF2F1;
+  --sheet: #FFFFFF;
+  --ink: #17242C;
+  --muted: #586A73;
+  --rule: #D3DCDB;
+  --accent: #0D6863;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DDEFEC;
+  --alert: #B3261E;
+  --alert-soft: #FBE9E7;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41;
+    --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39; --alert: #FF8A80; --alert-soft: #3A1D1B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41;
+  --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39; --alert: #FF8A80; --alert-soft: #3A1D1B;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.8; }
+.wrap { max-width: 920px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 56px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+p { margin: 0; }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: 0.86em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.hero { padding-block: 48px 36px; display: grid; gap: 16px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; color: var(--muted); }
+.hero h1 { font-size: clamp(30px, 5.4vw, 48px); }
+.hero h1 small { display: block; font-size: 0.42em; font-weight: 500; color: var(--muted); margin-top: 6px; letter-spacing: 0.04em; }
+.hero .lead { font-size: clamp(17px, 2.2vw, 20px); max-width: 38em; }
+.hero .lead strong { background: linear-gradient(transparent 62%, var(--accent-soft) 62%); }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 10px 18px; border-radius: 4px; font-weight: 500; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.status { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.status span::before { content: "● "; color: var(--accent); }
+
+section.block { padding-block: 36px; border-top: 1px solid var(--rule); display: grid; gap: 18px; }
+section.block > h2 { font-size: clamp(22px, 3vw, 28px); }
+section.block > .intro { color: var(--muted); max-width: 40em; }
+
+/* 課題: いまと、これから */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.case { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; align-content: start; }
+.case h3 { font-size: 17px; }
+.case.now h3 { color: var(--alert); }
+.case.next h3 { color: var(--accent); }
+.case ul { margin: 0; padding-left: 1.2em; }
+.quote { border-left: 3px solid var(--alert); background: var(--alert-soft); padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; }
+
+/* 仕組み: 3者の流れ */
+.flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: stretch; }
+.node { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.node h3 { font-size: 16px; }
+.node .files { display: grid; gap: 4px; }
+.node .file { font-family: var(--font-mono); font-size: 12px; background: var(--accent-soft); color: var(--accent); border-radius: 3px; padding: 3px 8px; overflow-wrap: anywhere; }
+.node p { font-size: 14px; color: var(--muted); }
+.arrow { align-self: center; color: var(--accent); font-size: 22px; text-align: center; }
+.arrow small { display: block; font-size: 11px; color: var(--muted); }
+@media (max-width: 760px) { .flow { grid-template-columns: 1fr; } .arrow { transform: rotate(90deg); } .arrow small { transform: rotate(-90deg); } }
+
+/* 5つの利点 */
+.benefits { display: grid; gap: 12px; counter-reset: b; }
+.benefit { display: grid; grid-template-columns: 3.2em minmax(0, 1fr); gap: 4px 14px; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; }
+.benefit::before { counter-increment: b; content: counter(b); grid-row: span 2; font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1.2; }
+.benefit h3 { font-size: 18px; }
+.benefit p { color: var(--ink); }
+.benefit.risk { border-color: var(--alert); }
+.benefit.risk::before { color: var(--alert); }
+
+/* 原則 */
+.principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 22px; margin: 0; padding: 0; list-style: none; }
+.principles li { display: grid; gap: 2px; padding-left: 14px; border-left: 3px solid var(--accent); }
+.principles strong { font-family: var(--font-display); }
+.principles span { color: var(--muted); font-size: 14.5px; }
+
+/* 立場ごと */
+.who { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.who .case h3 { color: var(--ink); }
+
+/* 医療者へのお願い */
+.ask { background: var(--accent-soft); border-radius: var(--radius); padding: 22px; display: grid; gap: 10px; }
+.ask h2 { font-size: 22px; }
+
+/* よくある質問 */
+details { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
+details + details { margin-top: 8px; }
+summary { cursor: pointer; padding: 12px 16px; font-weight: 500; }
+details > p { padding: 0 16px 14px; color: var(--ink); }
+
+footer.foot { border-top: 1px solid var(--rule); padding-top: 24px; display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+footer.foot dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 0; }
+footer.foot dt { color: var(--muted); }
+footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">OPEN INTAKE · v0.2 草案</div>
+    <h1>オープン問診票<small>Open Intake</small></h1>
+    <p class="lead">医療機関がホームページに<strong>小さなファイルを1つ置くだけ</strong>で、患者さんがふだん使っている AI が、<strong>正しい情報で受診を手伝える</strong>ようにする、開かれた仕組みです。</p>
+    <div class="cta">
+      <a class="btn" href="maker/">ファイルを作る（無料）</a>
+      <a class="btn ghost" href="https://github.com/open-intake/open-intake/blob/main/SPEC.md">仕様書を読む</a>
+    </div>
+    <div class="status"><span>無料・オープンソース</span><span>診断はしません</span><span>患者さんの情報をためません</span><span>医療者のご意見を募集中</span></div>
+  </header>
+
+  <section class="block" aria-labelledby="h-why">
+    <h2 id="h-why">なぜ必要か</h2>
+    <p class="intro">体調が悪いとき、まず AI に相談し、受診先を探す人が増えています。これから先は、AI が受診先を選び、予約し、症状を医療機関に伝えるところまで手伝うようになるはずです。そのとき AI が頼る情報が、正しいとは限りません。</p>
+    <div class="compare">
+      <div class="case now">
+        <h3>いま起きていること</h3>
+        <ul>
+          <li>診療時間などの情報は、地図サービスや口コミサイトの登録に頼っている</li>
+          <li>臨時の休診や当番医の情報は、反映が遅れやすい</li>
+          <li>直したくても、直せる場所がばらばらで、自分では直せないこともある</li>
+          <li>医療機関に AI チャットを置くには、費用と手間がかかり、AI の進歩に合わせて作り直しも要る</li>
+        </ul>
+      </div>
+      <div class="case next">
+        <h3>この仕組みでできること</h3>
+        <ul>
+          <li>医療機関が<strong>自分で書いた情報</strong>を、AI が直接読む</li>
+          <li>臨時の休診・当番・お知らせを、受付の方がすぐに更新できる</li>
+          <li>問診票に沿って、AI が受診前の記入を手伝う</li>
+          <li>医療機関の側には AI もサーバーも要らない</li>
+        </ul>
+      </div>
+    </div>
+    <p class="quote">地方のガソリンスタンドで、地図サービスに表示された営業日が間違っていた。店の人は「伝えても直らない」と言う。医療機関でも同じことが起こりえます。違うのは、間違った情報で困るのが、具合の悪い患者さんだということです。</p>
+  </section>
+
+  <section class="block" aria-labelledby="h-how">
+    <h2 id="h-how">仕組み</h2>
+    <p class="intro">AI は患者さんの側にあるものとし、医療機関は「AI が読める形の公開情報」だけを用意します。</p>
+    <div class="flow">
+      <div class="node">
+        <h3>医療機関</h3>
+        <div class="files"><span class="file">clinic-intake.json</span><span class="file">clinic-schedule.json</span></div>
+        <p>ホームページにファイルを置く。ふだんの情報と、臨時の情報（有効期限つき）に分けられる</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→<small>読む</small></div>
+      <div class="node">
+        <h3>患者さんの AI</h3>
+        <p>ChatGPT・Claude・Gemini など、どの AI でもよい。救急の目安を先に確かめ、診療時間・予約方法を案内し、問診票の記入を手伝う</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→<small>案内</small></div>
+      <div class="node">
+        <h3>患者さん</h3>
+        <p>正しい情報で、受診するか・いつ行くか・何を持っていくかを決められる。命に関わる症状なら、予約より先に119番へ</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-merit">
+    <h2 id="h-merit">医療機関にとっての5つの利点</h2>
+    <div class="benefits">
+      <div class="benefit"><h3>導入が簡単</h3><p>作成ツールの画面に入力するか、AI と会話するだけでファイルができます。ホームページに置けば終わりです。サーバーも、月々の費用も要りません。</p></div>
+      <div class="benefit"><h3>管理しやすい</h3><p>ふだんの情報と臨時の情報を、別のファイルに分けられます。受付の方は臨時の情報だけを直せばよく、ファイルごとに編集する人を分けられます。中身は作成ツールで読みやすく表示でき、技術がなくても確かめられます。</p></div>
+      <div class="benefit"><h3>安全</h3><p>患者さんの情報を医療機関のサーバーに送らず、ためません。ファイルに入るのは公開してよい情報だけです。AI には診断をさせず、救急の目安に当てはまれば予約より先に119番を勧めるよう、形式そのもので決めています。</p></div>
+      <div class="benefit"><h3>将来も使える</h3><p>変わりやすい AI と、変わりにくい情報（診療時間や問診票の項目）を分けました。AI が入れ替わっても、ファイルは直さずに使えます。形式は国際標準（HL7 FHIR・schema.org）に合わせ、古い版のファイルも読めるよう決まりを設けています。</p></div>
+      <div class="benefit risk"><h3>置かないと、間違った情報が使われる</h3><p>医療機関が自分で情報を出さなければ、AI は地図サービスや古いページから推し量るしかありません。「休診日に来てしまった」「当番医を探せなかった」ということが、AI の時代にはもっと起こりやすくなります。</p></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-rule">
+    <h2 id="h-rule">大事にしていること</h2>
+    <ul class="principles">
+      <li><strong>診断をしない</strong><span>病名の推定や緊急度の判定はしません。情報の受け渡しの形を決めるだけです</span></li>
+      <li><strong>命を最優先にする</strong><span>救急の目安（消防庁の資料をもとに、おとな・高齢者・こどもごと）を、予約の前に必ず確かめます</span></li>
+      <li><strong>情報をためない</strong><span>患者さんの症状や個人情報を、医療機関のサーバーにも、この仕組みにも集めません</span></li>
+      <li><strong>開かれている</strong><span>仕様もツールも無料で公開しています。誰でも使え、誰でも作り直せます</span></li>
+    </ul>
+  </section>
+
+  <section class="block" aria-labelledby="h-who">
+    <h2 id="h-who">立場ごとの使い方</h2>
+    <div class="who">
+      <div class="case"><h3>医療機関の方</h3><p><a href="maker/">作成ツール</a>で、医院の情報と問診票を入力します。できたファイルを、ホームページの管理者に頼んでサイトに置いてもらいます。</p></div>
+      <div class="case"><h3>患者さん</h3><p>ふだん使っている AI に、医療機関のホームページの住所を伝えて「受診したい」と相談します。対応している医療機関なら、AI が正しい情報で案内できます。</p></div>
+      <div class="case"><h3>開発者の方</h3><p><a href="https://github.com/open-intake/open-intake/blob/main/SPEC.md">仕様書</a>と <a href="schema/clinic-intake.schema.json">JSON Schema</a> を公開しています。AI のサービスや予約システムから読み込めます。</p></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-ask">
+    <div class="ask">
+      <h2 id="h-ask">医療に携わる方へのお願い</h2>
+      <p>この仕組みは、医療者ではない作者が考えた草案です。形式（ファイルの形や安全の仕組み）は作者が責任を持って作ります。<strong>救急の目安や問診票の中身は、医療に携わる方に決めていただきたい</strong>と考えています。</p>
+      <p>「この項目は要らない」「この質問が抜けている」など、一言でも大きな助けになります。</p>
+      <div class="cta"><a class="btn" href="https://github.com/open-intake/open-intake/blob/main/CONTRIBUTING.md">ご意見の出し方</a></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-faq">
+    <h2 id="h-faq">よくある質問</h2>
+    <div>
+      <details><summary>AI が診断をするのですか？</summary><p>しません。この仕組みは、医療機関の公開情報と問診票の質問を、AI が読める形で渡すだけです。ファイルを読む AI には、病名を挙げない・薬の量を指示しないよう求めています。</p></details>
+      <details><summary>患者さんの情報はどこに行きますか？</summary><p>この仕組みは患者さんの情報を集めません。医療機関が置くファイルに入るのは、医療機関の公開情報だけです。患者さんと AI の会話は、患者さんが使っている AI のサービスの中で行われます。</p></details>
+      <details><summary>費用はかかりますか？</summary><p>かかりません。仕様もツールも無料で公開しています。ファイルは今あるホームページに置くだけなので、新しいサーバーも要りません。</p></details>
+      <details><summary>予約システムの代わりになりますか？</summary><p>なりません。今お使いの予約ページや電話番号を、AI に正しく案内させるための仕組みです。予約システムはそのまま使えます。</p></details>
+      <details><summary>どの AI で使えますか？</summary><p>特定の AI に頼りません。中身は JSON という広く使われている文字の形式なので、どの AI でも読めます。</p></details>
+      <details><summary>ホームページがない医療機関はどうすればよいですか？</summary><p>いまは、ファイルを置く場所が必要です。将来は、医師会や自治体が地域の医療機関のファイルをまとめて置く形も考えています。</p></details>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <dl>
+      <dt>運営</dt><dd>Open Intake プロジェクト（代表 Taichi Kurihara・<a href="https://orcid.org/0009-0003-0369-9689">ORCID 0009-0003-0369-9689</a>）</dd>
+      <dt>状態</dt><dd>v0.2 草案。救急の目安と問診票の例は、医師の確認前です</dd>
+      <dt>引用</dt><dd>DOI <a href="https://doi.org/10.5281/zenodo.24121889">10.5281/zenodo.24121889</a></dd>
+      <dt>ソース</dt><dd><a href="https://github.com/open-intake/open-intake">github.com/open-intake/open-intake</a></dd>
+      <dt>ライセンス</dt><dd>仕様書は CC BY 4.0、JSON Schema と例は CC0、ツールは Apache-2.0</dd>
+    </dl>
+  </footer>
+</div>

@@ -1,4 +1,4 @@
-// 作成サイトを組み立てる。
+// サイトを組み立てる。トップ（docs/index.html）と作成ツール（docs/maker/index.html）。
 //   node tools/build.mjs          → docs/ を書き出す（GitHub Pages はここを配る）
 //   node tools/build.mjs --check  → docs/ が原稿から作った結果と1バイトも違わないかだけ見る
 // 埋め込むもの: src/validate.js（検査器）、AI_INSTRUCTIONS.md の「ここから〜ここまで」（指示文）
@@ -19,8 +19,10 @@ const validateJs = read("src/validate.js");
 if (validateJs.includes("</script")) throw new Error("validate.js に </script が含まれています");
 const body = src.replace("<!--PROMPT-->", () => esc(m[1].trim())).replace("/*VALIDATE*/", () => validateJs);
 
+const page = b => `<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<style>[hidden]{display:none!important}body{margin:0}</style>\n</head>\n<body>\n${b}\n</body>\n</html>\n`;
 const outputs = new Map();
-outputs.set("docs/index.html", `<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<style>[hidden]{display:none!important}body{margin:0}</style>\n</head>\n<body>\n${body}\n</body>\n</html>\n`);
+outputs.set("docs/maker/index.html", page(body));   // 作成ツール
+outputs.set("docs/index.html", page(read("src/index.src.html")));   // トップ（取り組みの説明）
 outputs.set("docs/.nojekyll", "");
 const copyTree = (from, to) => { for (const e of fs.readdirSync(from, { withFileTypes: true })) {
   const a = path.join(from, e.name), b = path.join(to, e.name);

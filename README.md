@@ -29,7 +29,8 @@
 
 | 方法 | 内容 |
 |---|---|
-| **作成サイト** | https://open-intake.github.io/open-intake/ ：画面に入力すると `clinic-intake.json` ができます。入力内容はブラウザの外に送りません |
+| **説明のページ** | https://open-intake.github.io/open-intake/ ：この取り組みの意義と仕組み |
+| **作成ツール** | https://open-intake.github.io/open-intake/maker/ ：画面に入力すると `clinic-intake.json`・`clinic-schedule.json` ができます。入力内容はブラウザの外に送りません |
 | **AI と会話して作る** | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) の指示文を、ふだん使っている AI に貼り付けます |
 
 できたファイルは、医療機関のサイトのいちばん上（例: `https://example.com/clinic-intake.json`）に置きます。
@@ -42,8 +43,8 @@
 | [schema/](schema/) | JSON Schema（draft 2020-12）。固定の情報と臨時の情報の2つ |
 | [examples/](examples/) | 各版の例（架空の医院） |
 | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) | AI と会話してファイルを作るための指示書 |
-| `src/` | 作成サイトの原稿（`generator.src.html`）と検査器（`validate.js`） |
-| `docs/` | 公開される作成サイト（**生成物。手で直さない**） |
+| `src/` | トップの原稿（`index.src.html`）、作成ツールの原稿（`generator.src.html`）、検査器（`validate.js`） |
+| `docs/` | 公開されるサイト（トップと作成ツール。**生成物。手で直さない**） |
 | [CHANGELOG.md](CHANGELOG.md) | 変更の記録 |
 
 ## 開発
