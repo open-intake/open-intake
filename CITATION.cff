@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "この形式やツールを引用するときは、次の情報を使ってください。"
+title: "オープン問診票（Open Intake）: 医療機関の情報と問診票を AI が読める形で公開するための開かれた形式"
+type: software
+authors:
+  - name: "Open Intake project"
+repository-code: "https://github.com/open-intake/open-intake"
+url: "https://open-intake.github.io/open-intake/"
+license: Apache-2.0
+version: "0.2.0"
+date-released: "2026-11-11"
+keywords:
+  - healthcare
+  - patient intake
+  - HL7 FHIR
+  - Questionnaire
+  - JSON
+  - AI agents
+abstract: >-
+  医療機関が JSON ファイルを自分のサイトに置くだけで、患者がふだん使っている汎用 AI が、
+  医療機関の診療内容・診療時間・予約方法・臨時の休診や当番を正しく読み取り、
+  FHIR R4 Questionnaire の部分集合で書かれた問診票に沿って受診前の記入を手伝えるようにする形式の草案。
+  診断はせず、患者の情報を医療機関のサーバーにためない。
