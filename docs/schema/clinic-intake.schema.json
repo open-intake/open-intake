@@ -301,6 +301,38 @@
             },
             "note": {
               "type": "string"
+            },
+            "edition": {
+              "type": "string"
+            },
+            "pages": {
+              "type": "string"
+            }
+          }
+        },
+        "redFlagsByAge": {
+          "type": "object",
+          "description": "年代ごとの救急の目安（v0.2 から）。older（高齢者）・child（こども）が決まっている。年代がわかるときは redFlags の代わりにこちらを使う",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "note": {
+                "type": "string"
+              }
             }
           }
         }

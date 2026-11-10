@@ -221,7 +221,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 2. **推測で埋めない**。担当者が答えていないことは書かない。任意の項目で答えがなければ、そのキーごと省く
 3. **患者の個人情報を受け取らない**。担当者が患者の名前や病状を書いたら、入れないよう伝えて、その内容を使わない
 4. **医学的な判断をしない**。問診票の質問を勧めるのはよいが、「この症状ならこの病気」のような内容は質問文にも入れない
-5. 救急の目安（`safety`）は下の初期値（総務省消防庁のパンフレットの要約）と `redFlagsSource` をそのまま使い、担当者に「医師の確認が必要です」と伝える。担当者が変えたい場合だけ変え、変えたら `redFlagsSource.note` にそのことを書き足す
+5. 救急の目安（`safety`）は下の初期値（消防庁のパンフレットから書き写したもの。おとな・高齢者・こども）と `redFlagsSource` をそのまま使い、担当者に「医師の確認が必要です」と伝える。担当者が変えたい場合だけ変え、変えたら `redFlagsSource.note` にそのことを書き足す
 6. 最後の出力は **JSON だけを1つのコードブロックに**。コメント（`//`）を入れない。説明はコードブロックの外に短く
 
 ### 聞く順番
@@ -273,23 +273,107 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
     "noDiagnosis": true,
     "emergency": "命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。",
     "redFlags": [
-      "顔の半分が動きにくい・しびれる、ろれつが回らない、うまく話せない",
-      "見える範囲が急に狭くなる・ものが二重に見える",
-      "突然の激しい頭痛",
-      "支えなしで立てないほど急にふらつく",
-      "胸や背中の突然の激痛、胸が締めつけられるような痛みが2〜3分続く",
-      "急な息切れ・呼吸が苦しい",
-      "突然の激しい腹痛・続く激しい腹痛、吐血や下血",
-      "手足の突然のしびれ、片方の腕や足に急に力が入らない",
-      "意識がない・もうろうとしている・ぐったりしている",
-      "冷や汗を伴う強い吐き気",
-      "物をのどに詰まらせて呼吸が苦しい",
-      "けいれんが止まらない・止まっても意識が戻らない",
-      "大量の出血を伴うけが・広い範囲のやけど",
-      "交通事故で強い衝撃を受けた・おぼれた・高いところから落ちた",
-      "いつもと様子が明らかに違う"
+      "顔: 顔半分が動きにくい、または、しびれる",
+      "顔: ニッコリ笑うと口や顔の片方がゆがむ",
+      "顔: ろれつがまわりにくく、うまく話せない",
+      "顔: 見える範囲が狭くなる",
+      "顔: 突然、周りが二重に見える",
+      "顔: 顔色が明らかに悪い",
+      "頭: 突然の激しい頭痛",
+      "頭: 突然の高熱",
+      "頭: 支えなしで立てないぐらい急にふらつく",
+      "胸や背中: 突然の激痛",
+      "胸や背中: 急な息切れ、呼吸困難",
+      "胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く",
+      "胸や背中: 痛む場所が移動する",
+      "おなか: 突然の激しい腹痛",
+      "おなか: 激しい腹痛が持続する",
+      "おなか: 血を吐く",
+      "おなか: 便に血が混ざる、または、真っ黒い便が出る",
+      "手・足: 突然のしびれ",
+      "手・足: 突然、片方の腕や足に力が入らなくなる",
+      "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）",
+      "意識の障害: ぐったりしている",
+      "吐き気: 冷や汗を伴うような強い吐き気",
+      "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない",
+      "けいれん: けいれんが止まらない",
+      "けいれん: けいれんが止まっても、意識がもどらない",
+      "けが・やけど: 大量の出血を伴うけが",
+      "けが・やけど: 広範囲のやけど",
+      "事故: 交通事故にあった（強い衝撃を受けた）",
+      "事故: 水におぼれている",
+      "事故: 高いところから落ちた",
+      "その他: いつもと違う場合、様子がおかしい場合"
     ],
-    "redFlagsSource": {"publisher": "総務省消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese.pdf", "note": "大人の項目を要約したもの。原文との照合と医師の確認が済んでいない。子ども・高齢者の項目は含まない。"}
+    "redFlagsByAge": {
+      "older": {
+        "label": "高齢者",
+        "items": [
+          "顔: 顔半分が動きにくい、しびれる",
+          "顔: 笑うと口や顔の片方がゆがむ",
+          "顔: ろれつがまわりにくい",
+          "顔: 見える範囲が狭くなる",
+          "顔: 周りが二重に見える",
+          "頭: 突然の激しい頭痛",
+          "頭: 突然の高熱",
+          "頭: 急にふらつき、立っていられない",
+          "胸や背中: 突然の激痛",
+          "胸や背中: 急な息切れ、呼吸困難",
+          "胸や背中: 旅行などの後に痛み出した",
+          "胸や背中: 痛む場所が移動する",
+          "おなか: 突然の激しい腹痛",
+          "おなか: 血を吐く",
+          "手・足: 突然のしびれ",
+          "手・足: 突然、片方の腕や足に力が入らなくなる",
+          "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）",
+          "吐き気: 冷や汗を伴うような強い吐き気",
+          "けいれん: けいれんが止まらない",
+          "飲み込み: 物をのどにつまらせた",
+          "けが・やけど: 大量の出血を伴うけが",
+          "けが・やけど: 広範囲のやけど",
+          "事故: 交通事故や転落、転倒で強い衝撃を受けた",
+          "その他: いつもと違う場合、様子がおかしい場合"
+        ],
+        "note": "高齢者は自覚症状が出にくい場合もあるので注意する。"
+      },
+      "child": {
+        "label": "こども（15歳以下）",
+        "items": [
+          "顔: くちびるの色が紫色",
+          "顔: 顔色が明らかに悪い",
+          "頭: 頭を痛がって、けいれんがある",
+          "頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある",
+          "胸: 激しい咳やゼーゼーして呼吸が苦しそう",
+          "胸: 呼吸が弱い",
+          "手・足: 手足が硬直している",
+          "おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない",
+          "おなか: 激しいおなかの痛みで苦しがる",
+          "おなか: 嘔吐が止まらない",
+          "おなか: 便に血がまじった",
+          "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）",
+          "けいれん: けいれんが止まらない",
+          "けいれん: けいれんが止まっても、意識がもどらない",
+          "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない",
+          "じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった",
+          "やけど: 痛みのひどいやけど",
+          "やけど: 広範囲のやけど",
+          "事故: 交通事故にあった（強い衝撃を受けた）",
+          "事故: 水におぼれている",
+          "事故: 高いところから落ちた",
+          "生まれて3カ月未満の乳児: 乳児の様子がおかしい",
+          "その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"
+        ],
+        "note": "判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"
+      }
+    },
+    "redFlagsSource": {
+      "publisher": "消防庁",
+      "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜",
+      "edition": "令和7年12月発行",
+      "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf",
+      "pages": "おとな p.3・高齢者 p.2・こども p.4",
+      "note": "「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"
+    }
   },
   "aiNotes": "AI へのお願い",
   "questionnaires": [
@@ -417,6 +501,7 @@ var OpenIntakeValidate = (function () {
 "use strict";
 const SUPPORTED_VERSIONS = ["0.1", "0.2"];
 const KNOWN_ROLES = ["schedule"];
+const KNOWN_AGE_GROUPS = ["older", "child"];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
 const todayStr = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
@@ -492,6 +577,13 @@ function validateIntake(o) {
     if (s.noDiagnosis !== true) err("E7", "safety.noDiagnosis は true にしてください。", "safety.noDiagnosis");
     if (!isStr(s.emergency)) err("E7", "緊急時の案内文が空です。", "safety.emergency");
     if (!Array.isArray(s.redFlags) || !s.redFlags.filter(isStr).length) err("E7", "救急の目安になる症状を1つ以上入れてください。", "safety.redFlags");
+    if (s.redFlagsByAge !== undefined) {
+      if (!isObj(s.redFlagsByAge)) err("E7", "safety.redFlagsByAge は、年代ごとの { } にしてください。", "safety.redFlagsByAge");
+      else for (const [k, g] of Object.entries(s.redFlagsByAge)) {
+        if (!isObj(g) || !Array.isArray(g.items) || !g.items.filter(isStr).length) err("E7", `年代「${k}」の救急の目安に、症状（items）を1つ以上入れてください。`, `safety.redFlagsByAge.${k}`);
+        else if (!KNOWN_AGE_GROUPS.includes(k)) warn("W13", `年代「${k}」は、この検査器が知らないものです（older・child が決まっています）。`, `safety.redFlagsByAge.${k}`);
+      }
+    }
   }
   if (typeof o.aiNotes === "string" && o.aiNotes.length > 500) warn("W5", `AI へのお願いが長すぎます（${o.aiNotes.length} 字・500 字まで）。`, "aiNotes");
   if (!Array.isArray(o.questionnaires)) err("E8", "questionnaires（問診票の並び）がありません。空なら [] にしてください。", "questionnaires");
@@ -624,8 +716,9 @@ const TYPES = [["boolean","はい／いいえ"],["choice","選ぶ"],["open-choic
 const TYPE_KEYS = ["group", ...TYPES.map(t => t[0])];
 const CHOICE = new Set(["choice","open-choice"]);
 const DEFAULT_EMERGENCY = "命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。";
-const DEFAULT_RED = ["顔の半分が動きにくい・しびれる、ろれつが回らない、うまく話せない", "見える範囲が急に狭くなる・ものが二重に見える", "突然の激しい頭痛", "支えなしで立てないほど急にふらつく", "胸や背中の突然の激痛、胸が締めつけられるような痛みが2〜3分続く", "急な息切れ・呼吸が苦しい", "突然の激しい腹痛・続く激しい腹痛、吐血や下血", "手足の突然のしびれ、片方の腕や足に急に力が入らない", "意識がない・もうろうとしている・ぐったりしている", "冷や汗を伴う強い吐き気", "物をのどに詰まらせて呼吸が苦しい", "けいれんが止まらない・止まっても意識が戻らない", "大量の出血を伴うけが・広い範囲のやけど", "交通事故で強い衝撃を受けた・おぼれた・高いところから落ちた", "いつもと様子が明らかに違う"];
-const DEFAULT_RED_SOURCE = {"publisher": "総務省消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese.pdf", "note": "大人の項目を要約したもの。原文との照合と医師の確認が済んでいない。子ども・高齢者の項目は含まない。"};
+const DEFAULT_RED = ["顔: 顔半分が動きにくい、または、しびれる", "顔: ニッコリ笑うと口や顔の片方がゆがむ", "顔: ろれつがまわりにくく、うまく話せない", "顔: 見える範囲が狭くなる", "顔: 突然、周りが二重に見える", "顔: 顔色が明らかに悪い", "頭: 突然の激しい頭痛", "頭: 突然の高熱", "頭: 支えなしで立てないぐらい急にふらつく", "胸や背中: 突然の激痛", "胸や背中: 急な息切れ、呼吸困難", "胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く", "胸や背中: 痛む場所が移動する", "おなか: 突然の激しい腹痛", "おなか: 激しい腹痛が持続する", "おなか: 血を吐く", "おなか: 便に血が混ざる、または、真っ黒い便が出る", "手・足: 突然のしびれ", "手・足: 突然、片方の腕や足に力が入らなくなる", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "意識の障害: ぐったりしている", "吐き気: 冷や汗を伴うような強い吐き気", "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない", "けいれん: けいれんが止まらない", "けいれん: けいれんが止まっても、意識がもどらない", "けが・やけど: 大量の出血を伴うけが", "けが・やけど: 広範囲のやけど", "事故: 交通事故にあった（強い衝撃を受けた）", "事故: 水におぼれている", "事故: 高いところから落ちた", "その他: いつもと違う場合、様子がおかしい場合"];
+const DEFAULT_RED_BY_AGE = {"older": {"label": "高齢者", "items": ["顔: 顔半分が動きにくい、しびれる", "顔: 笑うと口や顔の片方がゆがむ", "顔: ろれつがまわりにくい", "顔: 見える範囲が狭くなる", "顔: 周りが二重に見える", "頭: 突然の激しい頭痛", "頭: 突然の高熱", "頭: 急にふらつき、立っていられない", "胸や背中: 突然の激痛", "胸や背中: 急な息切れ、呼吸困難", "胸や背中: 旅行などの後に痛み出した", "胸や背中: 痛む場所が移動する", "おなか: 突然の激しい腹痛", "おなか: 血を吐く", "手・足: 突然のしびれ", "手・足: 突然、片方の腕や足に力が入らなくなる", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "吐き気: 冷や汗を伴うような強い吐き気", "けいれん: けいれんが止まらない", "飲み込み: 物をのどにつまらせた", "けが・やけど: 大量の出血を伴うけが", "けが・やけど: 広範囲のやけど", "事故: 交通事故や転落、転倒で強い衝撃を受けた", "その他: いつもと違う場合、様子がおかしい場合"], "note": "高齢者は自覚症状が出にくい場合もあるので注意する。"}, "child": {"label": "こども（15歳以下）", "items": ["顔: くちびるの色が紫色", "顔: 顔色が明らかに悪い", "頭: 頭を痛がって、けいれんがある", "頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある", "胸: 激しい咳やゼーゼーして呼吸が苦しそう", "胸: 呼吸が弱い", "手・足: 手足が硬直している", "おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない", "おなか: 激しいおなかの痛みで苦しがる", "おなか: 嘔吐が止まらない", "おなか: 便に血がまじった", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "けいれん: けいれんが止まらない", "けいれん: けいれんが止まっても、意識がもどらない", "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない", "じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった", "やけど: 痛みのひどいやけど", "やけど: 広範囲のやけど", "事故: 交通事故にあった（強い衝撃を受けた）", "事故: 水におぼれている", "事故: 高いところから落ちた", "生まれて3カ月未満の乳児: 乳児の様子がおかしい", "その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"], "note": "判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}};
+const DEFAULT_RED_SOURCE = {"publisher": "消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "edition": "令和7年12月発行", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf", "pages": "おとな p.3・高齢者 p.2・こども p.4", "note": "「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"};
 const STORE_KEY = "open-intake-draft-v1";
 const STORE_KEY_S = "open-intake-schedule-draft-v1";
 const addDays = (d, n) => { const t = new Date(d + "T00:00:00"); t.setDate(t.getDate() + n); const p = x => String(x).padStart(2, "0"); return `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`; };
@@ -652,7 +745,7 @@ function feverQuestionnaire() {
     ]
   };
 }
-function blankSafety() { return { noDiagnosis: true, emergency: DEFAULT_EMERGENCY, redFlags: DEFAULT_RED.slice(), redFlagsSource: { ...DEFAULT_RED_SOURCE } }; }
+function blankSafety() { return { noDiagnosis: true, emergency: DEFAULT_EMERGENCY, redFlags: DEFAULT_RED.slice(), redFlagsByAge: JSON.parse(JSON.stringify(DEFAULT_RED_BY_AGE)), redFlagsSource: { ...DEFAULT_RED_SOURCE } }; }
 function exampleDoc() {
   return {
     spec: "open-intake", specVersion: "0.2", updated: today(),
@@ -713,6 +806,8 @@ function normalize(doc) {
   if (typeof s.emergency !== "string") s.emergency = DEFAULT_EMERGENCY;
   s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : DEFAULT_RED.slice();
   if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
+  if (!(s.redFlagsByAge && typeof s.redFlagsByAge === "object")) delete s.redFlagsByAge;
+  else for (const g of Object.values(s.redFlagsByAge)) if (g && typeof g === "object" && !Array.isArray(g.items)) g.items = [];
   if (typeof d.aiNotes !== "string") d.aiNotes = "";
   d.questionnaires = Array.isArray(d.questionnaires) ? d.questionnaires : [];
   for (const q of d.questionnaires) {
@@ -751,6 +846,7 @@ function build(d) {
   for (const k of ["bring","languages","accessibility"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
   out.clinic = clinic;
   out.safety = { noDiagnosis: true, emergency: clean(d.safety.emergency), redFlags: cleanList(d.safety.redFlags) };
+  if (d.safety.redFlagsByAge) { const by = {}; for (const [k, g] of Object.entries(d.safety.redFlagsByAge)) { if (!g || typeof g !== "object") continue; const items = cleanList(g.items); if (!items.length) continue; by[k] = { ...g, items }; } if (Object.keys(by).length) out.safety.redFlagsByAge = by; }
   if (d.safety.redFlagsSource) out.safety.redFlagsSource = d.safety.redFlagsSource;
   if (clean(d.aiNotes)) out.aiNotes = clean(d.aiNotes);
   out.questionnaires = d.questionnaires.map(q => {
@@ -880,12 +976,13 @@ function renderBooking() {
 function renderSafety() {
   const s = S.safety, el = $("sec-safety"); el.replaceChildren();
   el.append(sheetHead("4", "安全のための決まり", "safety"),
-    h("p", { class: "lead" }, "患者さんの AI は、問診の前にここを確かめます。初期値は総務省消防庁のパンフレット（大人の項目）を要約した草案で、原文との照合と医師の確認がまだです。", h("strong", { text: "公開の前に必ず医師に見てもらってください。" })),
+    h("p", { class: "lead" }, "患者さんの AI は、問診の前にここを確かめます。初期値は総務省消防庁のパンフレットの「ためらわず救急車を呼んでほしい症状」を、おとな・高齢者・こどもごとに書き写したものです。医師の確認はまだです。", h("strong", { text: "公開の前に必ず医師に見てもらってください。" })),
     h("div", { class: "field" }, h("div", { class: "label" }, "診断をしない", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "この欄は変えられません。このファイルを読む AI は、病名の推定や診断をしません。" })),
     field("f-emerg", "緊急時の案内", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
-    field("f-red", "予約より先に救急へ（目安の症状）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。減らすときは医師に確認してください。" }),
+    field("f-red", "予約より先に救急へ（目安の症状・おとな／年代がわからないとき）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。減らすときは医師に確認してください。" }),
+    s.redFlagsByAge && h("div", { class: "grid" }, Object.entries(s.redFlagsByAge).map(([k, g]) => field("f-red-" + k, `${g.label || k}の目安`, `redFlagsByAge.${k}`, lines("f-red-" + k, () => g.items, v => g.items = v, { rows: 8 }), { hint: g.note || "" }))),
     s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "目安の出典", h("span", { class: "k", text: "redFlagsSource" })),
-      h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}「${s.redFlagsSource.title || ""}」`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "原文（PDF）" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),
+      h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}「${s.redFlagsSource.title || ""}」${s.redFlagsSource.edition ? "（" + s.redFlagsSource.edition + "）" : ""}${s.redFlagsSource.pages ? " " + s.redFlagsSource.pages : ""}`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "原文（PDF）" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),
     h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { S.safety = blankSafety(); renderSafety(); changed(); } }, "初期値に戻す")));
 }
 
@@ -1147,8 +1244,9 @@ function viewIntake(o) {
     block("安全のための決まり",
       h("div", {}, s.noDiagnosis === true ? h("span", { class: "tag good", text: "診断をしない" }) : h("span", { class: "tag alert", text: "noDiagnosis が true ではありません" })),
       s.emergency && h("p", { style: "margin:0", text: s.emergency }),
-      h("div", { class: "sub", text: "予約より先に救急へ（目安）:" }), list(arr(s.redFlags)),
-      s.redFlagsSource && h("div", { class: "sub", text: `出典: ${str(s.redFlagsSource.publisher)}「${str(s.redFlagsSource.title)}」${s.redFlagsSource.note ? "　" + s.redFlagsSource.note : ""}` })),
+      h("div", { class: "sub", text: "予約より先に救急へ（目安・おとな／年代がわからないとき）:" }), list(arr(s.redFlags)),
+      ...Object.values(s.redFlagsByAge && typeof s.redFlagsByAge === "object" ? s.redFlagsByAge : {}).filter(g => g && typeof g === "object").map(g => h("div", {}, h("div", { class: "sub", text: `${str(g.label)}の目安:` }), list(arr(g.items)), g.note && h("div", { class: "sub", text: str(g.note) }))),
+      s.redFlagsSource && h("div", { class: "sub", text: `出典: ${str(s.redFlagsSource.publisher)}「${str(s.redFlagsSource.title)}」${s.redFlagsSource.edition ? "（" + str(s.redFlagsSource.edition) + "）" : ""} ${str(s.redFlagsSource.pages)}${s.redFlagsSource.note ? "　" + s.redFlagsSource.note : ""}` })),
     o.aiNotes && block("AI へのお願い", h("p", { style: "margin:0", text: str(o.aiNotes) })),
     block("正規のファイルの一覧", list(arr(o.files).map(f => h("span", {}, h("strong", { text: f.role === "schedule" ? "臨時の情報" : str(f.role) }), "　" + str(f.url), f.note && h("span", { class: "sub", text: "（" + f.note + "）" }))))),
     ...qs.map(q => block(`問診票: ${str(q.title) || str(q.id)}`,

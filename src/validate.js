@@ -8,6 +8,7 @@ var OpenIntakeValidate = (function () {
 "use strict";
 const SUPPORTED_VERSIONS = ["0.1", "0.2"];
 const KNOWN_ROLES = ["schedule"];
+const KNOWN_AGE_GROUPS = ["older", "child"];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
 const todayStr = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
@@ -83,6 +84,13 @@ function validateIntake(o) {
     if (s.noDiagnosis !== true) err("E7", "safety.noDiagnosis は true にしてください。", "safety.noDiagnosis");
     if (!isStr(s.emergency)) err("E7", "緊急時の案内文が空です。", "safety.emergency");
     if (!Array.isArray(s.redFlags) || !s.redFlags.filter(isStr).length) err("E7", "救急の目安になる症状を1つ以上入れてください。", "safety.redFlags");
+    if (s.redFlagsByAge !== undefined) {
+      if (!isObj(s.redFlagsByAge)) err("E7", "safety.redFlagsByAge は、年代ごとの { } にしてください。", "safety.redFlagsByAge");
+      else for (const [k, g] of Object.entries(s.redFlagsByAge)) {
+        if (!isObj(g) || !Array.isArray(g.items) || !g.items.filter(isStr).length) err("E7", `年代「${k}」の救急の目安に、症状（items）を1つ以上入れてください。`, `safety.redFlagsByAge.${k}`);
+        else if (!KNOWN_AGE_GROUPS.includes(k)) warn("W13", `年代「${k}」は、この検査器が知らないものです（older・child が決まっています）。`, `safety.redFlagsByAge.${k}`);
+      }
+    }
   }
   if (typeof o.aiNotes === "string" && o.aiNotes.length > 500) warn("W5", `AI へのお願いが長すぎます（${o.aiNotes.length} 字・500 字まで）。`, "aiNotes");
   if (!Array.isArray(o.questionnaires)) err("E8", "questionnaires（問診票の並び）がありません。空なら [] にしてください。", "questionnaires");

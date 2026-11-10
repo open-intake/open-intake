@@ -66,6 +66,13 @@ for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r 
   d.files = [{ role: "future-role", url: "/x.json" }]; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W11"), "知らない役割は注意（W11）だけ");
   d.files = [{ role: "schedule", url: "/a b.json" }]; ok(codes(validate(d)).includes("E12"), "空白を含む URL は E12"); }
 
+// 年代ごとの救急の目安
+{ const d = JSON.parse(fs.readFileSync("examples/v0.2/clinic-intake.json", "utf8"));
+  ok(Object.keys(d.safety.redFlagsByAge).join() === "older,child", "v0.2 の例に高齢者とこどもの目安がある");
+  ok(d.safety.redFlags.length === 31 && d.safety.redFlagsByAge.older.items.length === 24 && d.safety.redFlagsByAge.child.items.length === 23, "目安の項目数が原文（おとな31・高齢者24・こども23）と合う");
+  d.safety.redFlagsByAge.child.items = []; ok(codes(validate(d)).includes("E7"), "年代の目安が空なら E7");
+  d.safety.redFlagsByAge = { teen: { items: ["x"] } }; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W13"), "知らない年代は注意（W13）だけ"); }
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }
