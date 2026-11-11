@@ -294,20 +294,20 @@
         <thead><tr><th scope="col"></th><th scope="col">Hospitals</th><th scope="col">Clinics</th><th scope="col">Dental clinics</th></tr></thead>
         <tbody>
           <tr><td>Number</td><td>7,715</td><td>80,155</td><td>54,637</td></tr>
-          <tr><td>Reception closes before clinic hours end</td><td class="hi">71%</td><td class="hi">42%</td><td class="hi">59%</td></tr>
-          <tr><td>Reception opens before clinic hours start</td><td>70%</td><td>32%</td><td>12%</td></tr>
-          <tr><td>Hours differ by department (among facilities with several departments)</td><td class="hi">85%</td><td class="hi">37%</td><td class="hi">43%</td></tr>
+          <tr><td>Reception closes before clinic hours end in some time slot</td><td class="hi">80%</td><td class="hi">49%</td><td class="hi">66%</td></tr>
+          <tr><td>Reception opens before clinic hours start in some time slot</td><td>76%</td><td>37%</td><td>19%</td></tr>
+          <tr><td>Hours differ by department (among facilities with hours for several departments)</td><td class="hi">82%</td><td class="hi">30%</td><td class="hi">31%</td></tr>
           <tr><td>A website address is registered</td><td>96%</td><td>64%</td><td>52%</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Reception figures are counted per "time slot × day" for which reception hours are registered (85–91% of them have reception hours). Where a clinic's reception closes early, 16–30 minutes before the end of clinic hours is the most common.</p>
+    <p class="note">Reception figures are out of the facilities that registered reception hours (95% of hospitals, 86% of clinics, 84% of dental clinics). Among clinics whose reception closes early, closing 16–30 minutes before the end of clinic hours is the most common, at about 6 in 10.</p>
     <div class="compare">
       <div class="case next">
         <h3>What we learned: where fields should be added</h3>
         <ul>
-          <li><strong>Reception hours should be writable separately from clinic hours.</strong> Even among clinics, more than 4 in 10 close reception early. The current format (0.3) can only say this in a note, so the next version proposes fields for when reception opens and closes</li>
-          <li><strong>Hours per department also deserve a field.</strong> Nearly 4 in 10 clinics with several departments have different hours by department. The next version proposes letting opening hours name a department</li>
+          <li><strong>Reception hours should be writable separately from clinic hours.</strong> Even among clinics, about half close reception early in some time slot. The current format (0.3) can only say this in a note, so the next version proposes fields for when reception opens and closes</li>
+          <li><strong>Hours per department also deserve a field.</strong> About 3 in 10 clinics with several departments have different hours by department. The next version proposes letting opening hours name a department</li>
           <li>The national data is organised by department, time slot, day, and clinic and reception times. The next version's fields follow the same split, so <strong>a mapping table to the national data is possible</strong></li>
         </ul>
       </div>
