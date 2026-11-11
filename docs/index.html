@@ -46,7 +46,7 @@
 * { box-sizing: border-box; }
 body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.8; }
 .wrap { max-width: 920px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 56px; }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; word-break: auto-phrase; line-height: 1.35; margin: 0; }
 p { margin: 0; }
 a { color: var(--accent); }
 code { font-family: var(--font-mono); font-size: 0.86em; }
@@ -233,7 +233,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <h2 id="h-summary">ひと目でわかる要点</h2>
     <div class="pillars">
       <div class="pillar">
-        <h3>技術がなくても、簡単</h3>
+        <h3>技術がなくても簡単</h3>
         <ul>
           <li>作成ツールのフォームに入力して保存し、ホームページに置くだけ</li>
           <li>ふだん使っている AI と会話して作ることもできる</li>
@@ -242,7 +242,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
       </div>
       <div class="pillar">
-        <h3>リスクとデメリットが、とても小さい</h3>
+        <h3>リスクとデメリットがとても小さい</h3>
         <ul>
           <li>載せるのは、公開してよい情報だけ。患者さんの情報は扱わない</li>
           <li>口コミの数や評価の点数を出して比べるものではない。悪評を書き込まれる場所もない</li>
@@ -253,7 +253,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         <p class="note">残る心配は、書いた内容が古くなること。臨時の情報には有効期限をつけ、期限を過ぎたものは AI が使わない決まりにしています。</p>
       </div>
       <div class="pillar">
-        <h3>医療機関にも、患者さんにも良い</h3>
+        <h3>医療機関にも患者さんにも良い</h3>
         <ul>
           <li><strong>医療機関</strong>：休診日の来院や、診療時間の問い合わせなどの行き違いが減る。自分の医院の特徴を、自分の言葉で伝えられる</li>
           <li><strong>患者さん</strong>：正しい情報で、迷わずに受診先を選べる。口コミに振り回されない。この仕組みを知らなくても、いつもどおり AI に相談するだけでよい</li>
@@ -329,7 +329,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
   </section>
 
   <section class="block" aria-labelledby="h-future">
-    <h2 id="h-future">これから、受診はこう変わる（予測）</h2>
+    <h2 id="h-future">これからの受診（未来予測）</h2>
     <p class="intro">この取り組みとは関係なく、医療の入口は大きく変わろうとしています。AI が、具合の悪い人のそばにいる<strong>案内役（コンシェルジュ）</strong>になる、という変化です。私たちはこう予測しています。</p>
     <ol class="timeline">
       <li><div class="when">いま</div><div><h3>AI に相談するが、受診先は自分で探す</h3><ul><li>検索の代わりに、AI に症状を相談する人が増えている</li><li>AI の答えは一般的な説明にとどまり、どこに行くか・いつ行くかは、患者さんが自分で調べて決める</li></ul></div></li>
