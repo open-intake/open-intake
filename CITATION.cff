@@ -12,6 +12,9 @@ identifiers:
     value: "10.5281/zenodo.24121889"
     description: "全体の DOI（いつも最新版）"
   - type: doi
+    value: "10.5281/zenodo.24148223"
+    description: "v0.4.0 の DOI"
+  - type: doi
     value: "10.5281/zenodo.24132416"
     description: "v0.3.1 の DOI"
   - type: doi
