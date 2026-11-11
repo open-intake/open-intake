@@ -345,6 +345,15 @@
     </ul>
   </section>
 
+  <section class="block" aria-labelledby="h-who">
+    <h2 id="h-who">How each role uses it</h2>
+    <div class="who">
+      <div class="case"><h3>Clinics</h3><p>Enter the clinic's information and questionnaires in the <a href="maker/">creation tool</a>, and ask your website manager to put the resulting file on your website. For how to share the work, see <a href="#use">how a clinic uses it</a>.</p></div>
+      <div class="case"><h3>Patients</h3><p>Tell the AI you usually use the clinic's website address and say you want to see a doctor. If the clinic publishes the file, the AI can guide you with correct information.</p></div>
+      <div class="case"><h3>Developers</h3><p>The <a href="https://github.com/open-intake/open-intake/blob/main/SPEC.en.md">specification</a> and <a href="../schema/clinic-intake.schema.json">JSON Schema</a> are public, so AI services and booking systems can read the files.</p></div>
+    </div>
+  </section>
+
   <section class="block" aria-labelledby="h-intl">
     <h2 id="h-intl">One format, many regions</h2>
     <p class="intro">Healthcare systems differ by country and region, but the basic design is the same everywhere. The common core is region-neutral; regional differences live in <strong>regional profiles</strong>.</p>
@@ -427,7 +436,7 @@
       <h2 id="h-ask">A request to people working in healthcare</h2>
       <p>This format was drafted by an author who is not a healthcare professional. The author takes responsibility for the format itself (file structure and safety mechanisms). <strong>We want the medical content, such as warning signs and questionnaires, to be decided by people working in healthcare.</strong></p>
       <p>Even a short comment such as "this item is unnecessary" or "this question is missing" helps a lot.</p>
-      <div class="cta"><a class="btn" href="https://github.com/open-intake/open-intake/blob/main/CONTRIBUTING.md">How to give feedback</a></div>
+      <div class="cta"><a class="btn" href="https://github.com/open-intake/open-intake/blob/main/CONTRIBUTING.md">How to give feedback</a><a class="btn ghost" href="https://github.com/open-intake/open-intake/blob/main/REVIEW.md" hreflang="ja">Questions for clinicians (Japanese)</a><a class="btn ghost" href="https://docs.google.com/forms/d/e/1FAIpQLSetqBo2x7iXx2i4x5BtX3FWzrv1TK9qPO15DaznR1dPdNGfkg/viewform" hreflang="ja">Feedback form (Japanese)</a></div>
     </div>
   </section>
 
@@ -442,6 +451,7 @@
       <details><summary>Does it replace booking systems?</summary><p>No. It lets AI correctly point patients to the clinic's existing booking page or phone number.</p></details>
       <details><summary>Which AI can use it?</summary><p>It does not depend on any particular AI. The content is JSON, a widely used text format that any AI can read.</p></details>
       <details><summary>Can it be used outside Japan?</summary><p>Yes. The core is region-neutral. Each region adds a regional profile with its own emergency numbers, warning signs and base questionnaires. We welcome communities who want to start a profile for their region.</p></details>
+      <details><summary>What if a clinic has no website?</summary><p>For now, the file needs somewhere to live. In the future, medical associations or local governments could host the files for clinics in their area together.</p></details>
     </div>
   </section>
 
