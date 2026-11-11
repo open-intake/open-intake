@@ -1,5 +1,5 @@
 /*
- * オープン問診票（Open Intake）の検査器 — SPEC.md §7 の規則をそのまま書いたもの。
+ * オープン受診案内（Open Intake）の検査器 — SPEC.md §7 の規則をそのまま書いたもの。
  * ブラウザでは作成サイトに埋め込まれ（グローバル OpenIntakeValidate）、node では require で読める。
  * 互換の決まり（SPEC.md §8）: 知らないキーは見ない。古い版のファイルもエラーにしない。
  * License: Apache-2.0

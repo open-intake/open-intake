@@ -6,9 +6,9 @@
 <style>[hidden]{display:none!important}body{margin:0}</style>
 </head>
 <body>
-<title>オープン問診票メーカー</title>
+<title>オープン受診案内メーカー</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="医療機関の情報と問診票を、AI が読める clinic-intake.json・clinic-schedule.json（オープン問診票 v0.2）にまとめる作成ツール">
+<meta name="description" content="医療機関の情報と問診票を、AI が読める clinic-intake.json・clinic-schedule.json（オープン受診案内 v0.2）にまとめる作成ツール">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -190,8 +190,8 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow"><a href="../">← オープン問診票とは</a> · clinic-intake.json · clinic-schedule.json · v0.2 草案</div>
-    <h1>オープン問診票メーカー</h1>
+    <div class="eyebrow"><a href="../">← オープン受診案内とは</a> · clinic-intake.json · clinic-schedule.json · v0.2 草案</div>
+    <h1>オープン受診案内メーカー</h1>
     <p>医療機関の情報と問診票を入力すると、患者さんの AI が読める <code>clinic-intake.json</code> ができます。サーバーには何も送りません。入力はこのブラウザの中だけで扱います。</p>
   </header>
 
@@ -213,7 +213,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
           </ol>
           <p class="small">⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。</p>
           <div class="actions"><button class="btn" type="button" id="copyPrompt">指示文をコピー</button><span class="toast" id="promptToast" role="status"></span></div>
-          <pre class="prompt" id="aiPrompt">あなたは、医療機関の担当者が `clinic-intake.json`（オープン問診票 v0.2）を作るのを手伝う係です。担当者は IT に詳しくない前提で、やさしい言葉で進めてください。
+          <pre class="prompt" id="aiPrompt">あなたは、医療機関の担当者が `clinic-intake.json`（オープン受診案内 v0.2）を作るのを手伝う係です。担当者は IT に詳しくない前提で、やさしい言葉で進めてください。
 
 ### 守ること
 
@@ -491,13 +491,13 @@ JSON のあとに、次の2行を添える:
   </div>
 
   <footer class="foot">
-    <div>仕様: オープン問診票（Open Intake）v0.2 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0</div>
+    <div>仕様: オープン受診案内（Open Intake）v0.2 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0</div>
     <div>このツールは診断をしません。問診票と救急の目安は、公開の前に必ず医師に確認してもらってください。</div>
   </footer>
 </div>
 
 <script>/*
- * オープン問診票（Open Intake）の検査器 — SPEC.md §7 の規則をそのまま書いたもの。
+ * オープン受診案内（Open Intake）の検査器 — SPEC.md §7 の規則をそのまま書いたもの。
  * ブラウザでは作成サイトに埋め込まれ（グローバル OpenIntakeValidate）、node では require で読める。
  * 互換の決まり（SPEC.md §8）: 知らないキーは見ない。古い版のファイルもエラーにしない。
  * License: Apache-2.0

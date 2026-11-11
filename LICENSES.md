@@ -2,7 +2,7 @@
 
 | 対象 | ライセンス | 使うときにしてほしいこと |
 |---|---|---|
-| `SPEC.md`・`AI_INSTRUCTIONS.md`・`README.md` などの文書 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.ja) | 出所（「オープン問診票（Open Intake）」とリポジトリの URL）を書く |
+| `SPEC.md`・`AI_INSTRUCTIONS.md`・`README.md` などの文書 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.ja) | 出所（「オープン受診案内（Open Intake）」とリポジトリの URL）を書く |
 | `schema/`・`examples/` | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode.ja) | なし（自由に使える） |
 | `src/`・`tools/`・`docs/index.html` | [Apache License 2.0](LICENSE) | ライセンスの文と著作権の表示を残す |
 
@@ -10,4 +10,4 @@
 
 ## 名前の使い方
 
-「オープン問診票」「Open Intake」の名前は、[SPEC.md](SPEC.md) の検査の規則（§7）でエラーが出ないファイルにだけ使ってください（例: 「オープン問診票 v0.1 準拠」）。中身の違う形式に同じ名前を付けると、医療機関と患者さんが混乱するためです。
+「オープン受診案内」「オープン受診案内 JSON」「Open Intake」の名前は、[SPEC.md](SPEC.md) の検査の規則（§7）でエラーが出ないファイルにだけ使ってください（例: 「オープン受診案内 JSON v0.2 準拠」）。中身の違う形式に同じ名前を付けると、医療機関と患者さんが混乱するためです。
