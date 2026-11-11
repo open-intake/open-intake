@@ -153,6 +153,13 @@ A file is only used if readers can find it. Three mechanisms:
 2. **Links from pages**: each page's `<head>` contains `<link rel="alternate" type="application/json" title="clinic-intake" href="/clinic-intake.json">`
 3. **Regional directories** (§6c): medical associations, local governments or volunteers list the clinics in a region that publish files, so readers can reach each clinic's file
 
+### Getting updates noticed quickly
+
+- How often a reader comes back is decided by the reader, based on how the file actually changes. So the format has no field for an "update frequency" or an "update history" (declared frequencies are not used by major search engines either, and a history is only visible after the file has been read, so it cannot decide when to read it). A human-readable hint can go in the `note` of the list of official files (for example "updated weekly by the front desk")
+- If the site has a `sitemap.xml`, list `clinic-intake.json` and `clinic-schedule.json` in it with an accurate last-modified date in `<lastmod>`
+- Set `updated` to the current date only when the content changes. Do not refresh the date when nothing changed (inaccurate dates lower readers' trust)
+- The patient's AI reads the file when asked, so none of this tuning is needed for it
+
 ## 4. `clinic` (clinic information)
 
 Key names follow schema.org (`MedicalClinic`, `PostalAddress`) where possible.
