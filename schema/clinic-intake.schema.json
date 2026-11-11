@@ -64,6 +64,10 @@
           }
         }
       }
+    },
+    "policy": {
+      "type": "string",
+      "description": "使用目的と使い方の決まりの場所（SPEC §1b）"
     }
   },
   "$defs": {

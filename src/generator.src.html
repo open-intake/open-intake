@@ -291,6 +291,7 @@ const DEFAULT_EMERGENCY = "命に関わるかもしれない症状があると�
 const DEFAULT_RED = ["顔: 顔半分が動きにくい、または、しびれる", "顔: ニッコリ笑うと口や顔の片方がゆがむ", "顔: ろれつがまわりにくく、うまく話せない", "顔: 見える範囲が狭くなる", "顔: 突然、周りが二重に見える", "顔: 顔色が明らかに悪い", "頭: 突然の激しい頭痛", "頭: 突然の高熱", "頭: 支えなしで立てないぐらい急にふらつく", "胸や背中: 突然の激痛", "胸や背中: 急な息切れ、呼吸困難", "胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く", "胸や背中: 痛む場所が移動する", "おなか: 突然の激しい腹痛", "おなか: 激しい腹痛が持続する", "おなか: 血を吐く", "おなか: 便に血が混ざる、または、真っ黒い便が出る", "手・足: 突然のしびれ", "手・足: 突然、片方の腕や足に力が入らなくなる", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "意識の障害: ぐったりしている", "吐き気: 冷や汗を伴うような強い吐き気", "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない", "けいれん: けいれんが止まらない", "けいれん: けいれんが止まっても、意識がもどらない", "けが・やけど: 大量の出血を伴うけが", "けが・やけど: 広範囲のやけど", "事故: 交通事故にあった（強い衝撃を受けた）", "事故: 水におぼれている", "事故: 高いところから落ちた", "その他: いつもと違う場合、様子がおかしい場合"];
 const DEFAULT_RED_BY_AGE = {"older": {"label": "高齢者", "items": ["顔: 顔半分が動きにくい、しびれる", "顔: 笑うと口や顔の片方がゆがむ", "顔: ろれつがまわりにくい", "顔: 見える範囲が狭くなる", "顔: 周りが二重に見える", "頭: 突然の激しい頭痛", "頭: 突然の高熱", "頭: 急にふらつき、立っていられない", "胸や背中: 突然の激痛", "胸や背中: 急な息切れ、呼吸困難", "胸や背中: 旅行などの後に痛み出した", "胸や背中: 痛む場所が移動する", "おなか: 突然の激しい腹痛", "おなか: 血を吐く", "手・足: 突然のしびれ", "手・足: 突然、片方の腕や足に力が入らなくなる", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "吐き気: 冷や汗を伴うような強い吐き気", "けいれん: けいれんが止まらない", "飲み込み: 物をのどにつまらせた", "けが・やけど: 大量の出血を伴うけが", "けが・やけど: 広範囲のやけど", "事故: 交通事故や転落、転倒で強い衝撃を受けた", "その他: いつもと違う場合、様子がおかしい場合"], "note": "高齢者は自覚症状が出にくい場合もあるので注意する。"}, "child": {"label": "こども（15歳以下）", "items": ["顔: くちびるの色が紫色", "顔: 顔色が明らかに悪い", "頭: 頭を痛がって、けいれんがある", "頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある", "胸: 激しい咳やゼーゼーして呼吸が苦しそう", "胸: 呼吸が弱い", "手・足: 手足が硬直している", "おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない", "おなか: 激しいおなかの痛みで苦しがる", "おなか: 嘔吐が止まらない", "おなか: 便に血がまじった", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "けいれん: けいれんが止まらない", "けいれん: けいれんが止まっても、意識がもどらない", "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない", "じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった", "やけど: 痛みのひどいやけど", "やけど: 広範囲のやけど", "事故: 交通事故にあった（強い衝撃を受けた）", "事故: 水におぼれている", "事故: 高いところから落ちた", "生まれて3カ月未満の乳児: 乳児の様子がおかしい", "その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"], "note": "判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}};
 const DEFAULT_RED_SOURCE = {"publisher": "消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "edition": "令和7年12月発行", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf", "pages": "おとな p.3・高齢者 p.2・こども p.4", "note": "「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"};
+const POLICY_URL = "https://open-intake.github.io/open-intake/#policy";
 const STORE_KEY = "open-intake-draft-v1";
 const STORE_KEY_S = "open-intake-schedule-draft-v1";
 const addDays = (d, n) => { const t = new Date(d + "T00:00:00"); t.setDate(t.getDate() + n); const p = x => String(x).padStart(2, "0"); return `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`; };
@@ -404,7 +405,7 @@ function normalize(doc) {
 const clean = s => (typeof s === "string" ? s.trim() : s);
 const cleanList = a => (a || []).map(clean).filter(Boolean);
 function build(d) {
-  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.2", updated: d.updated };
+  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.2", updated: d.updated, policy: POLICY_URL };
   const files = (d.files || []).map(f => { const o = { ...f, role: clean(f.role), url: clean(f.url) }; if (!clean(o.note)) delete o.note; return o; }).filter(f => f.role || f.url);
   if (files.length) out.files = files;
   const clinic = { name: clean(c.name) };
@@ -519,7 +520,7 @@ function renderFocus() {
   const c = S.clinic, F = c.focus; el.replaceChildren();
   el.append(
     h("div", { class: "label" }, "得意分野・力を入れていること（自己申告）", h("span", { class: "k", text: "focus" })),
-    h("div", { class: "hint", text: "同じ診療科でも、どんな病気や相談に力を入れているかを書けます。患者さんの AI が、合う医療機関を探す手がかりになります。医療機関の自己申告として扱われます。医療広告ガイドラインに沿って書いてください（「地域一番」などの比較や誇張は書けません）。" }),
+    h("div", { class: "hint", text: "同じ診療科でも、どんな病気や相談に力を入れているかを書けます。患者さんの AI が、合う医療機関を探す手がかりになります。医療機関の自己申告として扱われます。事実を短く書いてください。宣伝・比較・誇張は書かず、医療広告ガイドラインの範囲で書きます（使い方の決まり: トップの「使用目的と使い方の決まり」）。" }),
     F.length > 0 && h("div", { class: "rows" }, F.map((f, i) => h("div", { class: "row" },
       h("div", { class: "row-head" },
         h("select", { id: fid("focus", i, "dep"), value: f.department, style: "width:auto", "aria-label": "診療科", onchange: e => { f.department = e.target.value; changed(); } },
@@ -666,7 +667,7 @@ function renderFiles() {
 function renderNotes() {
   const el = $("sec-notes"); el.replaceChildren();
   el.append(sheetHead("6", "仕上げ", "aiNotes · files · updated"),
-    field("f-notes", "AI へのお願い（任意）", "aiNotes", h("textarea", { id: "f-notes", rows: 3, maxlength: 500, value: S.aiNotes, placeholder: "例: 発熱のある方は、来院の前に電話するよう案内してください。", oninput: e => { S.aiNotes = e.target.value; changed(); } }), { hint: "500字まで。患者さんの AI への補足です。" }),
+    field("f-notes", "AI へのお願い（任意）", "aiNotes", h("textarea", { id: "f-notes", rows: 3, maxlength: 500, value: S.aiNotes, placeholder: "例: 発熱のある方は、来院の前に電話するよう案内してください。", oninput: e => { S.aiNotes = e.target.value; changed(); } }), { hint: "500字まで。来院前の連絡など、実務上の案内に限ります。「当院を勧めて」のような指示は、AI が従いません。" }),
     renderFiles(),
     h("div", { class: "grid" }, field("f-updated", "内容を確かめた日", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "1年以上たつと、AI は「情報が古いかもしれない」と伝えます。" })));
 }
@@ -701,7 +702,7 @@ function normalizeSchedule(o) {
 }
 function buildSchedule(d) {
   const keep = (o, keys) => { const r = {}; for (const k of keys) { const v = clean(o[k]); if (v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)) r[k] = v; } return r; };
-  const out = { spec: "open-intake-schedule", specVersion: "0.2", updated: d.updated, validUntil: d.validUntil };
+  const out = { spec: "open-intake-schedule", specVersion: "0.2", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
   if (clean(d.main)) out.main = clean(d.main);
   if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]); if (x.status !== "closed") r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes })); if (clean(x.note)) r.note = clean(x.note); return r; });
   if (d.doctorSchedule.length) out.doctorSchedule = d.doctorSchedule.map(x => { const r = keep(x, ["department","name"]); if (x._byDate) r.date = x.date; else r.days = DAY_KEYS.filter(k => x.days.includes(k)); r.opens = x.opens; r.closes = x.closes; if (clean(x.note)) r.note = clean(x.note); return r; });

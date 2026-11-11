@@ -249,6 +249,10 @@
     "main": {
       "type": "string",
       "description": "メインのファイル（clinic-intake.json）のありか。読む側は、メインの files にこのファイルが載っているかを確かめる"
+    },
+    "policy": {
+      "type": "string",
+      "description": "使用目的と使い方の決まりの場所（SPEC §1b）"
     }
   }
 }

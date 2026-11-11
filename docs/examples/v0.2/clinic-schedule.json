@@ -3,6 +3,7 @@
   "specVersion": "0.2",
   "updated": "2026-11-10",
   "validUntil": "2027-01-31",
+  "policy": "https://open-intake.github.io/open-intake/#policy",
   "main": "/clinic-intake.json",
   "exceptions": [
     {
