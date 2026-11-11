@@ -562,6 +562,60 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <p class="note">This project defines the format and the container for profiles. The content of each profile is discussed and maintained by communities in that region. The Japanese profile is a first draft for discussion.</p>
   </section>
 
+  <section class="block" id="vision" aria-labelledby="h-vision">
+    <h2 id="h-vision">Governance and growth (our plans)</h2>
+    <p class="intro">Today this is a draft run by a single author, unpaid. What follows is where we want to go, not something already decided. Every step will be discussed in the open.</p>
+    <div class="pillars">
+      <div class="pillar">
+        <h3>Governance: decided together, in the open</h3>
+        <ul>
+          <li>Today the author is responsible for the format and its safety mechanisms, while medical content such as warning signs and questionnaires is decided with input from clinicians</li>
+          <li>Next, an open forum where clinicians, local governments and developers of AI and booking services take part. The way proposals reach agreement will also be written down and published</li>
+          <li>Each region can have a community that maintains its regional profile</li>
+          <li>It stays non-profit and independent of any one company. Using it and building on it remain free</li>
+        </ul>
+      </div>
+      <div class="pillar">
+        <h3>Versions: a global version and regional versions</h3>
+        <ul>
+          <li>Two levels of versions: a <strong>global version</strong> shared by every country (for example 0.4) and a <strong>regional version</strong> for each profile (for example the Japanese profile jp-1.0)</li>
+          <li>For example, when doctors review Japan's emergency warning signs, only the Japanese version goes up; the global version stays the same</li>
+          <li>Files written for older versions keep working by rule. Changes are announced in advance and recorded in the changelog and with a DOI for each release (a number for citing it in papers and elsewhere)</li>
+        </ul>
+      </div>
+      <div class="pillar">
+        <h3>Towards an international standard</h3>
+        <ul>
+          <li>The common core is region-neutral (it follows international codes for countries, languages and so on)</li>
+          <li>A published mapping links it to the web's shared vocabulary (schema.org) and to the international health data standard (HL7 FHIR)</li>
+          <li>Later, we aim to propose it as an HL7 FHIR implementation guide and to register the file's fixed location internationally</li>
+        </ul>
+      </div>
+    </div>
+    <div class="compare">
+      <div class="case">
+        <h3>What regions may decide (local adaptation)</h3>
+        <ul>
+          <li>Emergency numbers and warning signs (based on that region's public sources)</li>
+          <li>Identifier systems for clinics</li>
+          <li>Base questionnaires and word lists such as department names</li>
+          <li>Fields for region-specific ways of accepting patients (for example, registered patients only)</li>
+        </ul>
+      </div>
+      <div class="case">
+        <h3>What no region changes</h3>
+        <ul>
+          <li>No diagnosis</li>
+          <li>Emergency warning signs are always checked before booking</li>
+          <li>No collection of patient information</li>
+          <li>No reviews or ratings. Patients choose</li>
+          <li>The meaning of common fields never changes</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">The exact range of regional adaptation will be decided in the next version, based on our survey of how clinics in Japan and abroad describe their hours and booking rules.</p>
+  </section>
+
   <section class="block" id="policy" aria-labelledby="h-policy">
     <h2 id="h-policy">Purpose and usage policy</h2>
     <p class="intro">The only purpose of this format is to <strong>improve the match between clinics and patients</strong>. Rather than listing detailed prohibitions, everything is judged against this purpose. Files made with the creation tool include the location and a summary of this policy.</p>
