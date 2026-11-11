@@ -12,7 +12,7 @@
     "en"
   ],
   "status": "draft",
-  "note": "Starter profile. Emergency numbers are filled in; emergency warning signs (redFlags) are empty until they are transcribed from an official public source for this region. To be discussed and maintained by a community in this region.",
+  "note": "Starter profile for Canada as a whole. Emergency numbers are filled in. Health services are organised by province, so warning signs are kept in provincial profiles (for example ca-bc).",
   "emergency": {
     "message": "In a life-threatening emergency, call 911 now. In many provinces you can call 811 for health advice from a nurse when it is not an emergency.",
     "numbers": [

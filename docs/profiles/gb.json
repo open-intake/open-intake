@@ -12,7 +12,7 @@
     "en"
   ],
   "status": "draft",
-  "note": "Starter profile. Emergency numbers are filled in; emergency warning signs (redFlags) are empty until they are transcribed from an official public source for this region. To be discussed and maintained by a community in this region.",
+  "note": "Starter profile. Emergency numbers are filled in. The national NHS pages (\"When to call 999\", \"When to go to A&E\", reviewed 3 February 2023) do not currently list symptoms; lists are published by regional NHS ambulance services. Warning signs are pending transcription from an official NHS source. To be discussed and maintained by a community in this region.",
   "emergency": {
     "message": "If someone is seriously ill or injured and their life is at risk, call 999 now. If you need medical help urgently but it is not life-threatening, call NHS 111 or use NHS 111 online.",
     "numbers": [

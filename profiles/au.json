@@ -12,7 +12,7 @@
     "en"
   ],
   "status": "draft",
-  "note": "Starter profile. Emergency numbers are filled in; emergency warning signs (redFlags) are empty until they are transcribed from an official public source for this region. To be discussed and maintained by a community in this region.",
+  "note": "Starter profile. Emergency numbers and emergency warning signs (transcribed from healthdirect Australia) are filled in. To be discussed and maintained by a community in this region.",
   "emergency": {
     "message": "In a life-threatening emergency, call Triple Zero (000) now. If you are not sure whether to seek care, you can call the healthdirect helpline on 1800 022 222.",
     "numbers": [
@@ -30,7 +30,29 @@
       }
     ]
   },
-  "redFlags": [],
+  "redFlags": [
+    "Loss of consciousness (blackout or fainting) — even if brief",
+    "Chest pain",
+    "Sudden weakness in the face, arm or leg or trouble speaking — these could be signs of a stroke",
+    "Breathing problems",
+    "A sudden collapse or unexplained fall",
+    "A seizure",
+    "Uncontrollable bleeding",
+    "Any other major concern about a person's health or wellbeing",
+    "Severe burns",
+    "Stings or bites from snakes, jellyfish or other poisonous animals",
+    "Fallen from a great height",
+    "An injury from a major car accident",
+    "Been physically assaulted, including stabbing or shooting"
+  ],
+  "redFlagsSource": {
+    "publisher": "healthdirect Australia",
+    "title": "Calling triple zero (000)",
+    "edition": "Last reviewed: August 2025",
+    "url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
+    "pages": "section \"When do I need an ambulance?\"",
+    "note": "Transcribed verbatim from the official page. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."
+  },
   "identifierSystems": [],
   "questionnaires": []
 }

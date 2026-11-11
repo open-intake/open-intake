@@ -1,0 +1,51 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "ca-bc",
+  "url": "https://open-intake.github.io/open-intake/profiles/ca-bc.json",
+  "title": "British Columbia, Canada (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "CA",
+    "addressRegion": "BC"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile for British Columbia. Health services in Canada are organised by province, so warning signs are kept per province. Emergency numbers and warning signs (transcribed from HealthLink BC) are filled in. To be discussed and maintained by a community in this region.",
+  "emergency": {
+    "message": "Call 9-1-1 anytime you think you may need emergency care. If you are unsure if a health concern is an emergency, call HealthLink BC at 8-1-1 for advice.",
+    "numbers": [
+      {
+        "number": "911",
+        "label": "Emergency services"
+      },
+      {
+        "number": "811",
+        "label": "HealthLink BC (health advice; 7-1-1 for the deaf and hard of hearing)"
+      },
+      {
+        "number": "988",
+        "label": "Suicide Crisis Helpline (call or text)"
+      }
+    ]
+  },
+  "redFlags": [
+    "A major accident",
+    "Trouble breathing, or catching your breath",
+    "Severe abdominal or chest pain/pressure",
+    "Weakness or tingling on one side of your body",
+    "Loss of consciousness",
+    "Heavy bleeding"
+  ],
+  "redFlagsSource": {
+    "publisher": "HealthLink BC (Government of British Columbia)",
+    "title": "When to visit the emergency room",
+    "edition": "Last updated January 29, 2025",
+    "url": "https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room",
+    "note": "Transcribed verbatim from the official page (\"Always go to the ER if you have been in a major accident or for potentially life-threatening symptoms like: …\"). Accessed 2026-11-11. Not yet reviewed by clinicians in this region."
+  },
+  "identifierSystems": [],
+  "questionnaires": []
+}

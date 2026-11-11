@@ -12,7 +12,7 @@
     "en"
   ],
   "status": "draft",
-  "note": "Starter profile. Emergency numbers are filled in; emergency warning signs (redFlags) are empty until they are transcribed from an official public source for this region. To be discussed and maintained by a community in this region.",
+  "note": "Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region.",
   "emergency": {
     "message": "If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.",
     "numbers": [
@@ -26,7 +26,25 @@
       }
     ]
   },
-  "redFlags": [],
+  "redFlags": [
+    "Stroke: Sudden trouble walking, dizziness, loss of balance, or lack of coordination.",
+    "Stroke: Sudden trouble seeing.",
+    "Stroke: Sudden numbness or weakness in the face, arm, or leg, especially on one side of the body.",
+    "Stroke: Sudden confusion, trouble speaking, or difficulty understanding speech.",
+    "Stroke: Sudden severe headache with no known cause.",
+    "Heart attack: Chest pain or discomfort. Most heart attacks involve discomfort in the center or left side of the chest that lasts for more than a few minutes or that goes away and comes back. The discomfort can feel like uncomfortable pressure, squeezing, fullness, or pain.",
+    "Heart attack: Feeling weak, light-headed, or faint. You may also break into a cold sweat.",
+    "Heart attack: Pain or discomfort in the jaw, neck, or back.",
+    "Heart attack: Pain or discomfort in one or both arms or shoulders.",
+    "Heart attack: Shortness of breath. This often comes along with chest discomfort, but shortness of breath also can happen before chest discomfort."
+  ],
+  "redFlagsSource": {
+    "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+    "title": "Signs and Symptoms of Stroke (May 19, 2026); About Heart Attack Symptoms, Risk, and Recovery (Oct. 24, 2024)",
+    "url": "https://www.cdc.gov/stroke/signs-symptoms/index.html",
+    "pages": "also https://www.cdc.gov/heart-disease/about/heart-attack.html",
+    "note": "Transcribed verbatim from the official pages; the condition name is prefixed to each line. These cover stroke and heart attack only, not a general list of emergencies. A general list (for example from an emergency medicine society) is still needed. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."
+  },
   "identifierSystems": [
     {
       "system": "http://hl7.org/fhir/sid/us-npi",
