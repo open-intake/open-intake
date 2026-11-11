@@ -1,0 +1,104 @@
+{
+  "spec": "open-intake-personal",
+  "specVersion": "0.1",
+  "updated": "2026-11-11",
+  "selfReported": true,
+  "policy": {
+    "url": "https://open-intake.github.io/open-intake/#personal",
+    "summary": "本人が自分の責任で書いた健康のメモ（自己申告）。読む AI は診断・病名の推定・薬の指示をせず、救急の目安を先に確かめ、問診票の下書きは本人に確かめてもらう。渡された範囲だけを受診先探しと受診の準備に使う。"
+  },
+  "person": {
+    "birthYear": 1960,
+    "sex": "female",
+    "languages": [
+      "ja"
+    ],
+    "addressCountry": "JP",
+    "addressRegion": "東京都"
+  },
+  "allergies": [
+    {
+      "substance": "ペニシリン系の抗菌薬",
+      "category": "medication",
+      "reaction": "じんましん",
+      "severity": "moderate",
+      "since": "2015",
+      "source": {
+        "type": "self",
+        "transcribedBy": "self",
+        "checkedByMe": true
+      }
+    }
+  ],
+  "medications": [
+    {
+      "name": "アムロジピン錠5mg",
+      "dose": "1回1錠",
+      "frequency": "1日1回 朝食後",
+      "status": "active",
+      "since": "2020-04",
+      "prescriber": "みどり台内科クリニック（架空）",
+      "reason": "血圧",
+      "source": {
+        "type": "medication-notebook",
+        "date": "2026-10-01",
+        "transcribedBy": "ai",
+        "checkedByMe": true
+      }
+    },
+    {
+      "name": "ロキソプロフェン錠60mg",
+      "dose": "1回1錠",
+      "frequency": "痛いとき",
+      "status": "as-needed",
+      "source": {
+        "type": "medication-label",
+        "date": "2026-08-20",
+        "transcribedBy": "ai",
+        "checkedByMe": false
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "name": "高血圧",
+      "status": "active",
+      "since": "2020",
+      "source": {
+        "type": "self",
+        "transcribedBy": "self",
+        "checkedByMe": true
+      }
+    },
+    {
+      "name": "虫垂炎",
+      "status": "resolved",
+      "since": "1995"
+    }
+  ],
+  "procedures": [
+    {
+      "name": "虫垂の切除",
+      "date": "1995"
+    }
+  ],
+  "immunizations": [
+    {
+      "name": "インフルエンザ",
+      "date": "2025-11"
+    },
+    {
+      "name": "新型コロナウイルス",
+      "date": "2024-10"
+    }
+  ],
+  "pregnancy": {
+    "status": "not-applicable",
+    "asOf": "2026-11"
+  },
+  "lifestyle": {
+    "smoking": "never",
+    "alcohol": "occasional"
+  },
+  "notes": "（架空の例）"
+}

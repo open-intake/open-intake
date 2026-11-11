@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-intake.github.io/open-intake/schema/personal.schema.json",
+  "title": "Open Intake Personal my-health.json v0.1 (draft)",
+  "description": "本人が自分の責任で書く健康のメモ（自己申告）。HL7 FHIR IPS に対応づける（PERSONAL.md §6）",
+  "type": "object",
+  "required": [
+    "spec",
+    "specVersion",
+    "updated",
+    "selfReported"
+  ],
+  "properties": {
+    "spec": {
+      "const": "open-intake-personal"
+    },
+    "specVersion": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "selfReported": {
+      "const": true
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "birthYear": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100
+        },
+        "sex": {
+          "enum": [
+            "female",
+            "male",
+            "other",
+            "unknown"
+          ]
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "addressCountry": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "addressRegion": {
+          "type": "string"
+        }
+      }
+    },
+    "allergies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "substance"
+        ],
+        "properties": {
+          "substance": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "enum": [
+              "medication",
+              "food",
+              "environment",
+              "other"
+            ]
+          },
+          "reaction": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "mild",
+              "moderate",
+              "severe",
+              "unknown"
+            ]
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "self",
+                  "medication-notebook",
+                  "medication-label",
+                  "receipt",
+                  "checkup",
+                  "clinician-document",
+                  "other"
+                ]
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+              },
+              "transcribedBy": {
+                "enum": [
+                  "self",
+                  "ai"
+                ]
+              },
+              "checkedByMe": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "medications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dose": {
+            "type": "string"
+          },
+          "frequency": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "stopped",
+              "as-needed"
+            ]
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+          },
+          "until": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+          },
+          "prescriber": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "self",
+                  "medication-notebook",
+                  "medication-label",
+                  "receipt",
+                  "checkup",
+                  "clinician-document",
+                  "other"
+                ]
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+              },
+              "transcribedBy": {
+                "enum": [
+                  "self",
+                  "ai"
+                ]
+              },
+              "checkedByMe": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "active",
+              "resolved",
+              "unknown"
+            ]
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+          },
+          "note": {
+            "type": "string"
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "self",
+                  "medication-notebook",
+                  "medication-label",
+                  "receipt",
+                  "checkup",
+                  "clinician-document",
+                  "other"
+                ]
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+              },
+              "transcribedBy": {
+                "enum": [
+                  "self",
+                  "ai"
+                ]
+              },
+              "checkedByMe": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "procedures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+          },
+          "note": {
+            "type": "string"
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "self",
+                  "medication-notebook",
+                  "medication-label",
+                  "receipt",
+                  "checkup",
+                  "clinician-document",
+                  "other"
+                ]
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+              },
+              "transcribedBy": {
+                "enum": [
+                  "self",
+                  "ai"
+                ]
+              },
+              "checkedByMe": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "immunizations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+          },
+          "note": {
+            "type": "string"
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "self",
+                  "medication-notebook",
+                  "medication-label",
+                  "receipt",
+                  "checkup",
+                  "clinician-document",
+                  "other"
+                ]
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+              },
+              "transcribedBy": {
+                "enum": [
+                  "self",
+                  "ai"
+                ]
+              },
+              "checkedByMe": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "pregnancy": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "pregnant",
+            "not-pregnant",
+            "possible",
+            "not-applicable",
+            "unknown"
+          ]
+        },
+        "asOf": {
+          "type": "string",
+          "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+        }
+      }
+    },
+    "lifestyle": {
+      "type": "object",
+      "properties": {
+        "smoking": {
+          "enum": [
+            "never",
+            "former",
+            "current",
+            "unknown"
+          ]
+        },
+        "alcohol": {
+          "enum": [
+            "none",
+            "occasional",
+            "regular",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 500
+    }
+  }
+}

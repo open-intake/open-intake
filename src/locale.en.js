@@ -2,7 +2,7 @@
 // UI text is translated from Japanese with src/i18n/en.json at build time.
 var LOCALE = {
   lang: "en",
-  defaultProfile: "au",
+  defaultProfile: "us",
   days: ["Mo","Tu","We","Th","Fr","Sa","Su","PH"],
   depts: ["General practice","Internal medicine","Paediatrics","General surgery","Orthopaedics","Dermatology","Ear, nose and throat","Ophthalmology","Obstetrics and gynaecology","Urology","Psychiatry","Cardiology","Gastroenterology","Respiratory medicine","Rehabilitation","Dentistry"],
   langs: [["en","English"],["ja","Japanese"],["zh","Chinese"],["ko","Korean"],["vi","Vietnamese"],["es","Spanish"],["ar","Arabic"],["hi","Hindi"]],
@@ -29,12 +29,12 @@ var LOCALE = {
   }],
   exampleDoc(x) {
     return {
-      spec: "open-intake", specVersion: "0.3", updated: x.today(), profile: x.profileRef("au"),
+      spec: "open-intake", specVersion: "0.3", updated: x.today(), profile: x.profileRef("us"),
       files: [{ role: "schedule", url: "/clinic-schedule.json", note: "Temporary closures, doctors, on-call duty and notices" }],
       clinic: {
-        name: "Greenfield Family Practice (fictional example)", url: "https://example.com/", telephone: "(02) 0000 0000",
-        address: { addressCountry: "AU", postalCode: "2000", addressRegion: "NSW", addressLocality: "Sydney", streetAddress: "1 Example Street, Level 2" },
-        geo: { latitude: -33.8688, longitude: 151.2093 }, access: ["3 minutes' walk from Example Station (fictional)", "Parking for 3 cars"],
+        name: "Greenfield Family Practice (fictional example)", url: "https://example.com/", telephone: "(503) 000-0000",
+        address: { addressCountry: "US", postalCode: "97201", addressRegion: "OR", addressLocality: "Portland", streetAddress: "1 Example Street, Suite 200" },
+        geo: { latitude: 45.5152, longitude: -122.6784 }, access: ["3 minutes' walk from Example Station (fictional)", "Parking for 3 cars"],
         departments: ["General practice","Paediatrics"],
         openingHours: [
           { days: ["Mo","Tu","We","Th","Fr"], opens: "08:30", closes: "12:30" },
@@ -47,13 +47,13 @@ var LOCALE = {
         notHandled: ["Hospital admission","Babies under 6 months"],
         booking: [
           { method: "web", url: "https://example.com/book", note: "Same-day appointments available" },
-          { method: "phone", telephone: "(02) 0000 0000", note: "During opening hours only" },
+          { method: "phone", telephone: "(503) 000-0000", note: "During opening hours only" },
           { method: "walk-in", note: "If you have a fever, please call before you come in" }
         ],
-        bring: ["Medicare card","A list of your current medicines"],
-        languages: ["en","zh"], accessibility: ["Lift","Wheelchair access"]
+        bring: ["Insurance card","Photo ID","A list of your current medicines"],
+        languages: ["en","es"], accessibility: ["Elevator","Wheelchair access"]
       },
-      safety: x.safetyFrom("au"),
+      safety: x.safetyFrom("us"),
       aiNotes: "If the patient has a fever, ask them to call the clinic with their arrival time before coming in.",
       questionnaires: [x.fromTemplate(null, "fever-en", { id: "fever", title: "Fever and cough questionnaire" })]
     };

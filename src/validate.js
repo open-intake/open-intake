@@ -292,9 +292,51 @@ function validateProfile(o) {
   return { E, W };
 }
 
+// ---------- 自分の健康メモ（open-intake-personal・PERSONAL.md） ----------
+function validatePersonal(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const PDATE = /^\d{4}(-\d{2}(-\d{2})?)?$/;
+  if (!isObj(o)) { err("H1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (!isStr(o.specVersion)) err("H1", "specVersion（例: \"0.1\"）がありません。", "specVersion");
+  if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("H2", "updated（最後に確かめた日）は YYYY-MM-DD の形にしてください。", "updated");
+  else if ((Date.now() - Date.parse(o.updated + "T00:00:00")) / 864e5 > 365) warn("H8", "最後に確かめた日（updated）が1年以上前です。薬や持病が変わっていないか確かめてください。", "updated");
+  if (o.selfReported !== true) err("H3", "selfReported は true にしてください（本人の申告であるという宣言）。", "selfReported");
+  if (o.person !== undefined) {
+    if (!isObj(o.person)) err("H4", "person は { } にしてください。", "person");
+    else for (const k of Object.keys(o.person)) if (!["birthYear","sex","languages","addressCountry","addressRegion"].includes(k)) warn("H7", `person に「${k}」があります。氏名・住所・番号などは書かないでください。`, "person." + k);
+  }
+  const checkSrc = (x, w, label) => {
+    if (x.source === undefined) return;
+    if (!isObj(x.source)) { err("H4", `${label}: source は { } にしてください。`, w + ".source"); return; }
+    if (x.source.date !== undefined && !PDATE.test(String(x.source.date))) err("H5", `${label}: source.date は YYYY・YYYY-MM・YYYY-MM-DD のどれかにしてください。`, w + ".source.date");
+    if (x.source.transcribedBy === "ai" && x.source.checkedByMe !== true) warn("H6", `${label}: AI が書き起こした内容を、まだ本人が確かめていません。原本と見比べてください。`, w + ".source");
+  };
+  const LISTS = { allergies: ["substance", "アレルギー"], medications: ["name", "薬"], conditions: ["name", "持病・病気"], procedures: ["name", "手術・処置"], immunizations: ["name", "予防接種"] };
+  const ENUMS = { severity: ["mild","moderate","severe","unknown"], category: ["medication","food","environment","other"], status: null };
+  const STATUS = { medications: ["active","stopped","as-needed"], conditions: ["active","resolved","unknown"] };
+  for (const [k, [key, name]] of Object.entries(LISTS)) {
+    if (o[k] === undefined) continue;
+    if (!Array.isArray(o[k])) { err("H4", `${k} は配列（[ ]）にしてください。ないときは [] と書きます。`, k); continue; }
+    o[k].forEach((x, i) => {
+      const w = `${k}[${i}]`, label = `${name} ${i+1}`;
+      if (!isObj(x) || !isStr(x[key])) { err("H4", `${label}: ${key} が空です。`, w); return; }
+      if (k === "allergies") for (const f of ["severity","category"]) if (x[f] !== undefined && !ENUMS[f].includes(x[f])) err("H4", `${label}: ${f} は ${ENUMS[f].join("・")} のどれかにしてください。`, `${w}.${f}`);
+      if (STATUS[k] && x.status !== undefined && !STATUS[k].includes(x.status)) err("H4", `${label}: status は ${STATUS[k].join("・")} のどれかにしてください。`, w + ".status");
+      for (const f of ["since","until","date"]) if (x[f] !== undefined && !PDATE.test(String(x[f]))) err("H5", `${label}: ${f} は YYYY・YYYY-MM・YYYY-MM-DD のどれかにしてください。`, `${w}.${f}`);
+      checkSrc(x, w, label);
+    });
+  }
+  if (typeof o.notes === "string" && o.notes.length > 500) warn("W5", `そのほか伝えたいことが長すぎます（${o.notes.length} 字・500 字まで）。`, "notes");
+  return { E, W };
+}
+
 // 中身を見て、どちらのファイルかを判断して検査する
-function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : "intake"; }
-function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : validateIntake(o); }
-return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : s === "open-intake-personal" ? "personal" : "intake"; }
+function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : k === "personal" ? validatePersonal(o) : validateIntake(o); }
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;

@@ -96,6 +96,15 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   d.entries = []; ok(codes(validate(d)).includes("D4"), "地域の一覧が空なら D4"); }
 { const d = JSON.parse(fs.readFileSync("profiles/jp.json", "utf8")); delete d.questionnaires[0].url; ok(codes(validate(d)).includes("P4"), "基本形に url がなければ P4"); }
 
+// 自分の健康メモ（PERSONAL.md）
+{ const base = () => JSON.parse(fs.readFileSync("examples/personal/v0.1/my-health.json", "utf8"));
+  const r0 = validate(base()); ok(r0.E.length === 0 && r0.W.some(w => w.code === "H6"), "健康メモの例が通り、AI の書き起こしの未確認は H6", JSON.stringify(r0));
+  let d = base(); d.selfReported = false; ok(codes(validate(d)).includes("H3"), "selfReported が true でなければ H3");
+  d = base(); d.medications[0].name = ""; ok(codes(validate(d)).includes("H4"), "薬の名前が空なら H4");
+  d = base(); d.allergies[0].severity = "very"; ok(codes(validate(d)).includes("H4"), "決まっていない重さは H4");
+  d = base(); d.conditions[0].since = "2020/04"; ok(codes(validate(d)).includes("H5"), "日付の形が違えば H5");
+  d = base(); d.person.name = "山田"; ok(validate(d).W.some(w => w.code === "H7"), "person に氏名があれば H7"); }
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }

@@ -13,9 +13,9 @@
     "en"
   ],
   "status": "draft",
-  "note": "Starter profile for British Columbia. Health services in Canada are organised by province, so warning signs are kept per province. Emergency numbers and warning signs (transcribed from HealthLink BC) are filled in. To be discussed and maintained by a community in this region.",
+  "note": "Starter profile for British Columbia. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce the official source is granted; see references. To be discussed and maintained by a community in this region.",
   "emergency": {
-    "message": "Call 9-1-1 anytime you think you may need emergency care. If you are unsure if a health concern is an emergency, call HealthLink BC at 8-1-1 for advice.",
+    "message": "If you think you may need emergency care, call 9-1-1 now. If you are not sure whether it is an emergency, call 8-1-1 (HealthLink BC) for advice.",
     "numbers": [
       {
         "number": "911",
@@ -31,21 +31,15 @@
       }
     ]
   },
-  "redFlags": [
-    "A major accident",
-    "Trouble breathing, or catching your breath",
-    "Severe abdominal or chest pain/pressure",
-    "Weakness or tingling on one side of your body",
-    "Loss of consciousness",
-    "Heavy bleeding"
+  "redFlags": [],
+  "references": [
+    {
+      "publisher": "HealthLink BC (Government of British Columbia)",
+      "title": "When to visit the emergency room",
+      "url": "https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room",
+      "note": "Official list of potentially life-threatening symptoms. Not quoted until permission is granted (Province of British Columbia copyright)."
+    }
   ],
-  "redFlagsSource": {
-    "publisher": "HealthLink BC (Government of British Columbia)",
-    "title": "When to visit the emergency room",
-    "edition": "Last updated January 29, 2025",
-    "url": "https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room",
-    "note": "Transcribed verbatim from the official page (\"Always go to the ER if you have been in a major accident or for potentially life-threatening symptoms like: …\"). Accessed 2026-11-11. Not yet reviewed by clinicians in this region."
-  },
   "identifierSystems": [],
   "questionnaires": []
 }
