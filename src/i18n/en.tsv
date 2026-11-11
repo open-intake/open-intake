@@ -51,6 +51,7 @@ ${label}: 受付の時間に、始まり（opens）か締め切り（closes）�
 ${label}: 受付の時刻を 09:00 の形で入れてください。	${label}: enter reception times in the form 09:00.
 ${label}: 受付の始まり（${r.opens}）が締め切り（${r.closes}）より後になっています。	${label}: reception opens (${r.opens}) after its cut-off (${r.closes}).
 ${label}: 受付の締め切り（${r.closes}）が、診療の終わり（${h.closes}）より後です。間違いでないか確かめてください。	${label}: the reception cut-off (${r.closes}) is after the end of clinic hours (${h.closes}). Check that this is correct.
+${label}: 受付の締め切り（${r.closes}）が、診療の始まり（${h.opens}）より前です。ほかの時間の締め切りを写していないか確かめてください。	${label}: the reception cut-off (${r.closes}) is before the start of clinic hours (${h.opens}). Check that it was not copied from another session.
 ${label}: 診療科（department）は文字にしてください。	${label}: the department must be text.
 ${label}: 診療科「${h.department}」が、診療科の一覧にありません。	${label}: department "${h.department}" is not in the list of departments.
 ${label}: 用途（service）は文字の配列にしてください。	${label}: service must be an array of text.

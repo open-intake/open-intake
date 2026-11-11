@@ -5,7 +5,7 @@
 1. Open a new chat with the AI you usually use (ChatGPT, Claude, Gemini, etc.)
 2. Copy everything between "Start of the text to paste" and "End of the text to paste" below, paste it and send
 3. Answer the AI's questions. "I don't know" is fine
-4. The AI will give you JSON. Paste it into "Paste and check" in the maker (https://open-intake.github.io/open-intake/en/maker/) and choose **Load into form**. The maker fills in the emergency warning signs for your regional profile. They need a doctor's review; you may add to them, but do not remove any
+4. The AI will give you JSON. Paste it into "Paste and check" in the maker (https://open-intake.github.io/open-intake/en/maker/) and choose **Load into form**. The maker fills in the emergency warning signs for your regional profile. **Do not publish the AI's JSON without loading it into the maker** (it has no warning signs yet). They need a doctor's review; you may add to them, but do not remove any
 5. Fix any errors, then save the file as `clinic-intake.json` and ask your website administrator to put it at the top level of your website
 
 ⚠ **Do not enter patients' names, conditions or other personal information into the AI.** The file only holds the clinic's public information and questionnaire items.
@@ -39,7 +39,7 @@ You are helping clinic staff create `clinic-intake.json` (Open Intake JSON v0.4)
    - Whether there are set times or slots for particular services, such as health checks, vaccinations, procedures or tests, or rehabilitation
    - Whether hours or cut-off times differ for first visits and follow-up visits
    - For each time slot, whether patients may come without an appointment, only with an appointment, or whether no new patients are taken
-   - Whether the whole clinic is appointment only
+   - Whether patients who arrive without an appointment are turned away (or seen if they wait). Only if they are turned away at all times is the clinic "appointment only" ("appointments have priority" is not appointment only)
    - Rules by week of the month, such as "Saturdays on the 2nd and 4th week only"
    - Whether reception may close earlier than the cut-off when it is busy
 5. Symptoms and concerns usually seen, things not provided (e.g. hospital admission), and for each department the **areas of focus** (the clinic's own statement; factual, no advertising)

@@ -427,6 +427,7 @@ function checkReception(h, w, label, code, err, warn, departments) {
       for (const k of ["opens","closes"]) if (r[k] !== undefined && !TIME_RE.test(r[k])) err(code, `${label}: 受付の時刻を 09:00 の形で入れてください。`, `${w}.reception.${k}`);
       if (TIME_RE.test(r.opens || "") && TIME_RE.test(r.closes || "") && r.opens >= r.closes) err(code, `${label}: 受付の始まり（${r.opens}）が締め切り（${r.closes}）より後になっています。`, w + ".reception");
       if (TIME_RE.test(r.closes || "") && TIME_RE.test(h.closes || "") && r.closes > h.closes) warn("W19", `${label}: 受付の締め切り（${r.closes}）が、診療の終わり（${h.closes}）より後です。間違いでないか確かめてください。`, w + ".reception.closes");
+      if (TIME_RE.test(r.closes || "") && TIME_RE.test(h.opens || "") && r.closes <= h.opens) warn("W19", `${label}: 受付の締め切り（${r.closes}）が、診療の始まり（${h.opens}）より前です。ほかの時間の締め切りを写していないか確かめてください。`, w + ".reception.closes");
     }
   }
   if (h.department !== undefined) {

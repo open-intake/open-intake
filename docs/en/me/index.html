@@ -422,6 +422,7 @@ function checkReception(h, w, label, code, err, warn, departments) {
       for (const k of ["opens","closes"]) if (r[k] !== undefined && !TIME_RE.test(r[k])) err(code, `${label}: enter reception times in the form 09:00.`, `${w}.reception.${k}`);
       if (TIME_RE.test(r.opens || "") && TIME_RE.test(r.closes || "") && r.opens >= r.closes) err(code, `${label}: reception opens (${r.opens}) after its cut-off (${r.closes}).`, w + ".reception");
       if (TIME_RE.test(r.closes || "") && TIME_RE.test(h.closes || "") && r.closes > h.closes) warn("W19", `${label}: the reception cut-off (${r.closes}) is after the end of clinic hours (${h.closes}). Check that this is correct.`, w + ".reception.closes");
+      if (TIME_RE.test(r.closes || "") && TIME_RE.test(h.opens || "") && r.closes <= h.opens) warn("W19", `${label}: the reception cut-off (${r.closes}) is before the start of clinic hours (${h.opens}). Check that it was not copied from another session.`, w + ".reception.closes");
     }
   }
   if (h.department !== undefined) {

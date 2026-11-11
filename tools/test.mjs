@@ -126,6 +126,7 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   d = v4(); d.clinic.openingHours[0].reception = { opens: "12:00", closes: "11:00" }; ok(codes(validate(d)).includes("E5"), "受付の始まりが締め切りより後なら E5");
   d = v4(); d.clinic.openingHours[0].reception = {}; ok(codes(validate(d)).includes("E5"), "受付の時間が空なら E5");
   d = v4(); d.clinic.openingHours[0].reception = { closes: "13:00" }; ok(validate(d).E.length === 0 && wc(d).includes("W19"), "受付の締め切りが診療の終わりより後なら注意（W19）だけ");
+  d = v4(); d.clinic.openingHours[0].reception = { closes: d.clinic.openingHours[0].opens }; ok(validate(d).E.length === 0 && wc(d).includes("W19"), "受付の締め切りが診療の始まり以前なら注意（W19）");
   d = v4(); d.clinic.openingHours[0].entry = "closed"; ok(codes(validate(d)).includes("E5"), "決まっていない受け付け方は E5");
   d = v4(); d.clinic.openingHours[0].visitType = "new"; ok(codes(validate(d)).includes("E5"), "決まっていない visitType は E5");
   d = v4(); d.clinic.openingHours[4].weeksOfMonth = [0, 6]; ok(codes(validate(d)).includes("E5"), "第何週が 1〜5 でなければ E5");

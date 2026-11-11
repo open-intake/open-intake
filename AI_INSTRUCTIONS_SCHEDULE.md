@@ -93,6 +93,7 @@
 - `exceptions` の `status` は `closed`（休診）・`open`（臨時に診療）・`changed`（時間の変更）のどれか。`open` と `changed` には `hours` を必ず付ける。`from` は `to` より後にしない
 - `exceptions` の `department` は、その変更が当てはまる診療科（全体なら書かない）。`service` は用途の配列で、`general`（一般の外来）・`checkup`（健診）・`vaccination`（予防接種）・`procedure`（手術・検査など）・`rehabilitation`（リハビリ）・`other` から選ぶ（例: 予防接種だけなら `["vaccination"]`）
 - `exceptions` の `reception` は受付の始まり `opens`・締め切り `closes`（片方だけでもよい）。`entry` は `walk-in`（予約がなくても受け付ける）・`appointment`（予約の人だけ）・`none`（新しい受付はしない）のどれか
+- `changed` の `hours` には、**その日に診療する時間を全部**入れる。午後だけ変えるときも、午前の時間を入れる（書かない時間は休診と読まれる）
 - `reception` と `entry` は **`status: "changed"` と一緒に使う**（`hours` にその日の診療時間も入れる）。`closed` に付けない。例: 「この日は受付を11時で締め切る」→ `changed` に `"reception": { "closes": "11:00" }`。「予防接種の予約を止めている」→ `changed` に `"service": ["vaccination"]` と `"entry": "none"`
 - **`entry: "none"`（新しい受付をしない）は休診ではない。** 休診（`closed`）にしない
 - **医師1人の休みは `exceptions` に書かない。** `doctorSchedule` に、`date`（その日）と `note`（例: 「休診。代診あり」）で書く。診療科や医療機関全体の休診とは分ける
