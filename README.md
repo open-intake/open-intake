@@ -50,6 +50,7 @@
 | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)・[英語版](AI_INSTRUCTIONS.en.md) | AI と会話してファイルを作るための指示書 |
 | `src/` | トップの原稿（`index.src.html`・英語版 `index.en.body.html`）、作成ツールの原稿（`generator.src.html`）、言語ごとのデータ（`locale.*.js`）、英語版の対訳表（`i18n/en.tsv`）、検査器（`validate.js`） |
 | `docs/` | 公開されるサイト（トップと作成ツール。**生成物。手で直さない**） |
+| [REVIEW.md](REVIEW.md) | **医療に携わる方へ**: ご確認いただきたい点（見る場所と問い） |
 | [CHANGELOG.md](CHANGELOG.md) | 変更の記録 |
 
 ## 開発
