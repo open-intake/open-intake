@@ -17,11 +17,41 @@ const src = read("src/generator.src.html");
 for (const mark of ["<!--PROMPT-->", "/*VALIDATE*/"]) if (!src.includes(mark)) throw new Error(`src/generator.src.html に ${mark} がありません`);
 const validateJs = read("src/validate.js");
 if (validateJs.includes("</script")) throw new Error("validate.js に </script が含まれています");
-const body = src.replace("<!--PROMPT-->", () => esc(m[1].trim())).replace("/*VALIDATE*/", () => validateJs);
+// 地域プロファイル（作成ツールに埋め込む）
+const PROFILE_ORDER = ["jp", "us", "gb", "au", "ca", "ca-bc"];
+const profileFiles = fs.readdirSync("profiles").filter(f => f.endsWith(".json"));
+const profiles = profileFiles.map(f => JSON.parse(read("profiles/" + f)))
+  .sort((a, b) => (PROFILE_ORDER.indexOf(a.id) + 1 || 99) - (PROFILE_ORDER.indexOf(b.id) + 1 || 99));
+const profilesJs = JSON.stringify(profiles).replace(/</g, "\\u003c");
+
+// 英語版: 対訳表（src/i18n/en.tsv）で、日本語の画面の文を置き換える
+const JA_CHARS = /[\u3040-\u30ff\u3400-\u9fff\uff01-\uff5e「」、。・〜]/;
+function translate(text, table, where) {
+  // 日本語の注釈は英語版では取り除く（CSS の /* … */、JS の行末・行全体の // …）
+  text = text.replace(/\/\*[\s\S]*?\*\//g, c => /[\u3040-\u9fff]/.test(c) ? "" : c).replace(/(^|\s)\/\/ [^\n]*[\u3040-\u9fff][^\n]*/gm, "$1");
+  for (const [ja, en] of table) text = text.split(ja).join(en);
+  const left = text.split("\n").map((l, i) => [i + 1, l]).filter(([, l]) => JA_CHARS.test(l));
+  if (left.length) throw new Error(`${where} の英語版に日本語が残っています（src/i18n/en.tsv に足してください）:\n` + left.slice(0, 15).map(([n, l]) => `  ${n}: ${l.trim().slice(0, 140)}`).join("\n"));
+  return text;
+}
+const table = read("src/i18n/en.tsv").split("\n").filter(l => l && !l.startsWith("#")).map(l => { const i = l.indexOf("\t"); if (i < 0) throw new Error("en.tsv にタブのない行: " + l); return [l.slice(0, i), l.slice(i + 1)]; });
+function makeMaker(lang) {
+  let s = src, v = validateJs, prompt = esc(m[1].trim()), locale = read(`src/locale.${lang}.js`);
+  if (lang === "en") {
+    s = translate(s.replace("<!--PROMPT-->", "@@PROMPT@@"), table, "src/generator.src.html").replace("@@PROMPT@@", "<!--PROMPT-->");
+    v = translate(v, table, "src/validate.js");
+    const pe = /## Start of the text to paste\n([\s\S]*?)\n## End of the text to paste/.exec(read("AI_INSTRUCTIONS.en.md"));
+    if (!pe) throw new Error("AI_INSTRUCTIONS.en.md に「Start/End of the text to paste」がありません");
+    prompt = esc(pe[1].trim());
+  }
+  return s.replace("<!--PROMPT-->", () => prompt).replace("/*VALIDATE*/", () => v).replace("/*LOCALE*/", () => locale).replace("/*PROFILES*/[]", () => profilesJs);
+}
+const body = makeMaker("ja");
 
 const page = (b, lang = "ja") => `<!doctype html>\n<html lang="${lang}">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<style>[hidden]{display:none!important}body{margin:0}</style>\n</head>\n<body>\n${b}\n</body>\n</html>\n`;
 const outputs = new Map();
 outputs.set("docs/maker/index.html", page(body));   // 作成ツール
+outputs.set("docs/en/maker/index.html", page(makeMaker("en"), "en"));   // 作成ツールの英語版
 outputs.set("docs/index.html", page(read("src/index.src.html")));   // トップ（取り組みの説明）
 { // 英語版のトップ: 日本語版と同じ <style> を使い、本文だけ差し替える
   const ja = read("src/index.src.html"), st = ja.slice(ja.indexOf("<style>"), ja.indexOf("</style>") + 8);

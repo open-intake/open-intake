@@ -1,0 +1,1423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<title>Open Intake Maker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A tool that turns a clinic's information and questionnaires into clinic-intake.json and clinic-schedule.json (Open Intake), readable by AI">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+
+:root {
+  --paper: #EEF2F1;
+  --sheet: #FFFFFF;
+  --ink: #17242C;
+  --muted: #586A73;
+  --rule: #D3DCDB;
+  --field: #F8FAFA;
+  --accent: #0D6863;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DDEFEC;
+  --req: #B3261E;
+  --req-soft: #FBE9E7;
+  --warn: #8A5300;
+  --warn-soft: #FFF2D9;
+  --ok: #1D7238;
+  --ok-soft: #E2F3E6;
+  --code-bg: #12202A;
+  --code-fg: #DCE7EA;
+  --code-key: #7FD1C7;
+  --code-str: #F2D49B;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41; --field: #1C2930;
+    --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39;
+    --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+    --code-bg: #0A1216; --code-fg: #DCE7EA; --code-key: #7FD1C7; --code-str: #F2D49B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41; --field: #1C2930;
+  --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39;
+  --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+  --code-bg: #0A1216; --code-fg: #DCE7EA; --code-key: #7FD1C7; --code-str: #F2D49B;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.7; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+a { color: var(--accent); }
+
+header.top { padding-block: 28px 20px; display: grid; gap: 6px; }
+header.top .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--muted); }
+header.top h1 { font-size: clamp(24px, 3.4vw, 34px); }
+header.top p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.notice { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+.notice strong { font-weight: 700; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 24px; align-items: start; }
+@media (max-width: 980px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+.form { display: grid; gap: 18px; min-width: 0; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 20px 20px; display: grid; gap: 14px; min-width: 0; }
+.sheet > header { display: flex; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--rule); padding-bottom: 10px; }
+.sheet > header .no { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 14px; }
+.sheet > header h2 { font-size: 19px; }
+.sheet > header .key { margin-left: auto; color: var(--muted); }
+.sheet .lead { margin: 0; color: var(--muted); font-size: 14px; }
+
+.grid { display: grid; gap: 12px 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field > label, .field > .label { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-weight: 500; font-size: 14px; }
+.field .k { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); font-weight: 400; }
+.field .hint { font-size: 12.5px; color: var(--muted); }
+.badge { font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: 3px; letter-spacing: 0.04em; }
+.badge.req { color: var(--req); background: var(--req-soft); }
+.badge.draft { color: var(--warn); background: var(--warn-soft); }
+
+input[type="text"], input[type="url"], input[type="tel"], input[type="date"], input[type="time"], select, textarea {
+  font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 7px 9px; width: 100%; min-width: 0;
+}
+textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--rule); border-radius: 999px; padding: 3px 11px 3px 8px; font-size: 14px; cursor: pointer; background: var(--field); user-select: none; }
+.chip input { accent-color: var(--accent); margin: 0; }
+.chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+
+.rows { display: grid; gap: 10px; }
+.row { border: 1px dashed var(--rule); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px; min-width: 0; }
+.row-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row-head .spacer { flex: 1; }
+.days { display: flex; flex-wrap: wrap; gap: 4px; }
+.day { position: relative; }
+.day input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.day span { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--rule); font-weight: 500; background: var(--field); }
+.day input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.day input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.times { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.times input[type="time"] { width: 130px; }
+.times input[type="date"], .row-head input[type="date"] { width: 170px; }
+
+button { font: inherit; cursor: pointer; border-radius: 4px; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 6px 14px; font-weight: 500; font-size: 14px; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.small { padding: 3px 10px; font-size: 13px; }
+.icon-btn { border: 1px solid var(--rule); background: var(--field); color: var(--ink); min-width: 32px; height: 30px; padding: 0 8px; font-size: 14px; }
+.icon-btn.danger { color: var(--req); }
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.q { border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px; display: grid; gap: 12px; background: var(--sheet); }
+.q-head { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.items { display: grid; gap: 8px; counter-reset: qn; }
+.item { border-left: 3px solid var(--rule); background: var(--field); border-radius: 0 4px 4px 0; padding: 10px 12px; display: grid; gap: 8px; min-width: 0; }
+.item.cond { border-left-color: var(--accent); margin-left: 18px; }
+.item-top { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.item-top .num { font-family: var(--font-mono); font-weight: 600; color: var(--accent); min-width: 2.6em; }
+.item-top input { flex: 1; }
+.item-opts { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 14px; }
+.item-opts select { width: auto; }
+.item-opts label.check { display: inline-flex; gap: 5px; align-items: center; }
+.item-opts input[type="checkbox"] { accent-color: var(--accent); }
+.item .linkid { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+
+details.ai { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
+details.ai > summary { cursor: pointer; padding: 12px 18px; font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+details.ai .body { padding: 0 18px 18px; display: grid; gap: 12px; }
+details.ai ol { margin: 0; padding-left: 1.4em; }
+.prompt { background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; margin: 0; }
+
+aside.out { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; min-width: 0; }
+@media (max-width: 980px) { aside.out { position: static; } }
+.status { display: flex; gap: 10px; align-items: center; border-radius: var(--radius); padding: 10px 14px; font-weight: 500; }
+.status.ok { background: var(--ok-soft); color: var(--ok); }
+.status.warn { background: var(--warn-soft); color: var(--warn); }
+.status.err { background: var(--req-soft); color: var(--req); }
+.status .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--rule); }
+.tabs { flex-wrap: wrap; }
+.tab { white-space: nowrap; border: 0; background: transparent; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid transparent; border-radius: 0; font-weight: 500; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.panel { display: grid; gap: 10px; min-width: 0; }
+pre.json { background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius); padding: 14px; margin: 0; overflow: auto; max-height: 56vh; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; tab-size: 2; }
+pre.json .k { color: var(--code-key); }
+pre.json .s { color: var(--code-str); }
+.view { display: grid; gap: 14px; font-size: 14px; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px; max-height: 64vh; overflow: auto; }
+.view h3 { font-size: 17px; }
+.view h4 { font-family: var(--font-display); font-size: 14px; margin: 0 0 4px; color: var(--accent); }
+.view dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.view dt { color: var(--muted); }
+.view dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.view ul, .view ol { margin: 0; padding-left: 1.3em; }
+.view .tag { display: inline-block; font-size: 11.5px; border: 1px solid var(--rule); border-radius: 3px; padding: 0 5px; margin-left: 4px; color: var(--muted); }
+.view .tag.alert { color: var(--req); border-color: currentColor; }
+.view .tag.good { color: var(--ok); border-color: currentColor; }
+.view .sub { color: var(--muted); font-size: 12.5px; }
+.issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.issues li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 4px; }
+.issues li.e { background: var(--req-soft); }
+.issues li.w { background: var(--warn-soft); }
+.issues .code { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; }
+.issues li.e .code { color: var(--req); }
+.issues li.w .code { color: var(--warn); }
+.issues .where { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.toast { min-height: 1.4em; font-size: 13px; color: var(--ok); }
+.small { font-size: 13px; color: var(--muted); }
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.mode { text-align: left; display: grid; gap: 2px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); padding: 10px 14px; border-radius: var(--radius); }
+.mode strong { font-family: var(--font-display); font-size: 16px; }
+.mode .mono { color: var(--accent); }
+.mode[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+@media (prefers-reduced-motion: no-preference) { .status, .chip, .day span { transition: background-color 0.15s, color 0.15s; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow"><a href="../">← About Open Intake</a> · clinic-intake.json · clinic-schedule.json · v0.3 draft · <a href="../../maker/" hreflang="ja" lang="ja">&#26085;&#26412;&#35486;</a></div>
+    <h1>Open Intake Maker</h1>
+    <p>Enter your clinic's information and questionnaires to create <code>clinic-intake.json</code>, readable by patients' AI assistants. Nothing is sent to any server; your input stays in this browser.</p>
+  </header>
+
+  <div class="modes" role="tablist" aria-label="File to create">
+    <button class="mode" role="tab" id="mode-intake" aria-selected="true" type="button"><strong>Regular information</strong><span class="mono">clinic-intake.json</span><span class="small">Name, regular hours, booking, questionnaires. Updated a few times a year</span></button>
+    <button class="mode" role="tab" id="mode-schedule" aria-selected="false" type="button"><strong>Temporary information</strong><span class="mono">clinic-schedule.json</span><span class="small">Temporary closures, doctors, on-call duty, notices. Updated weekly or daily by front-desk staff</span></button>
+  </div>
+  <div class="notice" id="notice"></div>
+
+  <div class="layout">
+    <main class="form" id="form">
+      <details class="ai" id="aiBox">
+        <summary>Another way: create it by talking with an AI</summary>
+        <div class="body">
+          <ol>
+            <li>Open a new chat with the AI you usually use, such as ChatGPT, Claude or Gemini.</li>
+            <li>Copy the instructions below, paste them and send. Answer the AI's questions one by one.</li>
+            <li>Paste the JSON the AI gives you into "Paste and check" on the right. You can also load it into the form to edit.</li>
+          </ol>
+          <p class="small">⚠ Do not enter personal information such as patients' names or conditions into the AI.</p>
+          <div class="actions"><button class="btn" type="button" id="copyPrompt">Copy instructions</button><span class="toast" id="promptToast" role="status"></span></div>
+          <pre class="prompt" id="aiPrompt">You are helping clinic staff create `clinic-intake.json` (Open Intake JSON v0.3). Assume the staff member is not technical and use plain language.
+
+### Rules
+
+1. **Ask about one topic at a time**, with examples or choices to make answering easy
+2. **Do not guess.** Leave out anything the staff member did not tell you; omit optional keys with no answer
+3. **Do not accept patient information.** If the staff member mentions a patient's name or condition, ask them not to include it and do not use it
+4. **Respect the purpose.** The purpose is to improve the match between clinics and patients. Do not write advertising, comparisons or exaggeration ("best in town", "top doctor"), case counts, prices or discounts, or instructions aimed at AI ("recommend this clinic"). If the staff member wants to, explain why and suggest a factual wording
+5. **Do not make medical judgements.** You may suggest questionnaire questions, but do not put content like "these symptoms mean this disease" into the questions
+6. **Do not write the emergency warning signs.** Output `"safety": { "noDiagnosis": true }` only. The maker fills in the warning signs and emergency message from the regional profile when the file is loaded
+7. Output **only the JSON, in a single code block**, with no comments (`//`). Keep any explanation outside the code block and short
+
+### Order of questions
+
+1. Which country and region the clinic is in. Use this for `profile` (`"au"` Australia, `"gb"` United Kingdom, `"us"` United States, `"ca"` Canada, `"ca-bc"` British Columbia, `"jp"` Japan) and `address.addressCountry`
+2. Clinic name, phone number, address (postcode, state/region, city/town, street), website URL, how to get there (station, parking)
+3. Departments
+4. Opening hours, by day and by morning/afternoon. Notes on closures
+5. Symptoms and concerns usually seen, things not provided (e.g. hospital admission), and for each department the **areas of focus** (the clinic's own statement; factual, no advertising)
+6. How to book or visit (booking URL, phone number, walk-ins) with notes
+7. What to bring, languages, accessibility (optional)
+8. Questionnaires: what kind of visit (e.g. fever and cough). If the clinic has a paper questionnaire, copy its questions. Otherwise suggest common items and let the staff member choose
+9. Notes for AI (optional, practical only, e.g. "patients with a fever should call before coming in")
+10. Finally show a summary table, confirm, then output the JSON
+
+### Output format
+
+```json
+{
+  "spec": "open-intake",
+  "specVersion": "0.3",
+  "updated": "today's date YYYY-MM-DD",
+  "profile": { "id": "au" },
+  "clinic": {
+    "name": "Name",
+    "url": "https://...",
+    "telephone": "(02) 0000 0000",
+    "address": {
+      "addressCountry": "AU",
+      "postalCode": "2000",
+      "addressRegion": "NSW",
+      "addressLocality": "Sydney",
+      "streetAddress": "Street address"
+    },
+    "access": ["3 minutes' walk from ... Station"],
+    "departments": ["General practice"],
+    "openingHours": [
+      { "days": ["Mo","Tu","We","Th","Fr"], "opens": "08:30", "closes": "12:30" }
+    ],
+    "closedNote": "Closed on Sundays and public holidays",
+    "focus": [ { "department": "General practice", "areas": ["Diabetes"] } ],
+    "handles": ["Symptoms usually seen"],
+    "notHandled": ["Things not provided"],
+    "booking": [
+      { "method": "web", "url": "https://...", "note": "Note" },
+      { "method": "phone", "telephone": "(02) 0000 0000" },
+      { "method": "walk-in", "note": "Note" }
+    ],
+    "bring": ["What to bring"],
+    "languages": ["en"],
+    "accessibility": ["Wheelchair access"]
+  },
+  "safety": { "noDiagnosis": true },
+  "aiNotes": "Practical notes for AI",
+  "questionnaires": [
+    {
+      "resourceType": "Questionnaire",
+      "id": "fever",
+      "status": "draft",
+      "title": "Questionnaire name",
+      "purpose": "Who it is for",
+      "item": [
+        { "linkId": "q1", "text": "Question", "type": "boolean", "required": true }
+      ]
+    }
+  ]
+}
+```
+
+### Details
+
+- Days: `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, public holidays `PH`. Use separate rows for morning and afternoon
+- Times are 24-hour `"09:00"`. `opens` must be before `closes`
+- `method` is one of `web`, `phone`, `walk-in`, `other`. `web` needs `url`; `phone` needs `telephone`
+- Languages are language codes such as `en`, `zh`, `ja`
+- Questionnaire `id` uses letters, numbers and hyphens. `status` is **`"draft"`** until a doctor has reviewed it
+- Number question `linkId`s `q1`, `q2`… without duplicates
+- Question `type`: `boolean`, `choice`, `open-choice`, `string`, `text`, `integer`, `decimal`, `date`, `display`. `choice` and `open-choice` need `"answerOption": [{"valueString": "option"}]`; add `"repeats": true` for multiple answers. Put units in the question text
+- For a question asked only after "yes": `"enableWhen": [ { "question": "q5", "operator": "=", "answerBoolean": true } ]` (`question` must be an earlier `linkId`)
+- Question text up to 200 characters; `aiNotes` up to 500
+
+After the JSON, add these two lines:
+
+&gt; Paste this into "Paste and check" in the Open Intake maker (https://open-intake.github.io/open-intake/en/maker/) and choose "Load into form". The maker adds the emergency warning signs for your region.
+&gt; Have a doctor review the questionnaire and emergency warning signs before publishing (then change status to "active").
+
+Please start with the first question.</pre>
+        </div>
+      </details>
+
+      <section class="sheet" id="sec-clinic"></section>
+      <section class="sheet" id="sec-hours"></section>
+      <section class="sheet" id="sec-booking"></section>
+      <section class="sheet" id="sec-safety"></section>
+      <section class="sheet" id="sec-q"></section>
+      <section class="sheet" id="sec-notes"></section>
+    </main>
+    <main class="form" id="form-schedule" hidden>
+      <section class="sheet" id="sec-s-meta"></section>
+      <section class="sheet" id="sec-s-exc"></section>
+      <section class="sheet" id="sec-s-doc"></section>
+      <section class="sheet" id="sec-s-oncall"></section>
+      <section class="sheet" id="sec-s-notice"></section>
+    </main>
+
+    <aside class="out" aria-label="Result">
+      <div class="status" id="status" role="status"></div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-json" aria-selected="true" aria-controls="panel-json" type="button">JSON</button>
+        <button class="tab" role="tab" id="tab-view" aria-selected="false" aria-controls="panel-view" type="button">View</button>
+        <button class="tab" role="tab" id="tab-issues" aria-selected="false" aria-controls="panel-issues" type="button">Check</button>
+        <button class="tab" role="tab" id="tab-load" aria-selected="false" aria-controls="panel-load" type="button">Paste and check</button>
+      </div>
+      <div class="panel" id="panel-json" role="tabpanel">
+        <div class="actions">
+          <button class="btn" type="button" id="copyJson">Copy JSON</button>
+          <button class="btn ghost" type="button" id="saveJson">Save clinic-intake.json</button>
+          <span class="toast" id="jsonToast" role="status"></span>
+        </div>
+        <pre class="json" id="json" tabindex="0"></pre>
+        <p class="small" id="fileHint"></p>
+      </div>
+      <div class="panel" id="panel-view" role="tabpanel" hidden>
+        <p class="small">Shows the resulting JSON in plain language. Before publishing, check that it says what you intended.</p>
+        <div class="view" id="view"></div>
+      </div>
+      <div class="panel" id="panel-issues" role="tabpanel" hidden>
+        <ul class="issues" id="issues"></ul>
+      </div>
+      <div class="panel" id="panel-load" role="tabpanel" hidden>
+        <p class="small">Paste JSON made by an AI, or the content of a published file, to check it. The check results and a readable view appear below.</p>
+        <div class="field">
+          <label for="pasteBox">Paste JSON</label>
+          <textarea id="pasteBox" rows="9" spellcheck="false" placeholder='{ "spec": "open-intake", ... }'></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" id="checkPaste">Check</button>
+          <button class="btn ghost" type="button" id="loadPaste">Load into form</button>
+          <label class="btn ghost" for="fileIn" style="display:inline-flex;align-items:center">Open file</label>
+          <input type="file" id="fileIn" accept=".json,application/json" hidden>
+        </div>
+        <div class="toast" id="pasteToast" role="status"></div>
+        <ul class="issues" id="pasteIssues"></ul>
+        <div class="view" id="pasteView" hidden></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <div>Specification: Open Intake v0.3 draft · Specification CC BY 4.0, this tool Apache-2.0</div>
+    <div>This tool does not diagnose. Always have a doctor review questionnaires and emergency warning signs before publishing.</div>
+  </footer>
+</div>
+
+<script>
+var OpenIntakeValidate = (function () {
+"use strict";
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
+const KNOWN_ROLES = ["schedule"];
+
+const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
+const COUNTRY = /^[A-Z]{2}$/;
+const KNOWN_AGE_GROUPS = ["older", "child"];
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+const todayStr = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 864e5);
+const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
+const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
+const CHOICE = new Set(["choice","open-choice"]);
+function validateIntake(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!isObj(o)) { err("E1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (o.spec !== "open-intake") err("E1", "spec must be \"open-intake\".", "spec");
+  if (!isStr(o.specVersion)) err("E1", "specVersion (e.g. \"0.1\") is missing.", "specVersion");
+  else if (!/^\d+\.\d+$/.test(o.specVersion)) err("E1", "specVersion must look like \"0.1\".", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker (supports ${SUPPORTED_VERSIONS.join(", ")}). Unknown keys were ignored.`, "specVersion");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(o.updated || "")) err("E2", "updated must be a date in the form YYYY-MM-DD.", "updated");
+  else { const age = (Date.now() - new Date(o.updated + "T00:00:00").getTime()) / 864e5; if (age > 365) warn("W2", "The date last checked (updated) is more than a year ago. Check the content and update the date.", "updated"); }
+  const c = o.clinic;
+  if (!isObj(c)) err("E3", "clinic (clinic information) is missing.", "clinic");
+  else {
+    if (!isStr(c.name)) err("E3", "The clinic name is empty.", "clinic.name");
+    if (!isStr(c.telephone)) err("E3", "The phone number is empty.", "clinic.telephone");
+    else if (!/^[0-9+()\- ]{6,}$/.test(c.telephone)) warn("W1", "The phone number contains characters other than digits and hyphens.", "clinic.telephone");
+    if (isStr(c.url) && !/^https:\/\//.test(c.url)) warn("W1", "The website URL does not start with https.", "clinic.url");
+    const a = c.address;
+    if (!isObj(a) || !isStr(a.addressRegion)) err("E3", "State / region is empty.", "clinic.address.addressRegion");
+    if (!isObj(a) || !isStr(a.addressLocality)) err("E3", "City / town is empty.", "clinic.address.addressLocality");
+    if (isObj(a) && isStr(a.postalCode) && (!a.addressCountry || a.addressCountry === "JP") && !/^\d{3}-?\d{4}$/.test(a.postalCode)) warn("W1", "Use the form 100-0000 for Japanese postcodes.", "clinic.address.postalCode");
+    if (!Array.isArray(c.departments) || !c.departments.filter(isStr).length) err("E4", "Choose at least one department.", "clinic.departments");
+    if (isObj(c.address) && c.address.addressCountry !== undefined && !COUNTRY.test(String(c.address.addressCountry))) err("E15", "Country (addressCountry) must be a two-letter upper-case ISO 3166-1 code (e.g. JP).", "clinic.address.addressCountry");
+    if (c.identifiers !== undefined) {
+      if (!Array.isArray(c.identifiers)) err("E15", "identifiers must be an array ([ ]).", "clinic.identifiers");
+      else c.identifiers.forEach((id, i) => {
+        const w = `clinic.identifiers[${i}]`;
+        if (!isObj(id) || !isStr(id.system) || !isStr(id.value)) { err("E15", `Identifier ${i+1}: enter system (which scheme) and value (the number).`, w); return; }
+        const re = KNOWN_ID_SYSTEMS[id.system];
+        if (re && !re.test(id.value)) err("E15", `Identifier ${i+1}: the number does not match the format for ${id.system}.`, w + ".value");
+        if (!re && !/^(https?:|urn:)/.test(id.system)) warn("W15", `Identifier ${i+1}: system "${id.system}" is not known to this checker. A URI (https:// or urn:) is recommended.`, w + ".system");
+      });
+    }
+    if (c.geo !== undefined) {
+      const g = c.geo, okNum = (v, lo, hi) => typeof v === "number" && isFinite(v) && v >= lo && v <= hi;
+      if (!isObj(g) || !okNum(g.latitude, -90, 90) || !okNum(g.longitude, -180, 180)) err("E15", "Location (geo) must have numbers latitude (-90 to 90) and longitude (-180 to 180).", "clinic.geo");
+    }
+    if (c.focus !== undefined) {
+      if (!Array.isArray(c.focus)) err("E13", "focus (areas of focus) must be an array ([ ]).", "clinic.focus");
+      else c.focus.forEach((f, i) => {
+        const w = `clinic.focus[${i}]`;
+        if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `Area of focus ${i+1}: enter at least one item (areas).`, w + ".areas");
+        else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `Area of focus ${i+1}: department "${f.department}" is not in the list of departments.`, w + ".department");
+      });
+    }
+    if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
+    else c.openingHours.forEach((h, i) => {
+      const w = `clinic.openingHours[${i}]`;
+      if (!Array.isArray(h.days) || !h.days.length) err("E5", `Opening hours row ${i+1}: choose the days.`, w + ".days");
+      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `Opening hours row ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
+      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `Opening hours row ${i+1}: enter times in the form 09:00.`, w);
+      else if (h.opens >= h.closes) err("E5", `Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).`, w);
+    });
+    if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
+    else c.booking.forEach((b, i) => {
+      const w = `clinic.booking[${i}]`;
+      if (!["web","phone","walk-in","other"].includes(b.method)) err("E6", `Booking method ${i+1}: method is not one of web / phone / walk-in / other.`, w + ".method");
+      if (b.method === "web" && !isStr(b.url)) err("E6", `Booking method ${i+1}: enter the URL of the booking page.`, w + ".url");
+      if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `Booking method ${i+1}: the booking page URL does not start with https.`, w + ".url");
+      if (b.method === "phone" && !isStr(b.telephone)) err("E6", `Booking method ${i+1}: enter the booking phone number.`, w + ".telephone");
+    });
+  }
+  if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy must be an object ({ }) with url (where the policy is).", "policy");
+  if (o.profile !== undefined && !(isStr(o.profile) || (isObj(o.profile) && isStr(o.profile.id)))) err("E16", "profile (regional profile) must be an object with id (e.g. {\"id\": \"jp\", \"url\": \"…\"}).", "profile");
+  if (o.files !== undefined) {
+    if (!Array.isArray(o.files)) err("E12", "files (official files) must be an array ([ ]).", "files");
+    else {
+      const roles = new Map();
+      o.files.forEach((f, i) => {
+        const w = `files[${i}]`;
+        if (!isObj(f)) { err("E12", `File ${i+1}: the entry is not in the right form.`, w); return; }
+        if (!isStr(f.role)) err("E12", `File ${i+1}: role is empty (e.g. schedule).`, w + ".role");
+        else if (!KNOWN_ROLES.includes(f.role)) warn("W11", `File ${i+1}: role "${f.role}" is not known to this checker (readers will ignore it).`, w + ".role");
+        else if (roles.has(f.role)) err("E12", `File ${i+1}: there are two files with role "${f.role}". Keep only one.`, w + ".role");
+        if (isStr(f.role)) roles.set(f.role, true);
+        if (typeof f.url !== "string" || !f.url.trim() || /\s/.test(f.url)) err("E12", `File ${i+1}: url must be a URL without spaces (e.g. /clinic-schedule.json).`, w + ".url");
+        else if (/^http:\/\//.test(f.url)) warn("W1", `File ${i+1}: the URL does not start with https.`, w + ".url");
+        else if (/^https?:\/\//.test(f.url) && isStr(o.clinic?.url)) {
+          try { if (new URL(f.url).host !== new URL(o.clinic.url).host) warn("W12", `File ${i+1}: it is on a different site from the clinic's website, which makes it harder for AI to confirm it is official.`, w + ".url"); } catch (_) {}
+        }
+      });
+    }
+  }
+  const s = o.safety;
+  if (!isObj(s)) err("E7", "safety (safety rules) is missing. It cannot be left out.", "safety");
+  else {
+    if (s.noDiagnosis !== true) err("E7", "safety.noDiagnosis must be true.", "safety.noDiagnosis");
+    if (!isStr(s.emergency)) err("E7", "The emergency message is empty.", "safety.emergency");
+    if (!Array.isArray(s.redFlags) || !s.redFlags.filter(isStr).length) err("E7", "Enter at least one emergency warning sign.", "safety.redFlags");
+    if (s.redFlagsByAge !== undefined) {
+      if (!isObj(s.redFlagsByAge)) err("E7", "safety.redFlagsByAge must be an object ({ }) by age group.", "safety.redFlagsByAge");
+      else for (const [k, g] of Object.entries(s.redFlagsByAge)) {
+        if (!isObj(g) || !Array.isArray(g.items) || !g.items.filter(isStr).length) err("E7", `Enter at least one warning sign (items) for age group "${k}".`, `safety.redFlagsByAge.${k}`);
+        else if (!KNOWN_AGE_GROUPS.includes(k)) warn("W13", `Age group "${k}" is not known to this checker (older and child are defined).`, `safety.redFlagsByAge.${k}`);
+      }
+    }
+  }
+  if (typeof o.aiNotes === "string" && o.aiNotes.length > 500) warn("W5", `Notes for AI are too long (${o.aiNotes.length} characters; up to 500).`, "aiNotes");
+  if (!Array.isArray(o.questionnaires)) err("E8", "questionnaires is missing. Use [] if there are none.", "questionnaires");
+  else {
+    if (!o.questionnaires.length) warn("W4", "There are no questionnaires. The clinic information works on its own, but a questionnaire helps patients prepare before their visit.", "questionnaires");
+    const qids = new Set();
+    o.questionnaires.forEach((q, qi) => {
+      const w = `questionnaires[${qi}]`, name = (isObj(q) && isStr(q.title)) ? `"${q.title}"` : `Questionnaire ${qi+1}`;
+      if (!isObj(q)) { err("E8", `${name} is not in the right form.`, w); return; }
+      if (q.resourceType !== "Questionnaire") err("E8", `${name}: resourceType must be "Questionnaire".`, w + ".resourceType");
+      if (!/^[A-Za-z0-9\-.]{1,64}$/.test(q.id || "")) err("E8", `${name}: id must use letters, numbers and hyphens (e.g. fever).`, w + ".id");
+      else if (qids.has(q.id)) err("E8", `${name}: id "${q.id}" is used by another questionnaire.`, w + ".id");
+      else qids.add(q.id);
+      if (!["draft","active"].includes(q.status)) err("E8", `${name}: status must be draft or active.`, w + ".status");
+      else if (q.status === "draft") warn("W3", `${name} has not yet been reviewed by a doctor (draft). Change it to "In use" after review.`, w + ".status");
+      if (!isStr(q.title)) err("E8", `${name}: the questionnaire name is empty.`, w + ".title");
+      if (q.derivedFrom !== undefined && !(Array.isArray(q.derivedFrom) && q.derivedFrom.every(isStr))) err("E8", `${name}: derivedFrom (the base questionnaire it was made from) must be an array of URLs.`, w + ".derivedFrom");
+      if (!Array.isArray(q.item) || !q.item.length) { err("E8", `${name}: there are no questions.`, w + ".item"); return; }
+      const seen = new Map();
+      const walk = (items, path, depth) => items.forEach((it, i) => {
+        const p = `${path}[${i}]`, label = `${name} Q${i+1}`;
+        if (!isObj(it)) { err("E8", `${label}: the question is not in the right form.`, p); return; }
+        if (!/^[A-Za-z0-9\-._]{1,64}$/.test(it.linkId || "")) err("E9", `${label}: linkId must use letters and numbers.`, p + ".linkId");
+        else if (seen.has(it.linkId)) err("E9", `${label}: linkId "${it.linkId}" is duplicated.`, p + ".linkId");
+        if (!isStr(it.text)) err("E8", `${label}: the question text is empty.`, p + ".text");
+        else if (it.text.length > 200) warn("W5", `${label}: the question text is too long (${it.text.length} characters; up to 200).`, p + ".text");
+        if (it.derivedFrom !== undefined && !(Array.isArray(it.derivedFrom) && it.derivedFrom.every(isStr))) err("E8", `${label}: derivedFrom must be an array of URLs.`, p + ".derivedFrom");
+        if (!TYPE_KEYS.includes(it.type)) err("E10", `${label}: answer type "${it.type}" cannot be used.`, p + ".type");
+        if (CHOICE.has(it.type) && (!Array.isArray(it.answerOption) || !it.answerOption.filter(x => isStr(x?.valueString)).length)) err("E10", `${label}: enter at least one option.`, p + ".answerOption");
+        if (Array.isArray(it.enableWhen)) it.enableWhen.forEach((ew, k) => {
+          const target = seen.get(ew?.question);
+          if (!target) err("E11", `${label}: the condition refers to a question that is not earlier in the list (${ew?.question || "empty"}).`, `${p}.enableWhen[${k}]`);
+          if (!["=","exists"].includes(ew?.operator)) err("E11", `${label}: the condition operator must be "=" or "exists".`, `${p}.enableWhen[${k}].operator`);
+        });
+        if (isStr(it.linkId)) seen.set(it.linkId, it);
+        if (Array.isArray(it.item)) { if (depth >= 2) err("E8", `${label}: groups can be nested at most two levels deep.`, p + ".item"); walk(it.item, p + ".item", depth + 1); }
+      });
+      walk(q.item, w + ".item", 1);
+    });
+  }
+  return { E, W };
+}
+
+
+function validateSchedule(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const isDate = v => typeof v === "string" && DATE.test(v) && !isNaN(Date.parse(v + "T00:00:00Z"));
+  const today = todayStr();
+  if (!isObj(o)) { err("S1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (o.spec !== "open-intake-schedule") err("S1", "spec must be \"open-intake-schedule\".", "spec");
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("S1", "specVersion (e.g. \"0.2\") is missing.", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker (supports ${SUPPORTED_VERSIONS.join(", ")}). Unknown keys were ignored.`, "specVersion");
+  if (!isDate(o.updated)) err("S2", "updated (date updated) must be in the form YYYY-MM-DD.", "updated");
+  if (!isDate(o.validUntil)) err("S3", "validUntil (expiry of this information) is required, in the form YYYY-MM-DD.", "validUntil");
+  else {
+    if (isDate(o.updated) && o.validUntil < o.updated) err("S3", "The expiry date (validUntil) is before the date updated.", "validUntil");
+    if (o.validUntil < today) warn("W7", `The expiry date (${o.validUntil}) has passed. AI will not use this file. Check the content and extend the date.`, "validUntil");
+    if (isDate(o.updated) && dayDiff(o.updated, o.validUntil) > 180) warn("W8", "The expiry date is more than six months after the date updated. Keep temporary information short-lived and review it often.", "validUntil");
+  }
+  const old = (end, where, label) => { if (isDate(end) && end < today) warn("W9", `${label} has already ended. Check whether it can be removed.`, where); };
+  const hoursOk = (opens, closes, where, label, overnightOk) => {
+    if (!TIME_RE.test(opens || "") || !TIME_RE.test(closes || "")) { err("S4", `${label}: enter times in the form 09:00.`, where); return; }
+    if (!overnightOk && opens >= closes) err("S4", `${label}: the start (${opens}) is after the end (${closes}).`, where);
+  };
+  const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} must be an array ([ ]).`, k); return []; } return o[k]; };
+  list("exceptions").forEach((x, i) => {
+    const w = `exceptions[${i}]`, label = `Temporary closure or change ${i+1}`;
+    if (!isObj(x)) { err("S4", `${label}: not in the right form.`, w); return; }
+    if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: enter the period (from, to) in the form YYYY-MM-DD.`, w);
+    else { if (x.from > x.to) err("S4", `${label}: the start date is after the end date.`, w); old(x.to, w, label); }
+    if (!["closed","open","changed"].includes(x.status)) err("S4", `${label}: status must be closed, open (extra opening) or changed (changed hours).`, w + ".status");
+    if (x.status === "open" || x.status === "changed") {
+      if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: enter the opening hours (hours).`, w + ".hours");
+      else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label}, hours ${k+1}`, false));
+    }
+  });
+  list("doctorSchedule").forEach((x, i) => {
+    const w = `doctorSchedule[${i}]`, label = `Doctor's schedule ${i+1}`;
+    if (!isObj(x)) { err("S5", `${label}: not in the right form.`, w); return; }
+    if (!isStr(x.department) && !isStr(x.name)) err("S5", `${label}: enter a department or a doctor.`, w);
+    const hasDays = Array.isArray(x.days) && x.days.length, hasDate = isDate(x.date);
+    if (!hasDays && !hasDate) err("S5", `${label}: enter days (days) or a date (date).`, w);
+    if (hasDays && x.days.some(d => !DAY_KEYS.includes(d))) err("S5", `${label}: only Mo–Su and PH can be used as days.`, w + ".days");
+    hoursOk(x.opens, x.closes, w, label, false);
+    if (x.from !== undefined && !isDate(x.from)) err("S5", `${label}: from must be YYYY-MM-DD.`, w + ".from");
+    if (x.to !== undefined && !isDate(x.to)) err("S5", `${label}: to must be YYYY-MM-DD.`, w + ".to");
+    old(hasDate ? x.date : x.to, w, label);
+  });
+  list("onCall").forEach((x, i) => {
+    const w = `onCall[${i}]`, label = `On-call duty ${i+1}`;
+    if (!isObj(x)) { err("S6", `${label}: not in the right form.`, w); return; }
+    if (!isDate(x.date)) err("S6", `${label}: enter the date (date) in the form YYYY-MM-DD.`, w + ".date");
+    if (!["holiday","night","other"].includes(x.kind)) err("S6", `${label}: kind must be holiday (holiday duty), night (night duty) or other.`, w + ".kind");
+    hoursOk(x.opens, x.closes, w, label, true);
+    old(x.date, w, label);
+  });
+  list("notices").forEach((x, i) => {
+    const w = `notices[${i}]`, label = `Notice ${i+1}`;
+    if (!isObj(x) || !isStr(x.text)) { err("S7", `${label}: the text is empty.`, w); return; }
+    if (x.text.length > 200) warn("W5", `${label}: the text is too long (${x.text.length} characters; up to 200).`, w + ".text");
+    for (const k of ["from","to"]) if (x[k] !== undefined && !isDate(x[k])) err("S7", `${label}: ${k} must be YYYY-MM-DD.`, `${w}.${k}`);
+    if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: the start date is after the end date.`, w);
+    old(x.to, w, label);
+  });
+  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+    warn("W10", "There is no temporary information. Even with nothing scheduled, publishing this file tells AI there are no temporary arrangements.", "$");
+  return { E, W };
+}
+
+
+function validateDirectory(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("D1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("D1", "specVersion (e.g. \"0.3\") is missing.", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker.`, "specVersion");
+  if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("D2", "updated must be in the form YYYY-MM-DD.", "updated");
+  if (!isObj(o.publisher) || !isStr(o.publisher.name)) err("D3", "Enter publisher.name (the organisation that compiled this list).", "publisher");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("D3", "Enter area.addressCountry (country, e.g. JP).", "area");
+  if (!Array.isArray(o.entries) || !o.entries.length) err("D4", "Enter at least one entry (clinic).", "entries");
+  else {
+    const urls = new Set();
+    o.entries.forEach((e, i) => {
+      const w = `entries[${i}]`;
+      if (!isObj(e) || !isStr(e.name)) err("D4", `Entry ${i+1}: the clinic name (name) is missing.`, w);
+      if (!isObj(e) || typeof e.url !== "string" || !/^https:\/\/\S+$/.test(e.url)) err("D4", `Entry ${i+1}: enter url (where the clinic's clinic-intake.json is) starting with https://.`, w + ".url");
+      else if (urls.has(e.url)) err("D4", `Entry ${i+1}: the same url appears more than once.`, w + ".url"); else urls.add(e.url);
+      if (isObj(e) && e.geo !== undefined && !(isObj(e.geo) && typeof e.geo.latitude === "number" && typeof e.geo.longitude === "number")) err("D4", `Entry ${i+1}: geo must have numbers latitude and longitude.`, w + ".geo");
+    });
+  }
+  if (o.onCall !== undefined) {
+    if (!Array.isArray(o.onCall)) err("D5", "onCall (local on-call schedule) must be an array.", "onCall");
+    else o.onCall.forEach((x, i) => {
+      const w = `onCall[${i}]`;
+      if (!isObj(x) || !(typeof x.date === "string" && DATE.test(x.date))) err("D5", `On-call duty ${i+1}: enter the date (date) in the form YYYY-MM-DD.`, w);
+      if (!isObj(x) || !isStr(x.name)) err("D5", `On-call duty ${i+1}: enter the clinic name (name).`, w);
+      if (isObj(x) && (!TIME_RE.test(x.opens || "") || !TIME_RE.test(x.closes || ""))) err("D5", `On-call duty ${i+1}: enter times in the form 09:00.`, w);
+    });
+  }
+  return { E, W };
+}
+
+
+function validateProfile(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("P1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (!isStr(o.id) || !/^[a-z0-9-]{2,32}$/.test(o.id)) err("P1", "id must use lower-case letters, numbers and hyphens (e.g. jp, jp-tokyo).", "id");
+  if (!isStr(o.specVersion)) err("P1", "specVersion is missing.", "specVersion");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("P2", "Enter area.addressCountry (country, e.g. JP).", "area");
+  if (!isObj(o.emergency) || !isStr(o.emergency.message) || !Array.isArray(o.emergency.numbers) || !o.emergency.numbers.length) err("P3", "Enter emergency (the emergency message and numbers).", "emergency");
+  if (!Array.isArray(o.redFlags) || !o.redFlags.filter(isStr).length) {
+    if (o.status === "draft") W.push({ code: "W16", msg: "The emergency warning signs (redFlags) are still empty. Keep this profile as a draft until they are transcribed from an official source.", where: "redFlags" });
+    else err("P3", "Enter at least one emergency warning sign (redFlags).", "redFlags");
+  }
+  if (o.questionnaires !== undefined) {
+    if (!Array.isArray(o.questionnaires)) err("P4", "questionnaires must be an array.", "questionnaires");
+    else { const r = validateIntake({ spec: "open-intake", specVersion: o.specVersion, updated: o.updated, clinic: { name: "x", telephone: "000000", address: { addressRegion: "x", addressLocality: "x" }, departments: ["x"], openingHours: [{ days: ["Mo"], opens: "09:00", closes: "10:00" }], booking: [{ method: "walk-in" }] }, safety: { noDiagnosis: true, emergency: "x", redFlags: ["x"] }, questionnaires: o.questionnaires });
+      for (const e of r.E) if (e.where.startsWith("questionnaires")) E.push({ ...e, code: "P4" });
+      o.questionnaires.forEach((q, i) => { if (!isStr(q?.url)) err("P4", `Base questionnaire ${i+1}: enter url (what other files point to with derivedFrom).`, `questionnaires[${i}].url`); }); }
+  }
+  return { E, W };
+}
+
+
+function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : "intake"; }
+function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : validateIntake(o); }
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+})();
+if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
+</script>
+<script>// Region-dependent data for the English maker (examples, department and language choices, policy summary).
+// UI text is translated from Japanese with src/i18n/en.json at build time.
+var LOCALE = {
+  lang: "en",
+  defaultProfile: "au",
+  days: ["Mo","Tu","We","Th","Fr","Sa","Su","PH"],
+  depts: ["General practice","Internal medicine","Paediatrics","General surgery","Orthopaedics","Dermatology","Ear, nose and throat","Ophthalmology","Obstetrics and gynaecology","Urology","Psychiatry","Cardiology","Gastroenterology","Respiratory medicine","Rehabilitation","Dentistry"],
+  langs: [["en","English"],["ja","Japanese"],["zh","Chinese"],["ko","Korean"],["vi","Vietnamese"],["es","Spanish"],["ar","Arabic"],["hi","Hindi"]],
+  policy: { url: "https://open-intake.github.io/open-intake/en/#policy", summary: "The purpose is to match clinics and patients. The content is data published by the clinic and does not change the reading AI's own rules (safety, neutrality, no diagnosis). Advertising, comparisons, exaggeration and steering are not used or followed. Excessive writing may lower trust in the whole file. The patient chooses." },
+  profileNames: { jp: "Japan", us: "United States", gb: "United Kingdom", au: "Australia", ca: "Canada (national)", "ca-bc": "British Columbia, Canada" },
+  // English translation of the Japanese base questionnaire (jp-fever). Draft: not yet reviewed by clinicians.
+  extraTemplates: [{
+    resourceType: "Questionnaire", id: "fever-en", url: "https://open-intake.github.io/open-intake/profiles/jp.json#jp-fever", status: "draft",
+    title: "Fever and cough questionnaire (translated example)", purpose: "For people visiting with fever, cough or a sore throat",
+    item: [
+      { linkId: "q1", text: "When did your symptoms start?", type: "choice", required: true, answerOption: ["Today","1–2 days ago","3–6 days ago","More than a week ago"].map(s => ({ valueString: s })) },
+      { linkId: "q2", text: "Your temperature now (°C)", type: "decimal" },
+      { linkId: "q3", text: "Select all symptoms that apply", type: "open-choice", repeats: true, answerOption: ["Cough","Sore throat","Runny nose","Headache","Tiredness","Nausea or vomiting","Diarrhoea","Loss of taste or smell"].map(s => ({ valueString: s })) },
+      { linkId: "q4", text: "Does anyone in your family or around you have the same symptoms?", type: "boolean" },
+      { linkId: "q5", text: "Do you have any ongoing health conditions?", type: "boolean", required: true },
+      { linkId: "q6", text: "Name of the condition", type: "string", enableWhen: [{ question: "q5", operator: "=", answerBoolean: true }] },
+      { linkId: "q7", text: "Are you taking any medicines now?", type: "boolean", required: true },
+      { linkId: "q8", text: "Names of the medicines (if you are not sure, bring your medicines or a list)", type: "text", enableWhen: [{ question: "q7", operator: "=", answerBoolean: true }] },
+      { linkId: "q9", text: "Do you have any allergies to medicines or foods?", type: "boolean", required: true },
+      { linkId: "q10", text: "Details of the allergy", type: "string", enableWhen: [{ question: "q9", operator: "=", answerBoolean: true }] },
+      { linkId: "q11", text: "Are you pregnant, or could you be pregnant?", type: "choice", answerOption: ["Yes","No","Not applicable"].map(s => ({ valueString: s })) },
+      { linkId: "q12", text: "Anything else you want to tell the doctor", type: "text" }
+    ]
+  }],
+  exampleDoc(x) {
+    return {
+      spec: "open-intake", specVersion: "0.3", updated: x.today(), profile: x.profileRef("au"),
+      files: [{ role: "schedule", url: "/clinic-schedule.json", note: "Temporary closures, doctors, on-call duty and notices" }],
+      clinic: {
+        name: "Greenfield Family Practice (fictional example)", url: "https://example.com/", telephone: "(02) 0000 0000",
+        address: { addressCountry: "AU", postalCode: "2000", addressRegion: "NSW", addressLocality: "Sydney", streetAddress: "1 Example Street, Level 2" },
+        geo: { latitude: -33.8688, longitude: 151.2093 }, access: ["3 minutes' walk from Example Station (fictional)", "Parking for 3 cars"],
+        departments: ["General practice","Paediatrics"],
+        openingHours: [
+          { days: ["Mo","Tu","We","Th","Fr"], opens: "08:30", closes: "12:30" },
+          { days: ["Mo","Tu","We","Th","Fr"], opens: "14:00", closes: "18:00" },
+          { days: ["Sa"], opens: "09:00", closes: "12:00", note: "Last booking at 11:30" }
+        ],
+        closedNote: "Closed on Sundays and public holidays",
+        focus: [{ department: "General practice", areas: ["Diabetes", "Asthma", "Travel vaccinations"], note: "(fictional example)" }, { department: "Paediatrics", areas: ["Childhood asthma", "Immunisations"] }],
+        handles: ["Fever","Cough","Sore throat","Stomach pain and diarrhoea","Blood pressure and diabetes","Vaccinations"],
+        notHandled: ["Hospital admission","Babies under 6 months"],
+        booking: [
+          { method: "web", url: "https://example.com/book", note: "Same-day appointments available" },
+          { method: "phone", telephone: "(02) 0000 0000", note: "During opening hours only" },
+          { method: "walk-in", note: "If you have a fever, please call before you come in" }
+        ],
+        bring: ["Medicare card","A list of your current medicines"],
+        languages: ["en","zh"], accessibility: ["Lift","Wheelchair access"]
+      },
+      safety: x.safetyFrom("au"),
+      aiNotes: "If the patient has a fever, ask them to call the clinic with their arrival time before coming in.",
+      questionnaires: [x.fromTemplate(null, "fever-en", { id: "fever", title: "Fever and cough questionnaire" })]
+    };
+  },
+  exampleSchedule(x) {
+    const t = x.today(), d = x.addDays;
+    return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
+      exceptions: [
+        { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "Public holiday: open in the morning only" },
+        { from: d(t, 30), to: d(t, 31), status: "closed", note: "Closed for staff training" }],
+      doctorSchedule: [{ department: "Paediatrics", name: "Dr Smith (fictional)", days: ["Tu","Th"], opens: "14:00", closes: "18:00", note: "Children's clinic" }],
+      onCall: [{ date: d(t, 13), kind: "holiday", opens: "09:00", closes: "17:00", department: "General practice", note: "Local after-hours service (afternoon included)" }],
+      notices: [{ from: t, to: d(t, 30), text: "Flu vaccinations are by appointment. Please book online or by phone." }] };
+  }
+};
+</script>
+<script>
+(() => {
+"use strict";
+
+
+const DAYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"].map((k, i) => [k, LOCALE.days[i]]);
+const DAY_KEYS = DAYS.map(d => d[0]);
+const DEPTS = LOCALE.depts;
+const LANGS = LOCALE.langs;
+const METHODS = [["web","Online booking"],["phone","Phone"],["walk-in","Walk-in (no booking)"],["other","Other"]];
+const TYPES = [["boolean","Yes / no"],["choice","Choose"],["open-choice","Choose or write"],["string","Short text"],["text","Long text"],["integer","Whole number"],["decimal","Decimal number"],["date","Date"],["display","Note (no answer)"]];
+const TYPE_KEYS = ["group", ...TYPES.map(t => t[0])];
+const CHOICE = new Set(["choice","open-choice"]);
+const PROFILES = [{"spec":"open-intake-profile","specVersion":"0.3","id":"jp","url":"https://open-intake.github.io/open-intake/profiles/jp.json","title":"日本の地域プロファイル","updated":"2026-11-11","area":{"addressCountry":"JP"},"languages":["ja"],"status":"draft","note":"日本の医療機関が使う基本（救急の番号・救急の目安・識別番号の体系・問診票の基本形）。医師の確認はまだ済んでいない。","emergency":{"message":"命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。","numbers":[{"number":"119","label":"救急車・消防"},{"number":"#7119","label":"救急安心センター（救急車を呼ぶか迷うときの相談。地域による）"},{"number":"#8000","label":"子ども医療電話相談（主に休日・夜間）"}]},"redFlags":["顔: 顔半分が動きにくい、または、しびれる","顔: ニッコリ笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくく、うまく話せない","顔: 見える範囲が狭くなる","顔: 突然、周りが二重に見える","顔: 顔色が明らかに悪い","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 支えなしで立てないぐらい急にふらつく","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 激しい腹痛が持続する","おなか: 血を吐く","おなか: 便に血が混ざる、または、真っ黒い便が出る","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","意識の障害: ぐったりしている","吐き気: 冷や汗を伴うような強い吐き気","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","その他: いつもと違う場合、様子がおかしい場合"],"redFlagsByAge":{"older":{"label":"高齢者","items":["顔: 顔半分が動きにくい、しびれる","顔: 笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくい","顔: 見える範囲が狭くなる","顔: 周りが二重に見える","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 急にふらつき、立っていられない","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 旅行などの後に痛み出した","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 血を吐く","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","吐き気: 冷や汗を伴うような強い吐き気","けいれん: けいれんが止まらない","飲み込み: 物をのどにつまらせた","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故や転落、転倒で強い衝撃を受けた","その他: いつもと違う場合、様子がおかしい場合"],"note":"高齢者は自覚症状が出にくい場合もあるので注意する。"},"child":{"label":"こども（15歳以下）","items":["顔: くちびるの色が紫色","顔: 顔色が明らかに悪い","頭: 頭を痛がって、けいれんがある","頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある","胸: 激しい咳やゼーゼーして呼吸が苦しそう","胸: 呼吸が弱い","手・足: 手足が硬直している","おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない","おなか: 激しいおなかの痛みで苦しがる","おなか: 嘔吐が止まらない","おなか: 便に血がまじった","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった","やけど: 痛みのひどいやけど","やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","生まれて3カ月未満の乳児: 乳児の様子がおかしい","その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"],"note":"判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}},"redFlagsSource":{"publisher":"消防庁","title":"救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜","edition":"令和7年12月発行","url":"https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf","pages":"おとな p.3・高齢者 p.2・こども p.4","note":"「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"},"identifierSystems":[{"system":"jp-medical-institution-code","label":"医療機関コード（保険医療機関の番号・10桁）","pattern":"^\\d{10}$"}],"questionnaires":[{"resourceType":"Questionnaire","id":"jp-fever","status":"draft","title":"発熱・せきの問診票（基本形）","purpose":"発熱・せき・のどの痛みで受診する方","item":[{"linkId":"q1","text":"いつから症状がありますか","type":"choice","required":true,"answerOption":[{"valueString":"今日"},{"valueString":"1〜2日前"},{"valueString":"3〜6日前"},{"valueString":"1週間以上前"}]},{"linkId":"q2","text":"いまの体温（℃）","type":"decimal"},{"linkId":"q3","text":"当てはまる症状をすべて選んでください","type":"open-choice","repeats":true,"answerOption":[{"valueString":"せき"},{"valueString":"のどの痛み"},{"valueString":"鼻水"},{"valueString":"頭痛"},{"valueString":"体のだるさ"},{"valueString":"吐き気・おう吐"},{"valueString":"下痢"},{"valueString":"味やにおいがわからない"}]},{"linkId":"q4","text":"家族や周りに同じ症状の人はいますか","type":"boolean"},{"linkId":"q5","text":"持病はありますか","type":"boolean","required":true},{"linkId":"q6","text":"持病の名前","type":"string","enableWhen":[{"question":"q5","operator":"=","answerBoolean":true}]},{"linkId":"q7","text":"いま飲んでいる薬はありますか","type":"boolean","required":true},{"linkId":"q8","text":"薬の名前（わからなければ、お薬手帳を持ってきてください）","type":"text","enableWhen":[{"question":"q7","operator":"=","answerBoolean":true}]},{"linkId":"q9","text":"薬や食べ物のアレルギーはありますか","type":"boolean","required":true},{"linkId":"q10","text":"アレルギーの内容","type":"string","enableWhen":[{"question":"q9","operator":"=","answerBoolean":true}]},{"linkId":"q11","text":"妊娠している、またはその可能性がありますか","type":"choice","answerOption":[{"valueString":"はい"},{"valueString":"いいえ"},{"valueString":"あてはまらない"}]},{"linkId":"q12","text":"そのほか、医師に伝えたいこと","type":"text"}],"url":"https://open-intake.github.io/open-intake/profiles/jp.json#jp-fever"}]},{"spec":"open-intake-profile","specVersion":"0.3","id":"us","url":"https://open-intake.github.io/open-intake/profiles/us.json","title":"United States (starter profile)","updated":"2026-11-11","area":{"addressCountry":"US"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region. Reference not quoted (reproduction not permitted): American College of Emergency Physicians, \"When Your Child Has an Emergency\" (2002), https://www.acep.org/siteassets/uploads/uploaded-files/acep/clinical-and-practice-management/resources/pediatrics/whenyourchildhasanemergency.pdf","emergency":{"message":"If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.","numbers":[{"number":"911","label":"Emergency services (ambulance, fire, police)"},{"number":"988","label":"Suicide & Crisis Lifeline (call or text)"}]},"redFlags":["Stroke: Sudden trouble walking, dizziness, loss of balance, or lack of coordination.","Stroke: Sudden trouble seeing.","Stroke: Sudden numbness or weakness in the face, arm, or leg, especially on one side of the body.","Stroke: Sudden confusion, trouble speaking, or difficulty understanding speech.","Stroke: Sudden severe headache with no known cause.","Heart attack: Chest pain or discomfort. Most heart attacks involve discomfort in the center or left side of the chest that lasts for more than a few minutes or that goes away and comes back. The discomfort can feel like uncomfortable pressure, squeezing, fullness, or pain.","Heart attack: Feeling weak, light-headed, or faint. You may also break into a cold sweat.","Heart attack: Pain or discomfort in the jaw, neck, or back.","Heart attack: Pain or discomfort in one or both arms or shoulders.","Heart attack: Shortness of breath. This often comes along with chest discomfort, but shortness of breath also can happen before chest discomfort."],"redFlagsSource":{"publisher":"U.S. Centers for Disease Control and Prevention (CDC)","title":"Signs and Symptoms of Stroke (May 19, 2026); About Heart Attack Symptoms, Risk, and Recovery (Oct. 24, 2024)","url":"https://www.cdc.gov/stroke/signs-symptoms/index.html","pages":"also https://www.cdc.gov/heart-disease/about/heart-attack.html","note":"Transcribed verbatim from the official pages; the condition name is prefixed to each line. These cover stroke and heart attack only, not a general list of emergencies. A general list (for example from an emergency medicine society) is still needed. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[{"system":"http://hl7.org/fhir/sid/us-npi","label":"National Provider Identifier (NPI)","pattern":"^\\d{10}$"}],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"gb","url":"https://open-intake.github.io/open-intake/profiles/gb.json","title":"United Kingdom (starter profile)","updated":"2026-11-11","area":{"addressCountry":"GB"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers and emergency warning signs (transcribed from London Ambulance Service NHS Trust; examples, not exhaustive) are filled in. To be discussed and maintained by a community in this region.","emergency":{"message":"If someone is seriously ill or injured and their life is at risk, call 999 now. 999 is for life-threatening emergencies like serious road traffic accidents, strokes and heart attacks. If you think you need urgent medical help and you are not sure whether to call 999, use NHS 111 (111 online, call 111, or the NHS App).","numbers":[{"number":"999","label":"Emergency services"},{"number":"112","label":"Emergency services (also works)"},{"number":"111","label":"NHS 111 (urgent but not life-threatening)"}]},"redFlags":["Chest pain","Difficulty in breathing","Unconsciousness","Severe loss of blood","Severe burns or scalds","Choking","Fitting or concussion","Drowning","Severe allergic reactions"],"redFlagsSource":{"publisher":"London Ambulance Service NHS Trust","title":"When to call 999","edition":"Page modified 2026-09-30","url":"https://www.londonambulance.nhs.uk/our-services/emergency-care/calling-999/","pages":"section \"Examples of when to call 999\"","note":"Transcribed verbatim from the official page (examples given by the ambulance service, not an exhaustive list). The national NHS pages (nhs.uk, reviewed 3 February 2023) do not currently list symptoms. Saved copy provided by the project lead; accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"au","url":"https://open-intake.github.io/open-intake/profiles/au.json","title":"Australia (starter profile)","updated":"2026-11-11","area":{"addressCountry":"AU"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers and emergency warning signs (transcribed from healthdirect Australia) are filled in. To be discussed and maintained by a community in this region.","emergency":{"message":"In a life-threatening emergency, call Triple Zero (000) now. If you are not sure whether to seek care, you can call the healthdirect helpline on 1800 022 222.","numbers":[{"number":"000","label":"Triple Zero (ambulance, fire, police)"},{"number":"112","label":"Emergency number from mobile phones"},{"number":"1800 022 222","label":"healthdirect helpline (health advice)"}]},"redFlags":["Loss of consciousness (blackout or fainting) — even if brief","Chest pain","Sudden weakness in the face, arm or leg or trouble speaking — these could be signs of a stroke","Breathing problems","A sudden collapse or unexplained fall","A seizure","Uncontrollable bleeding","Any other major concern about a person's health or wellbeing","Severe burns","Stings or bites from snakes, jellyfish or other poisonous animals","Fallen from a great height","An injury from a major car accident","Been physically assaulted, including stabbing or shooting"],"redFlagsSource":{"publisher":"healthdirect Australia","title":"Calling triple zero (000)","edition":"Last reviewed: August 2025","url":"https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero","pages":"section \"When do I need an ambulance?\"","note":"Transcribed verbatim from the official page. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca","url":"https://open-intake.github.io/open-intake/profiles/ca.json","title":"Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA"},"languages":["en"],"status":"draft","note":"Starter profile for Canada as a whole. Emergency numbers are filled in. Health services are organised by province, so warning signs are kept in provincial profiles (for example ca-bc).","emergency":{"message":"In a life-threatening emergency, call 911 now. In many provinces you can call 811 for health advice from a nurse when it is not an emergency.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"Health advice line (available in many provinces)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca-bc","url":"https://open-intake.github.io/open-intake/profiles/ca-bc.json","title":"British Columbia, Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA","addressRegion":"BC"},"languages":["en"],"status":"draft","note":"Starter profile for British Columbia. Health services in Canada are organised by province, so warning signs are kept per province. Emergency numbers and warning signs (transcribed from HealthLink BC) are filled in. To be discussed and maintained by a community in this region.","emergency":{"message":"Call 9-1-1 anytime you think you may need emergency care. If you are unsure if a health concern is an emergency, call HealthLink BC at 8-1-1 for advice.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"HealthLink BC (health advice; 7-1-1 for the deaf and hard of hearing)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":["A major accident","Trouble breathing, or catching your breath","Severe abdominal or chest pain/pressure","Weakness or tingling on one side of your body","Loss of consciousness","Heavy bleeding"],"redFlagsSource":{"publisher":"HealthLink BC (Government of British Columbia)","title":"When to visit the emergency room","edition":"Last updated January 29, 2025","url":"https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room","note":"Transcribed verbatim from the official page (\"Always go to the ER if you have been in a major accident or for potentially life-threatening symptoms like: …\"). Accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[],"questionnaires":[]}];
+const profileById = id => PROFILES.find(p => p.id === id);
+const currentProfile = () => profileById(S && S.profile && (S.profile.id || S.profile)) || profileById(LOCALE.defaultProfile) || PROFILES[0];
+const profileName = p => (LOCALE.profileNames && LOCALE.profileNames[p.id]) || p.title;
+const profileRef = id => { const p = profileById(id); return p ? { id: p.id, url: p.url } : { id }; };
+const POLICY_URL = LOCALE.policy;
+const STORE_KEY = "open-intake-draft-v1";
+const STORE_KEY_S = "open-intake-schedule-draft-v1";
+const addDays = (d, n) => { const t = new Date(d + "T00:00:00"); t.setDate(t.getDate() + n); const p = x => String(x).padStart(2, "0"); return `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`; };
+
+const today = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const opt = s => ({ valueString: s });
+
+function templates(prof) { return [...((prof && prof.questionnaires) || []), ...(LOCALE.extraTemplates || [])]; }
+function fromTemplate(profId, tplId, over = {}) {
+  const all = profId ? (profileById(profId)?.questionnaires || []) : (LOCALE.extraTemplates || []);
+  const t = all.find(q => q.id === tplId) || templates(currentProfile())[0];
+  const q = JSON.parse(JSON.stringify(t));
+  if (q.url) q.derivedFrom = [q.url]; delete q.url;
+  return { ...q, status: "draft", ...over };
+}
+function blankSafety(prof = currentProfile()) {
+  const p = prof || {};
+  const s = { noDiagnosis: true, emergency: p.emergency ? p.emergency.message : "", redFlags: (p.redFlags || []).slice() };
+  if (p.redFlagsByAge) s.redFlagsByAge = JSON.parse(JSON.stringify(p.redFlagsByAge));
+  if (p.redFlagsSource) s.redFlagsSource = { ...p.redFlagsSource };
+  return s;
+}
+const X = { today: () => today(), addDays: (d, n) => addDays(d, n), profileRef, safetyFrom: id => blankSafety(profileById(id)), fromTemplate };
+function exampleDoc() { return LOCALE.exampleDoc(X); }
+function blankDoc() {
+  return {
+    spec: "open-intake", specVersion: "0.3", updated: today(), profile: profileRef(LOCALE.defaultProfile), files: [],
+    clinic: { name: "", url: "", identifiers: [], telephone: "", address: { addressCountry: (profileById(LOCALE.defaultProfile)?.area?.addressCountry) || "", postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" }, geo: null, access: [],
+      departments: [], openingHours: [{ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "12:00" }], closedNote: "",
+      handles: [], notHandled: [], booking: [{ method: "phone", telephone: "" }], bring: [], languages: [LOCALE.lang], accessibility: [] },
+    safety: blankSafety(profileById(LOCALE.defaultProfile)), aiNotes: "", questionnaires: []
+  };
+}
+
+
+let S;          
+let origin = ""; // "example" | "draft" | "blank" | "loaded"
+
+function normalize(doc) {
+  const d = (doc && typeof doc === "object") ? JSON.parse(JSON.stringify(doc)) : {};
+  const notes = [];
+  d.spec = "open-intake"; d.specVersion = typeof d.specVersion === "string" ? d.specVersion : "0.1";
+  if (d.profile === undefined) d.profile = profileRef(LOCALE.defaultProfile);
+  if (typeof d.updated !== "string") d.updated = today();
+  d.files = Array.isArray(d.files) ? d.files.filter(f => f && typeof f === "object").map(f => ({ ...f, role: String(f.role ?? ""), url: String(f.url ?? "") })) : [];
+  const c = d.clinic = (d.clinic && typeof d.clinic === "object") ? d.clinic : {};
+  for (const k of ["name","url","telephone","closedNote"]) if (typeof c[k] !== "string") c[k] = "";
+  c.address = (c.address && typeof c.address === "object") ? c.address : {};
+  for (const k of ["postalCode","addressRegion","addressLocality","streetAddress"]) if (typeof c.address[k] !== "string") c.address[k] = "";
+  if (typeof c.address.addressCountry !== "string") c.address.addressCountry = (profileById(LOCALE.defaultProfile)?.area?.addressCountry) || "";
+  c.identifiers = Array.isArray(c.identifiers) ? c.identifiers.filter(x => x && typeof x === "object") : [];
+  c.geo = (c.geo && typeof c.geo === "object" && typeof c.geo.latitude === "number" && typeof c.geo.longitude === "number") ? { latitude: c.geo.latitude, longitude: c.geo.longitude } : null;
+  c.access = Array.isArray(c.access) ? c.access.filter(x => typeof x === "string") : [];
+  for (const k of ["departments","handles","notHandled","bring","languages","accessibility"]) c[k] = Array.isArray(c[k]) ? c[k].filter(x => typeof x === "string") : [];
+  c.focus = Array.isArray(c.focus) ? c.focus.filter(f => f && typeof f === "object").map(f => ({ ...f, department: typeof f.department === "string" ? f.department : "", areas: Array.isArray(f.areas) ? f.areas.filter(x => typeof x === "string") : [], note: typeof f.note === "string" ? f.note : "" })) : [];
+  c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.map(h => ({ days: Array.isArray(h?.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h?.opens || "", closes: h?.closes || "", ...(h?.note ? { note: h.note } : {}) })) : [];
+  c.booking = Array.isArray(c.booking) ? c.booking.map(b => ({ method: b?.method || "other", url: b?.url || "", telephone: b?.telephone || "", note: b?.note || "" })) : [];
+  const s = d.safety = (d.safety && typeof d.safety === "object") ? d.safety : {};
+  s.noDiagnosis = true;
+  const dprof = profileById(d.profile && (d.profile.id || d.profile)) || profileById(LOCALE.defaultProfile) || {};
+  if (typeof s.emergency !== "string") s.emergency = dprof.emergency ? dprof.emergency.message : "";
+  s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : (dprof.redFlags || []).slice();
+  if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
+  if (!(s.redFlagsByAge && typeof s.redFlagsByAge === "object")) delete s.redFlagsByAge;
+  else for (const g of Object.values(s.redFlagsByAge)) if (g && typeof g === "object" && !Array.isArray(g.items)) g.items = [];
+  if (typeof d.aiNotes !== "string") d.aiNotes = "";
+  d.questionnaires = Array.isArray(d.questionnaires) ? d.questionnaires : [];
+  for (const q of d.questionnaires) {
+    q.resourceType = "Questionnaire";
+    for (const k of ["id","title","purpose"]) if (typeof q[k] !== "string") q[k] = "";
+    if (q.status !== "active") q.status = "draft";
+    const flat = [];
+    const walk = (arr) => { for (const it of (Array.isArray(arr) ? arr : [])) {
+      if (it?.type === "group") { notes.push(`Group "${it.text || it.linkId}" in "${q.title || q.id}" was flattened when loading.`); walk(it.item); continue; }
+      if (it && typeof it === "object") { const x = { ...it }; delete x.item; flat.push(x); }
+    } };
+    walk(q.item);
+    q.item = flat.map(it => ({ ...it, linkId: String(it.linkId ?? ""), text: String(it.text ?? ""), type: TYPE_KEYS.includes(it.type) ? it.type : "string",
+      answerOption: Array.isArray(it.answerOption) ? it.answerOption.filter(o => typeof o?.valueString === "string") : undefined }));
+  }
+  return { doc: d, notes };
+}
+
+
+const clean = s => (typeof s === "string" ? s.trim() : s);
+const cleanList = a => (a || []).map(clean).filter(Boolean);
+function build(d) {
+  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.3", updated: d.updated, policy: POLICY_URL };
+  if (d.profile) out.profile = d.profile;
+  const files = (d.files || []).map(f => { const o = { ...f, role: clean(f.role), url: clean(f.url) }; if (!clean(o.note)) delete o.note; return o; }).filter(f => f.role || f.url);
+  if (files.length) out.files = files;
+  const clinic = { name: clean(c.name) };
+  if (clean(c.url)) clinic.url = clean(c.url);
+  const ids = c.identifiers.map(x => ({ ...x, system: clean(x.system), value: clean(x.value) })).filter(x => x.system && x.value);
+  if (ids.length) clinic.identifiers = ids;
+  clinic.telephone = clean(c.telephone);
+  const a = {}; for (const k of ["addressCountry","postalCode","addressRegion","addressLocality","streetAddress"]) { const v = clean(c.address[k]); if (v || k === "addressRegion" || k === "addressLocality") a[k] = v; }
+  clinic.address = a;
+  if (c.geo) clinic.geo = { latitude: c.geo.latitude, longitude: c.geo.longitude };
+  { const v = cleanList(c.access); if (v.length) clinic.access = v; }
+  clinic.departments = cleanList(c.departments);
+  clinic.openingHours = c.openingHours.map(h => { const o = { days: DAY_KEYS.filter(k => h.days.includes(k)), opens: h.opens, closes: h.closes }; if (clean(h.note)) o.note = clean(h.note); return o; });
+  if (clean(c.closedNote)) clinic.closedNote = clean(c.closedNote);
+  { const fo = c.focus.map(f => { const o = {}; if (clean(f.department)) o.department = clean(f.department); o.areas = cleanList(f.areas); if (clean(f.note)) o.note = clean(f.note); return o; }).filter(f => f.areas.length || f.department); if (fo.length) clinic.focus = fo; }
+  for (const k of ["handles","notHandled"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
+  clinic.booking = c.booking.map(b => { const o = { method: b.method }; if (b.method === "web" || (b.method === "other" && clean(b.url))) o.url = clean(b.url); if (b.method === "phone" || (b.method === "other" && clean(b.telephone))) o.telephone = clean(b.telephone); if (clean(b.note)) o.note = clean(b.note); return o; });
+  for (const k of ["bring","languages","accessibility"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
+  out.clinic = clinic;
+  out.safety = { noDiagnosis: true, emergency: clean(d.safety.emergency), redFlags: cleanList(d.safety.redFlags) };
+  if (d.safety.redFlagsByAge) { const by = {}; for (const [k, g] of Object.entries(d.safety.redFlagsByAge)) { if (!g || typeof g !== "object") continue; const items = cleanList(g.items); if (!items.length) continue; by[k] = { ...g, items }; } if (Object.keys(by).length) out.safety.redFlagsByAge = by; }
+  if (d.safety.redFlagsSource) out.safety.redFlagsSource = d.safety.redFlagsSource;
+  if (clean(d.aiNotes)) out.aiNotes = clean(d.aiNotes);
+  out.questionnaires = d.questionnaires.map(q => {
+    const o = { resourceType: "Questionnaire", id: clean(q.id), status: q.status, title: clean(q.title) };
+    if (clean(q.purpose)) o.purpose = clean(q.purpose);
+    if (clean(q.url)) o.url = clean(q.url);
+    if (Array.isArray(q.derivedFrom) && q.derivedFrom.length) o.derivedFrom = q.derivedFrom;
+    o.item = q.item.map(it => {
+      const x = { linkId: it.linkId, text: clean(it.text), type: it.type };
+      if (it.required && it.type !== "display") x.required = true;
+      if (it.repeats && CHOICE.has(it.type)) x.repeats = true;
+      if (CHOICE.has(it.type)) x.answerOption = (it.answerOption || []).map(o => ({ valueString: clean(o.valueString) })).filter(o => o.valueString);
+      if (Array.isArray(it.enableWhen) && it.enableWhen.length) { x.enableWhen = it.enableWhen; if (it.enableWhen.length > 1 && it.enableBehavior) x.enableBehavior = it.enableBehavior; }
+      return x;
+    });
+    return o;
+  });
+  return out;
+}
+
+const { validate } = OpenIntakeValidate;
+
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag); let value, checked;
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k === "value") value = v;
+    else if (k === "checked") checked = v;
+    else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  if (value !== undefined) el.value = value;
+  if (checked !== undefined) el.checked = checked;
+  return el;
+}
+const $ = id => document.getElementById(id);
+const fid = (...p) => "f-" + p.join("-");
+function field(id, label, key, control, { req, hint } = {}) {
+  return h("div", { class: "field" },
+    h("label", { for: id }, label, req && h("span", { class: "badge req", text: "Required" }), key && h("span", { class: "k", text: key })),
+    control, hint && h("div", { class: "hint", text: hint }));
+}
+function text(id, get, set, attrs = {}) { return h("input", { type: "text", id, value: get() ?? "", oninput: e => { set(e.target.value); changed(); }, ...attrs }); }
+function lines(id, get, set, attrs = {}) { return h("textarea", { id, rows: 4, value: (get() || []).join("\n"), oninput: e => { set(e.target.value.split("\n").map(s => s.trim()).filter(Boolean)); changed(); }, ...attrs }); }
+function sheetHead(no, title, key) { return h("header", {}, h("span", { class: "no", text: no }), h("h2", { text: title }), key && h("code", { class: "key", text: key })); }
+
+
+function renderClinic() {
+  const c = S.clinic, a = c.address, el = $("sec-clinic"); el.replaceChildren();
+  const geoDraft = { latitude: c.geo ? String(c.geo.latitude) : "", longitude: c.geo ? String(c.geo.longitude) : "" };
+  const setGeo = (k, v) => { geoDraft[k] = v.trim(); const la = parseFloat(geoDraft.latitude), lo = parseFloat(geoDraft.longitude); c.geo = (geoDraft.latitude && geoDraft.longitude && isFinite(la) && isFinite(lo)) ? { latitude: la, longitude: lo } : (geoDraft.latitude || geoDraft.longitude ? { latitude: NaN, longitude: NaN } : null); };
+  const others = c.departments.filter(x => !DEPTS.includes(x));
+  const setDepts = () => {
+    const picked = DEPTS.filter(dp => el.querySelector(`[data-dept="${dp}"]`)?.checked);
+    const extra = $("f-dept-other").value.split(/[\u3001,\uff0c]+/).map(s => s.trim()).filter(Boolean);
+    c.departments = [...picked, ...extra.filter(x => !picked.includes(x))]; renderFocus(); changed();
+  };
+  const langOthers = c.languages.filter(x => !LANGS.some(l => l[0] === x));
+  const setLangs = () => {
+    const picked = LANGS.map(l => l[0]).filter(k => el.querySelector(`[data-lang="${k}"]`)?.checked);
+    const extra = $("f-lang-other").value.split(/[\u3001,\uff0c]+/).map(s => s.trim()).filter(Boolean);
+    c.languages = [...picked, ...extra]; changed();
+  };
+  el.append(
+    sheetHead("1", "Clinic information", "clinic"),
+    field("f-profile", "Regional profile", "profile", h("select", { id: "f-profile", value: currentProfile().id, onchange: e => {
+        const p = profileById(e.target.value); if (!p) return;
+        S.profile = profileRef(p.id); if (p.area && p.area.addressCountry) S.clinic.address.addressCountry = p.area.addressCountry;
+        S.safety = blankSafety(p); renderAll(); renderNotice(`Regional profile set to "${profileName(p)}". Emergency warning signs and the emergency message were replaced with its defaults.`);
+      } }, PROFILES.map(p => h("option", { value: p.id, text: `${profileName(p)} (${p.id})` }))),
+      { hint: "Region-specific basics (emergency numbers, warning signs, base questionnaires). Changing it replaces the warning signs with that region's defaults." }),
+    h("div", { class: "grid" },
+      field("f-name", "Name", "name", text("f-name", () => c.name, v => c.name = v, { placeholder: "Greenfield Family Practice" }), { req: true }),
+      field("f-tel", "Phone", "telephone", text("f-tel", () => c.telephone, v => c.telephone = v, { type: "tel", placeholder: "(02) 0000 0000" }), { req: true }),
+      field("f-url", "Website", "url", text("f-url", () => c.url, v => c.url = v, { type: "url", placeholder: "https://" }))),
+    h("div", { class: "grid" },
+      field("f-zip", "Postcode", "postalCode", text("f-zip", () => a.postalCode, v => a.postalCode = v, { placeholder: "2000", inputmode: "numeric" })),
+      field("f-pref", "State / region", "addressRegion", text("f-pref", () => a.addressRegion, v => a.addressRegion = v, { placeholder: "NSW" }), { req: true }),
+      field("f-city", "City / town", "addressLocality", text("f-city", () => a.addressLocality, v => a.addressLocality = v, { placeholder: "Sydney" }), { req: true }),
+      field("f-street", "Street address", "streetAddress", text("f-street", () => a.streetAddress, v => a.streetAddress = v)),
+      field("f-country", "Country", "addressCountry", text("f-country", () => a.addressCountry, v => a.addressCountry = v.toUpperCase(), { placeholder: "JP", maxlength: 2 }), { hint: "Two-letter ISO code (e.g. AU, GB, US, JP)" })),
+    h("div", { class: "grid" },
+      ...(currentProfile().identifierSystems || []).map((sys, si) => field(fid("id", si), sys.label || sys.system, "identifiers", text(fid("id", si), () => (c.identifiers.find(x => x.system === sys.system) || {}).value || "", v => { const t = v.trim(); const i = c.identifiers.findIndex(x => x.system === sys.system); if (!t) { if (i >= 0) c.identifiers.splice(i, 1); } else if (i >= 0) c.identifiers[i].value = t; else c.identifiers.push({ system: sys.system, value: t }); }, { inputmode: "numeric" }), { hint: "Lets readers check against official registers that this is a real clinic." })),
+      field("f-lat", "Latitude", "geo.latitude", text("f-lat", () => c.geo ? String(c.geo.latitude) : "", v => { setGeo("latitude", v); }, { inputmode: "decimal", placeholder: "35.6940" }), { hint: "The numbers shown when you long-press (or right-click) the place in a map app" }),
+      field("f-lng", "Longitude", "geo.longitude", text("f-lng", () => c.geo ? String(c.geo.longitude) : "", v => { setGeo("longitude", v); }, { inputmode: "decimal", placeholder: "139.7536" }))),
+    field("f-access", "Getting there", "access", lines("f-access", () => c.access, v => c.access = v, { rows: 2, placeholder: "3 minutes' walk from the station\nParking for 3 cars" }), { hint: "One per line." }),
+    h("div", { class: "field" },
+      h("div", { class: "label" }, "Departments", h("span", { class: "badge req", text: "Required" }), h("span", { class: "k", text: "departments" })),
+      h("div", { class: "chips" }, DEPTS.map(dp => h("label", { class: "chip" }, h("input", { type: "checkbox", id: fid("dept", DEPTS.indexOf(dp)), "data-dept": dp, checked: c.departments.includes(dp), onchange: setDepts }), dp))),
+      h("input", { type: "text", id: "f-dept-other", value: others.join(", "), placeholder: "Other departments (separate with commas)", oninput: setDepts, "aria-label": "Other departments" })),
+    h("div", { class: "grid" },
+      field("f-handles", "Symptoms and concerns usually seen", "handles", lines("f-handles", () => c.handles, v => c.handles = v, { placeholder: "Fever\nCough\nBlood pressure checks" }), { hint: "One per line. Helps patients' AI judge whether this clinic is a good fit." }),
+      field("f-nothandled", "Not provided", "notHandled", lines("f-nothandled", () => c.notHandled, v => c.notHandled = v, { placeholder: "Hospital admission\nBabies under 6 months" }), { hint: "One per line." })),
+    h("div", { class: "field", id: "focus-box" }),
+    h("div", { class: "grid" },
+      field("f-bring", "What to bring", "bring", lines("f-bring", () => c.bring, v => c.bring = v, { placeholder: "Health insurance card\nList of current medicines" })),
+      field("f-access", "Accessibility and facilities", "accessibility", lines("f-access", () => c.accessibility, v => c.accessibility = v, { placeholder: "Wheelchair access\nParking" }))),
+    h("div", { class: "field" },
+      h("div", { class: "label" }, "Languages", h("span", { class: "k", text: "languages" })),
+      h("div", { class: "chips" }, LANGS.map(([k, n]) => h("label", { class: "chip" }, h("input", { type: "checkbox", id: fid("lang", k), "data-lang": k, checked: c.languages.includes(k), onchange: setLangs }), n))),
+      h("input", { type: "text", id: "f-lang-other", value: langOthers.join(", "), placeholder: "Others (language codes, e.g. th, ne)", oninput: setLangs, "aria-label": "Other language codes" }))
+  );
+}
+
+function renderFocus() {
+  const el = $("focus-box"); if (!el) return;
+  const c = S.clinic, F = c.focus; el.replaceChildren();
+  el.append(
+    h("div", { class: "label" }, "Areas of focus (self-declared)", h("span", { class: "k", text: "focus" })),
+    h("div", { class: "hint", text: "Even within the same department, you can state which conditions you focus on. This helps patients' AI find a clinic that fits. It is treated as the clinic's own statement. Keep it short and factual. No advertising, comparisons or exaggeration; stay within local rules on medical advertising (see \"Purpose and usage policy\" on the top page)." }),
+    F.length > 0 && h("div", { class: "rows" }, F.map((f, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("focus", i, "dep"), value: f.department, style: "width:auto", "aria-label": "Departments", onchange: e => { f.department = e.target.value; changed(); } },
+          h("option", { value: "", text: "(Any department)" }),
+          [...new Set([...c.departments, f.department].filter(Boolean))].map(d => h("option", { value: d, text: d }))),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", "aria-label": `Remove focus ${i+1}`, onclick: () => { F.splice(i, 1); renderFocus(); changed(); } }, "×")),
+      lines(fid("focus", i, "areas"), () => f.areas, v => f.areas = v, { rows: 3, placeholder: "Diabetes\nThyroid disease", "aria-label": "Areas of focus (one per line)" }),
+      text(fid("focus", i, "note"), () => f.note, v => f.note = v, { placeholder: "Note (e.g. specialist clinic on the 1st and 3rd Saturday)", "aria-label": "Note" })))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { F.push({ department: c.departments[0] || "", areas: [], note: "" }); renderFocus(); changed(); } }, "+ Add area of focus")));
+}
+function renderHours() {
+  const c = S.clinic, el = $("sec-hours"); el.replaceChildren();
+  el.append(sheetHead("2", "Opening hours", "openingHours"),
+    h("p", { class: "lead", text: "Use separate rows for morning and afternoon sessions." }),
+    h("div", { class: "rows" }, c.openingHours.map((hr, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("div", { class: "days", role: "group", "aria-label": `Days for row ${i+1}` }, DAYS.map(([k, n]) => h("label", { class: "day", title: k },
+          h("input", { type: "checkbox", id: fid("hr", i, k), checked: hr.days.includes(k), "aria-label": n, onchange: e => { hr.days = e.target.checked ? DAY_KEYS.filter(x => x === k || hr.days.includes(x)) : hr.days.filter(x => x !== k); changed(); } }),
+          h("span", { text: n })))),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", "aria-label": `Remove row ${i+1}`, onclick: () => { c.openingHours.splice(i, 1); renderHours(); changed(); } }, "×")),
+      h("div", { class: "times" },
+        h("input", { type: "time", id: fid("hr", i, "o"), value: hr.opens, "aria-label": "Start", oninput: e => { hr.opens = e.target.value; changed(); } }),
+        h("span", { text: "–" }),
+        h("input", { type: "time", id: fid("hr", i, "c"), value: hr.closes, "aria-label": "End", oninput: e => { hr.closes = e.target.value; changed(); } }),
+        h("input", { type: "text", id: fid("hr", i, "n"), value: hr.note || "", placeholder: "Note (e.g. last check-in 30 minutes before closing)", style: "flex:1;min-width:160px", oninput: e => { hr.note = e.target.value; changed(); } }))))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.openingHours.push({ days: [], opens: "15:00", closes: "18:00" }); renderHours(); changed(); } }, "+ Add row")),
+    field("f-closed", "Closures note", "closedNote", text("f-closed", () => c.closedNote, v => c.closedNote = v, { placeholder: "Closed Sundays and public holidays" })));
+}
+
+function renderBooking() {
+  const c = S.clinic, el = $("sec-booking"); el.replaceChildren();
+  el.append(sheetHead("3", "Booking and visiting", "booking"),
+    h("div", { class: "rows" }, c.booking.map((b, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("bk", i, "m"), value: b.method, style: "width:auto", "aria-label": "Method", onchange: e => { b.method = e.target.value; renderBooking(); changed(); } }, METHODS.map(([k, n]) => h("option", { value: k, text: n }))),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", "aria-label": `Remove method ${i+1}`, onclick: () => { c.booking.splice(i, 1); renderBooking(); changed(); } }, "×")),
+      h("div", { class: "grid" },
+        (b.method === "web" || b.method === "other") && field(fid("bk", i, "u"), "Booking page URL", "url", text(fid("bk", i, "u"), () => b.url, v => b.url = v, { type: "url", placeholder: "https://" }), { req: b.method === "web" }),
+        (b.method === "phone" || b.method === "other") && field(fid("bk", i, "t"), "Booking phone number", "telephone", text(fid("bk", i, "t"), () => b.telephone, v => b.telephone = v, { type: "tel", placeholder: "(02) 0000 0000" }), { req: b.method === "phone" }),
+        field(fid("bk", i, "n"), "Note", "note", text(fid("bk", i, "n"), () => b.note, v => b.note = v, { placeholder: "e.g. new patients by phone only" })))))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.booking.push({ method: "web", url: "", telephone: "", note: "" }); renderBooking(); changed(); } }, "+ Add method")));
+}
+
+function renderSafety() {
+  const s = S.safety, el = $("sec-safety"); el.replaceChildren();
+  el.append(sheetHead("4", "Safety rules", "safety"),
+    h("p", { class: "lead" }, "Patients' AI checks this before any questionnaire. The defaults come from the selected regional profile (transcribed from that region's official sources; see the source below). They have not yet been reviewed by doctors.", h("strong", { text: " Always have a doctor review them before publishing." })),
+    h("div", { class: "field" }, h("div", { class: "label" }, "No diagnosis", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "This cannot be changed. AI reading this file does not guess diseases or diagnose." })),
+    field("f-emerg", "Emergency message", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
+    field("f-red", "Call emergency services before booking (warning signs: adults / age unknown)", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "One per line. Check with a doctor before removing any." }),
+    s.redFlagsByAge && h("div", { class: "grid" }, Object.entries(s.redFlagsByAge).map(([k, g]) => field("f-red-" + k, `Warning signs: ${g.label || k}`, `redFlagsByAge.${k}`, lines("f-red-" + k, () => g.items, v => g.items = v, { rows: 8 }), { hint: g.note || "" }))),
+    s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "Source of warning signs", h("span", { class: "k", text: "redFlagsSource" })),
+      h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}, "${s.redFlagsSource.title || ""}"${s.redFlagsSource.edition ? " (" + s.redFlagsSource.edition + ")" : ""}${s.redFlagsSource.pages ? " " + s.redFlagsSource.pages : ""}`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "Original source" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { S.safety = blankSafety(); renderSafety(); changed(); } }, "Reset to defaults")));
+}
+
+function nextLinkId(q) { let m = 0; for (const it of q.item) { const n = /^q(\d+)$/.exec(it.linkId); if (n) m = Math.max(m, +n[1]); } return "q" + (m + 1); }
+function renderQuestionnaires() {
+  const el = $("sec-q"); el.replaceChildren();
+  el.append(sheetHead("5", "Questionnaires", "questionnaires"),
+    h("p", { class: "lead", text: "Create one per reason for visiting. Patients' AI follows these questions in conversation and organises the answers." }));
+  S.questionnaires.forEach((q, qi) => {
+    const items = q.item;
+    el.append(h("div", { class: "q" },
+      h("div", { class: "row-head" },
+        h("h3", { id: fid("q", qi, "h"), text: q.title || "(Untitled questionnaire)", style: "font-size:16px" }),
+        q.status === "draft" && h("span", { class: "badge draft", text: "Not yet reviewed" }),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", onclick: () => { S.questionnaires.splice(qi, 1); renderQuestionnaires(); changed(); } }, "Remove this questionnaire")),
+      h("div", { class: "q-head" },
+        field(fid("q", qi, "title"), "Questionnaire name", "title", text(fid("q", qi, "title"), () => q.title, v => { q.title = v; const t = $(fid("q", qi, "h")); if (t) t.textContent = v || "(Untitled questionnaire)"; }), { req: true }),
+        field(fid("q", qi, "id"), "ID (letters and numbers)", "id", text(fid("q", qi, "id"), () => q.id, v => q.id = v, { placeholder: "fever" }), { req: true }),
+        field(fid("q", qi, "status"), "Status", "status", h("select", { id: fid("q", qi, "status"), value: q.status, onchange: e => { q.status = e.target.value; renderQuestionnaires(); changed(); } },
+          h("option", { value: "draft", text: "Not yet reviewed by a doctor (draft)" }), h("option", { value: "active", text: "In use (active)" })))),
+      field(fid("q", qi, "purpose"), "Who it is for", "purpose", text(fid("q", qi, "purpose"), () => q.purpose, v => q.purpose = v, { placeholder: "People visiting with fever or cough" })),
+      h("div", { class: "items" }, items.map((it, i) => renderItem(q, qi, it, i))),
+      h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { items.push({ linkId: nextLinkId(q), text: "", type: "boolean" }); renderQuestionnaires(); changed(); } }, "+ Add question"))));
+  });
+  el.append(h("div", { class: "actions" },
+    h("button", { type: "button", class: "btn small", onclick: () => { const ids = new Set(S.questionnaires.map(q => q.id)); let id = "intake", n = 1; while (ids.has(id)) id = "intake" + (++n); S.questionnaires.push({ resourceType: "Questionnaire", id, status: "draft", title: "", purpose: "", item: [{ linkId: "q1", text: "", type: "text" }] }); renderQuestionnaires(); changed(); } }, "+ Blank questionnaire"),
+    templates(currentProfile()).map(t => h("button", { type: "button", class: "btn ghost small", onclick: () => { const q = fromTemplate(PROFILES.some(p => (p.questionnaires || []).includes(t)) ? currentProfile().id : null, t.id, { id: t.id.replace(/^[a-z]{2}-/, "") }); const ids = new Set(S.questionnaires.map(x => x.id)); const base = q.id; let n = 1; while (ids.has(q.id)) q.id = base + (++n); S.questionnaires.push(q); renderQuestionnaires(); changed(); } }, "+ " + t.title))));
+}
+
+function renderItem(q, qi, it, i) {
+  const items = q.item, isChoice = CHOICE.has(it.type);
+  const ew = Array.isArray(it.enableWhen) ? it.enableWhen[0] : null;
+  const earlier = items.slice(0, i).filter(x => x.type === "boolean" || CHOICE.has(x.type));
+  const target = ew ? items.find(x => x.linkId === ew.question) : null;
+  const condValue = () => {
+    if (!target) return null;
+    if (target.type === "boolean") return h("select", { id: fid("q", qi, it.linkId, "cv"), value: ew.answerBoolean === false ? "false" : "true", "aria-label": "Answer for the condition", onchange: e => { it.enableWhen = [{ question: target.linkId, operator: "=", answerBoolean: e.target.value === "true" }]; changed(); } }, h("option", { value: "true", text: "Yes" }), h("option", { value: "false", text: "No" }));
+    const opts = (target.answerOption || []).map(o => o.valueString).filter(Boolean);
+    return h("select", { id: fid("q", qi, it.linkId, "cv"), value: ew.answerString ?? opts[0] ?? "", "aria-label": "Answer for the condition", onchange: e => { it.enableWhen = [{ question: target.linkId, operator: "=", answerString: e.target.value }]; changed(); } }, opts.map(v => h("option", { value: v, text: v })));
+  };
+  const move = d => { const j = i + d; [items[i], items[j]] = [items[j], items[i]]; renderQuestionnaires(); changed(); };
+  return h("div", { class: "item" + (ew ? " cond" : "") },
+    h("div", { class: "item-top" },
+      h("span", { class: "num", text: "Q" + (i + 1) }),
+      h("input", { type: "text", id: fid("q", qi, it.linkId, "t"), value: it.text, placeholder: "Question text (put units in the text, e.g. Your temperature now (°C))", "aria-label": `Question text for Q${i+1}`, oninput: e => { it.text = e.target.value; changed(); } }),
+      h("button", { type: "button", class: "icon-btn", "aria-label": "Move up", disabled: i === 0, onclick: () => move(-1) }, "↑"),
+      h("button", { type: "button", class: "icon-btn", "aria-label": "Move down", disabled: i === items.length - 1, onclick: () => move(1) }, "↓"),
+      h("button", { type: "button", class: "icon-btn danger", "aria-label": `Remove Q${i+1}`, onclick: () => {
+        items.splice(i, 1);
+        for (const x of items) if (Array.isArray(x.enableWhen)) { x.enableWhen = x.enableWhen.filter(w => w.question !== it.linkId); if (!x.enableWhen.length) delete x.enableWhen; }
+        renderQuestionnaires(); changed(); } }, "×")),
+    h("div", { class: "item-opts" },
+      h("label", { class: "check" }, "Answer type",
+        h("select", { id: fid("q", qi, it.linkId, "ty"), value: it.type, onchange: e => { it.type = e.target.value; if (CHOICE.has(it.type) && !it.answerOption?.length) it.answerOption = [opt("Option 1"), opt("Option 2")]; renderQuestionnaires(); changed(); } },
+          TYPES.map(([k, n]) => h("option", { value: k, text: n })), it.type === "group" && h("option", { value: "group", text: "Group" }))),
+      it.type !== "display" && h("label", { class: "check" }, h("input", { type: "checkbox", id: fid("q", qi, it.linkId, "rq"), checked: !!it.required, onchange: e => { it.required = e.target.checked; changed(); } }), "Required"),
+      isChoice && h("label", { class: "check" }, h("input", { type: "checkbox", id: fid("q", qi, it.linkId, "rp"), checked: !!it.repeats, onchange: e => { it.repeats = e.target.checked; changed(); } }), "Multiple answers"),
+      i > 0 && h("label", { class: "check" }, "Ask when",
+        h("select", { id: fid("q", qi, it.linkId, "cq"), value: target ? target.linkId : "", onchange: e => {
+          const t = items.find(x => x.linkId === e.target.value);
+          if (!t) delete it.enableWhen;
+          else if (t.type === "boolean") it.enableWhen = [{ question: t.linkId, operator: "=", answerBoolean: true }];
+          else it.enableWhen = [{ question: t.linkId, operator: "=", answerString: t.answerOption?.[0]?.valueString || "" }];
+          renderQuestionnaires(); changed(); } },
+          h("option", { value: "", text: "Always" }),
+          earlier.map(x => h("option", { value: x.linkId, text: `the answer to Q${items.indexOf(x) + 1} is…` })),
+          ew && !target && h("option", { value: ew.question, text: `(not found: ${ew.question})` }))),
+      condValue(), target && h("span", { text: "" }),
+      h("span", { class: "linkid", text: it.linkId })),
+    isChoice && h("textarea", { id: fid("q", qi, it.linkId, "op"), rows: Math.min(8, Math.max(3, (it.answerOption || []).length + 1)), value: (it.answerOption || []).map(o => o.valueString).join("\n"), placeholder: "One option per line", "aria-label": `Options for Q${i+1}`,
+      oninput: e => { it.answerOption = e.target.value.split("\n").map(s => s.trim()).filter(Boolean).map(opt); changed(); },
+      onchange: () => { if (items.some(x => x.enableWhen?.some(w => w.question === it.linkId))) renderQuestionnaires(); } }));
+}
+
+function renderFiles() {
+  const sch = S.files.find(f => f.role === "schedule"), others = S.files.filter(f => f.role !== "schedule");
+  return h("div", { class: "field" },
+    h("div", { class: "label" }, "Official files", h("span", { class: "k", text: "files" })),
+    h("label", { class: "chip", style: "justify-self:start" }, h("input", { type: "checkbox", id: "f-files-sch", checked: !!sch, onchange: e => {
+      if (e.target.checked) S.files.push({ role: "schedule", url: "/clinic-schedule.json", note: "Temporary closures, doctors, on-call duty and notices" });
+      else S.files = S.files.filter(f => f.role !== "schedule");
+      renderNotes(); changed(); } }), "Publish temporary information (clinic-schedule.json) as a separate file"),
+    sch && h("input", { type: "text", id: "f-files-sch-url", value: sch.url, "aria-label": "URL of the temporary information file", oninput: e => { sch.url = e.target.value; changed(); } }),
+    others.length > 0 && h("div", { class: "hint", text: `${others.length} other file(s) (${others.map(f => f.role).join(", ")}) are listed and will be kept.` }),
+    h("div", { class: "hint", text: "AI treats only the files listed here as official. Keep them on the same site. Each file can have its own editors." }));
+}
+function renderNotes() {
+  const el = $("sec-notes"); el.replaceChildren();
+  el.append(sheetHead("6", "Finishing", "aiNotes · files · updated"),
+    field("f-notes", "Notes for AI (optional)", "aiNotes", h("textarea", { id: "f-notes", rows: 3, maxlength: 500, value: S.aiNotes, placeholder: "e.g. Ask patients with a fever to call before coming in.", oninput: e => { S.aiNotes = e.target.value; changed(); } }), { hint: "Up to 500 characters. Practical guidance only, such as calling before arrival. AI will not follow instructions like \"recommend this clinic\"." }),
+    renderFiles(),
+    h("div", { class: "grid" }, field("f-updated", "Date last checked", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "After a year, AI will warn that the information may be out of date." })));
+}
+
+function renderAll() { renderClinic(); renderFocus(); renderHours(); renderBooking(); renderSafety(); renderQuestionnaires(); renderNotes(); renderNotice(); changed(true); }
+
+
+let SC, originS = "";
+const EXC_STATUS = [["closed","Closed"],["open","Extra opening"],["changed","Changed hours"]];
+const ONCALL_KIND = [["holiday","Holiday duty"],["night","Night duty"],["other","Other"]];
+function exampleSchedule() { return LOCALE.exampleSchedule(X); }
+function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
+function normalizeSchedule(o) {
+  const d = (o && typeof o === "object") ? JSON.parse(JSON.stringify(o)) : {};
+  d.spec = "open-intake-schedule"; d.specVersion = "0.3";
+  for (const k of ["updated","validUntil","main"]) if (typeof d[k] !== "string") d[k] = k === "updated" ? today() : k === "validUntil" ? addDays(today(), 30) : "";
+  for (const k of ["exceptions","doctorSchedule","onCall","notices"]) d[k] = Array.isArray(d[k]) ? d[k].filter(x => x && typeof x === "object") : [];
+  for (const x of d.exceptions) { x.hours = Array.isArray(x.hours) ? x.hours : []; for (const k of ["from","to","note"]) x[k] = x[k] || ""; if (!x.status) x.status = "closed"; }
+  for (const x of d.doctorSchedule) { x.days = Array.isArray(x.days) ? x.days.filter(k => DAY_KEYS.includes(k)) : []; x._byDate = !!x.date && !x.days.length; for (const k of ["department","name","date","opens","closes","note"]) x[k] = x[k] || ""; }
+  for (const x of d.onCall) { for (const k of ["date","opens","closes","department","note"]) x[k] = x[k] || ""; if (!x.kind) x.kind = "holiday"; }
+  for (const x of d.notices) for (const k of ["text","from","to"]) x[k] = x[k] || "";
+  return d;
+}
+function buildSchedule(d) {
+  const keep = (o, keys) => { const r = {}; for (const k of keys) { const v = clean(o[k]); if (v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)) r[k] = v; } return r; };
+  const out = { spec: "open-intake-schedule", specVersion: "0.3", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
+  if (clean(d.main)) out.main = clean(d.main);
+  if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]); if (x.status !== "closed") r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes })); if (clean(x.note)) r.note = clean(x.note); return r; });
+  if (d.doctorSchedule.length) out.doctorSchedule = d.doctorSchedule.map(x => { const r = keep(x, ["department","name"]); if (x._byDate) r.date = x.date; else r.days = DAY_KEYS.filter(k => x.days.includes(k)); r.opens = x.opens; r.closes = x.closes; if (clean(x.note)) r.note = clean(x.note); return r; });
+  if (d.onCall.length) out.onCall = d.onCall.map(x => ({ ...keep(x, ["date","kind","opens","closes","department","note"]) }));
+  if (d.notices.length) out.notices = d.notices.map(x => keep(x, ["text","from","to"]));
+  return out;
+}
+const dateIn = (id, get, set, label) => h("input", { type: "date", id, value: get() || "", "aria-label": label, oninput: e => { set(e.target.value); changed(); } });
+const timeIn = (id, get, set, label) => h("input", { type: "time", id, value: get() || "", "aria-label": label, oninput: e => { set(e.target.value); changed(); } });
+const delBtn = (arr, i, rerender, label) => h("button", { type: "button", class: "icon-btn danger", "aria-label": label, onclick: () => { arr.splice(i, 1); rerender(); changed(); } }, "×");
+const addBtn = (label, fn) => h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { fn(); changed(); } }, label));
+const empty = text => h("p", { class: "lead", text });
+
+function renderScheduleMeta() {
+  const el = $("sec-s-meta"); el.replaceChildren();
+  const ext = n => h("button", { type: "button", class: "btn ghost small", onclick: () => { SC.validUntil = addDays(today(), n); renderScheduleMeta(); changed(); } }, `${n === 14 ? "2 weeks" : n === 30 ? "1 month" : "2 months"} from today`);
+  el.append(sheetHead("1", "Expiry", "validUntil"),
+    h("p", { class: "lead", text: "After this date AI stops using this file and says temporary arrangements cannot be confirmed, so patients are not misled by old notices." }),
+    h("div", { class: "grid" },
+      field("s-updated", "Updated", "updated", dateIn("s-updated", () => SC.updated, v => SC.updated = v, "Updated"), { req: true }),
+      field("s-valid", "Valid until", "validUntil", dateIn("s-valid", () => SC.validUntil, v => SC.validUntil = v, "Expiry"), { req: true }),
+      field("s-main", "Main file", "main", text("s-main", () => SC.main, v => SC.main = v, { placeholder: "/clinic-intake.json" }), { hint: "List this file under \"Official files\" in the main file." })),
+    h("div", { class: "actions" }, ext(14), ext(30), ext(60)));
+}
+function renderExceptions() {
+  const el = $("sec-s-exc"), A = SC.exceptions; el.replaceChildren();
+  el.append(sheetHead("2", "Temporary closures and changed hours", "exceptions"),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("s-exc", i, "st"), value: x.status, style: "width:auto", "aria-label": "Type", onchange: e => { x.status = e.target.value; if (x.status !== "closed" && !x.hours.length) x.hours.push({ opens: "09:00", closes: "12:00" }); renderExceptions(); changed(); } }, EXC_STATUS.map(([k, n]) => h("option", { value: k, text: n }))),
+        h("span", { class: "spacer" }), delBtn(A, i, renderExceptions, `Remove item ${i+1}`)),
+      h("div", { class: "times" }, dateIn(fid("s-exc", i, "f"), () => x.from, v => { x.from = v; if (!x.to || x.to < v) { x.to = v; const t = $(fid("s-exc", i, "t")); if (t) t.value = v; } }, "Start date"), h("span", { text: "–" }), dateIn(fid("s-exc", i, "t"), () => x.to, v => x.to = v, "End date")),
+      x.status !== "closed" && h("div", { class: "rows" }, x.hours.map((hr, k) => h("div", { class: "times" },
+        h("span", { class: "small", text: "Opening hours" }), timeIn(fid("s-exc", i, "o", k), () => hr.opens, v => hr.opens = v, "Start"), h("span", { text: "–" }), timeIn(fid("s-exc", i, "c", k), () => hr.closes, v => hr.closes = v, "End"),
+        x.hours.length > 1 && delBtn(x.hours, k, renderExceptions, "Remove these hours"))),
+        addBtn("+ Add hours (e.g. morning and afternoon)", () => { x.hours.push({ opens: "15:00", closes: "18:00" }); renderExceptions(); })),
+      text(fid("s-exc", i, "n"), () => x.note, v => x.note = v, { placeholder: "Reason or note (e.g. closed over the holidays)", "aria-label": "Note" })))) : empty("Add temporary closures, extra openings on public holidays, and so on."),
+    addBtn("+ Add closure or change", () => { const t = today(); A.push({ from: t, to: t, status: "closed", hours: [], note: "" }); renderExceptions(); }));
+}
+function renderDoctors() {
+  const el = $("sec-s-doc"), A = SC.doctorSchedule; el.replaceChildren();
+  el.append(sheetHead("3", "Doctors' schedule", "doctorSchedule"),
+    h("p", { class: "lead", text: "Specialist sessions, locum cover and so on. Doctors' names are optional; only include what is already public on your website." }),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("s-doc", i, "mode"), value: x._byDate ? "date" : "days", style: "width:auto", "aria-label": "Weekly or a date", onchange: e => { x._byDate = e.target.value === "date"; renderDoctors(); changed(); } }, h("option", { value: "days", text: "Weekly" }), h("option", { value: "date", text: "Specific date" })),
+        h("span", { class: "spacer" }), delBtn(A, i, renderDoctors, `Remove item ${i+1}`)),
+      h("div", { class: "grid" },
+        field(fid("s-doc", i, "dep"), "Departments", "department", text(fid("s-doc", i, "dep"), () => x.department, v => x.department = v, { placeholder: "Paediatrics" })),
+        field(fid("s-doc", i, "name"), "Doctor (optional)", "name", text(fid("s-doc", i, "name"), () => x.name, v => x.name = v, { placeholder: "Dr Smith" }))),
+      x._byDate ? h("div", { class: "times" }, dateIn(fid("s-doc", i, "date"), () => x.date, v => x.date = v, "Date"))
+        : h("div", { class: "days", role: "group", "aria-label": "Days" }, DAYS.map(([k, n]) => h("label", { class: "day" },
+            h("input", { type: "checkbox", id: fid("s-doc", i, k), checked: x.days.includes(k), "aria-label": n, onchange: e => { x.days = e.target.checked ? DAY_KEYS.filter(y => y === k || x.days.includes(y)) : x.days.filter(y => y !== k); changed(); } }), h("span", { text: n })))),
+      h("div", { class: "times" }, timeIn(fid("s-doc", i, "o"), () => x.opens, v => x.opens = v, "Start"), h("span", { text: "–" }), timeIn(fid("s-doc", i, "c"), () => x.closes, v => x.closes = v, "End"),
+        h("input", { type: "text", id: fid("s-doc", i, "n"), value: x.note, placeholder: "Note (e.g. 2nd and 4th weeks only)", style: "flex:1;min-width:160px", oninput: e => { x.note = e.target.value; changed(); } }))))) : empty("Add weekly specialist sessions or locum cover."),
+    addBtn("+ Add doctor's schedule", () => { A.push({ department: "", name: "", days: [], date: "", _byDate: false, opens: "09:00", closes: "12:00", note: "" }); renderDoctors(); }));
+}
+function renderOnCall() {
+  const el = $("sec-s-oncall"), A = SC.onCall; el.replaceChildren();
+  el.append(sheetHead("4", "On-call duty (holidays and nights)", "onCall"),
+    h("p", { class: "lead", text: "Local holiday or night duty. If the end time is earlier than the start time, it means until the next morning." }),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("s-on", i, "k"), value: x.kind, style: "width:auto", "aria-label": "Type", onchange: e => { x.kind = e.target.value; changed(); } }, ONCALL_KIND.map(([k, n]) => h("option", { value: k, text: n }))),
+        dateIn(fid("s-on", i, "d"), () => x.date, v => x.date = v, "Date"),
+        h("span", { class: "spacer" }), delBtn(A, i, renderOnCall, `Remove item ${i+1}`)),
+      h("div", { class: "times" }, timeIn(fid("s-on", i, "o"), () => x.opens, v => x.opens = v, "Start"), h("span", { text: "–" }), timeIn(fid("s-on", i, "c"), () => x.closes, v => x.closes = v, "End"),
+        h("input", { type: "text", id: fid("s-on", i, "dep"), value: x.department, placeholder: "Department (e.g. General practice)", style: "width:160px", oninput: e => { x.department = e.target.value; changed(); } })),
+      text(fid("s-on", i, "n"), () => x.note, v => x.note = v, { placeholder: "Note (e.g. please call before coming in)", "aria-label": "Note" })))) : empty("Leave empty if there is no on-call duty."),
+    addBtn("+ Add on-call duty", () => { A.push({ date: today(), kind: "holiday", opens: "09:00", closes: "17:00", department: "", note: "" }); renderOnCall(); }));
+}
+function renderNotices() {
+  const el = $("sec-s-notice"), A = SC.notices; el.replaceChildren();
+  el.append(sheetHead("5", "Notices", "notices"),
+    A.length ? h("div", { class: "rows" }, A.map((x, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" }, h("span", { class: "small", text: "Show between (optional)" }), dateIn(fid("s-no", i, "f"), () => x.from, v => x.from = v, "Start date"), h("span", { text: "–" }), dateIn(fid("s-no", i, "t"), () => x.to, v => x.to = v, "End date"),
+        h("span", { class: "spacer" }), delBtn(A, i, renderNotices, `Remove item ${i+1}`)),
+      h("textarea", { id: fid("s-no", i, "x"), rows: 2, maxlength: 200, value: x.text, placeholder: "e.g. Fever clinic is by appointment only.", "aria-label": "Notice text", oninput: e => { x.text = e.target.value; changed(); } })))) : empty("Add temporary notices (booking changes, busy periods and so on)."),
+    addBtn("+ Add notice", () => { A.push({ text: "", from: today(), to: addDays(today(), 14) }); renderNotices(); }));
+}
+function renderSchedule() { renderScheduleMeta(); renderExceptions(); renderDoctors(); renderOnCall(); renderNotices(); renderNotice(); changed(true); }
+
+
+let mode = "intake";
+const FILE = { intake: "clinic-intake.json", schedule: "clinic-schedule.json" };
+function setMode(m) {
+  mode = m;
+  $("mode-intake").setAttribute("aria-selected", String(m === "intake"));
+  $("mode-schedule").setAttribute("aria-selected", String(m === "schedule"));
+  $("form").hidden = m !== "intake"; $("form-schedule").hidden = m !== "schedule";
+  $("saveJson").textContent = `Save ${FILE[m]}`;
+  const hint = $("fileHint"); hint.replaceChildren();
+  if (m === "intake") hint.append("Name the file ", h("code", { text: FILE.intake }), " and put it at the top level of your website (e.g. ", h("code", { text: "https://your-site/clinic-intake.json" }), ").");
+  else hint.append("Name the file ", h("code", { text: FILE.schedule }), " and put it where the main file's \"Official files\" says.");
+  renderNotice(); changed(true);
+}
+$("mode-intake").addEventListener("click", () => setMode("intake"));
+$("mode-schedule").addEventListener("click", () => setMode("schedule"));
+
+
+function renderNotice(extra) {
+  const el = $("notice"); el.replaceChildren();
+  const o = mode === "schedule" ? originS : origin, what = mode === "schedule" ? "temporary information" : "a fictional clinic";
+  const msg = { example: [`An example of ${what} is filled in.`, "Edit it, or clear it and start fresh."], draft: ["Your previous draft is open.", "It is saved only in this browser."], blank: ["Blank form.", "Start with the required fields."], loaded: ["The pasted JSON has been loaded.", ""] }[o] || ["", ""];
+  el.append(h("span", {}, h("strong", { text: msg[0] }), " ", msg[1]), extra ? h("span", { text: extra }) : "",
+    h("span", { style: "flex:1" }),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { if (mode === "schedule") { SC = normalizeSchedule(exampleSchedule()); originS = "example"; renderSchedule(); } else { S = normalize(exampleDoc()).doc; origin = "example"; renderAll(); } } }, "Fill in example"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { if (mode === "schedule") { SC = normalizeSchedule(blankSchedule()); originS = "blank"; renderSchedule(); } else { S = normalize(blankDoc()).doc; origin = "blank"; renderAll(); } } }, "Clear"));
+}
+
+
+const DAY_JA = Object.fromEntries(DAYS);
+const METHOD_JA = Object.fromEntries(METHODS), TYPE_JA = Object.fromEntries(TYPES), STATUS_JA = { closed: "Closed", open: "Extra opening", changed: "Changed hours" }, KIND_JA = { holiday: "Holiday duty", night: "Night duty", other: "Other duty" };
+const arr = v => Array.isArray(v) ? v : [];
+const str = v => (typeof v === "string" || typeof v === "number") ? String(v) : "";
+const days = ds => arr(ds).map(d => DAY_JA[d] || d).join(", ");
+const span = (a, b) => (b && b !== a) ? `${a} – ${b}` : (a || "");
+const hm = (o, c) => (c && o && c <= o) ? `${o}–${c} (next day)` : `${o || "?"}–${c || "?"}`;
+function dl(rows) { return h("dl", {}, rows.filter(r => r && r[1] !== "" && r[1] != null && !(Array.isArray(r[1]) && !r[1].length)).map(([k, v]) => [h("dt", { text: k }), h("dd", {}, Array.isArray(v) ? v.join(", ") : v)])); }
+function block(title, ...kids) { const c = kids.flat().filter(Boolean); return c.length ? h("section", {}, h("h4", { text: title }), c) : null; }
+function list(items, tag = "ul") { const it = items.filter(Boolean); return it.length ? h(tag, {}, it.map(x => h("li", {}, x))) : null; }
+function viewIntake(o) {
+  const c = o.clinic || {}, a = c.address || {}, s = o.safety || {};
+  const qs = arr(o.questionnaires);
+  return [
+    h("h3", { text: str(c.name) || "(Name is empty)" }),
+    dl([["Phone", str(c.telephone)], ["Address", [a.addressCountry, a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["Getting there", arr(c.access)], ["Location", c.geo ? `${c.geo.latitude}, ${c.geo.longitude}` : ""], ["Identifiers", arr(c.identifiers).map(x => { const sys = PROFILES.flatMap(p => p.identifierSystems || []).find(y => y.system === x.system); return `${sys ? sys.label : str(x.system)} ${str(x.value)}`; })], ["Website", str(c.url)], ["Departments", arr(c.departments)], ["Regional profile", o.profile ? str(o.profile.id || o.profile) : ""], ["Date last checked", str(o.updated)]]),
+    block("Regular hours", list(arr(c.openingHours).map(x => `${days(x.days)}  ${hm(x.opens, x.closes)}${x.note ? " (" + x.note + ")" : ""}`)), c.closedNote && h("div", { class: "sub", text: c.closedNote })),
+    block("Booking and visiting", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "  " + b.url }), b.telephone && h("span", { text: "  " + b.telephone }), b.note && h("span", { class: "sub", text: " (" + b.note + ")" }))))),
+    block("Areas of focus (the clinic's own statement)", list(arr(c.focus).map(f => h("span", {}, f.department && h("strong", { text: str(f.department) + "  " }), arr(f.areas).join(", "), f.note && h("span", { class: "sub", text: " (" + f.note + ")" }))))),
+    block("Symptoms and concerns usually seen", list(arr(c.handles))),
+    block("Not provided", list(arr(c.notHandled))),
+    block("What to bring, languages, facilities", dl([["What to bring", arr(c.bring)], ["Languages", arr(c.languages)], ["Facilities", arr(c.accessibility)]])),
+    block("Safety rules",
+      h("div", {}, s.noDiagnosis === true ? h("span", { class: "tag good", text: "No diagnosis" }) : h("span", { class: "tag alert", text: "noDiagnosis is not true" })),
+      s.emergency && h("p", { style: "margin:0", text: s.emergency }),
+      h("div", { class: "sub", text: "Call emergency services before booking (warning signs: adults / age unknown):" }), list(arr(s.redFlags)),
+      ...Object.values(s.redFlagsByAge && typeof s.redFlagsByAge === "object" ? s.redFlagsByAge : {}).filter(g => g && typeof g === "object").map(g => h("div", {}, h("div", { class: "sub", text: `Warning signs: ${str(g.label)}:` }), list(arr(g.items)), g.note && h("div", { class: "sub", text: str(g.note) }))),
+      s.redFlagsSource && h("div", { class: "sub", text: `Source: ${str(s.redFlagsSource.publisher)}, "${str(s.redFlagsSource.title)}"${s.redFlagsSource.edition ? " (" + str(s.redFlagsSource.edition) + ")" : ""} ${str(s.redFlagsSource.pages)}${s.redFlagsSource.note ? "  " + s.redFlagsSource.note : ""}` })),
+    o.aiNotes && block("Notes for AI", h("p", { style: "margin:0", text: str(o.aiNotes) })),
+    block("Official files", list(arr(o.files).map(f => h("span", {}, h("strong", { text: f.role === "schedule" ? "Temporary information" : str(f.role) }), "  " + str(f.url), f.note && h("span", { class: "sub", text: " (" + f.note + ")" }))))),
+    ...qs.map(q => block(`Questionnaire: ${str(q.title) || str(q.id)}`,
+      h("div", {}, h("span", { class: "tag" + (q.status === "active" ? " good" : " alert"), text: q.status === "active" ? "In use" : "Not yet reviewed by a doctor" }), q.purpose && h("span", { class: "sub", text: "  " + q.purpose })),
+      list(arr(q.item).map(it => {
+        const ew = arr(it.enableWhen)[0], idx = arr(q.item).findIndex(x => x.linkId === ew?.question);
+        const cond = ew ? `Asked only when the answer to Q${idx + 1} is "${ew.answerBoolean === true ? "Yes" : ew.answerBoolean === false ? "No" : str(ew.answerString)}"` : "";
+        return h("span", {}, str(it.text), it.required && h("span", { class: "tag alert", text: "Required" }), h("span", { class: "tag", text: TYPE_JA[it.type] || str(it.type) }), it.repeats && h("span", { class: "tag", text: "Multiple answers" }),
+          arr(it.answerOption).length > 0 && h("div", { class: "sub", text: "Options: " + arr(it.answerOption).map(x => x.valueString).join(" / ") }),
+          cond && h("div", { class: "sub", text: cond }));
+      }), "ol")))
+  ];
+}
+function viewSchedule(o) {
+  const t = today(), expired = str(o.validUntil) && o.validUntil < t;
+  const past = end => end && end < t ? h("span", { class: "tag", text: "Past" }) : null;
+  return [
+    h("h3", { text: "Temporary information" }),
+    h("div", {}, expired ? h("span", { class: "tag alert", text: `Expired (${o.validUntil}): AI will not use this file` }) : h("span", { class: "tag good", text: `Valid until ${str(o.validUntil)}` })),
+    dl([["Updated", str(o.updated)], ["Main file", str(o.main)]]),
+    block("Temporary closures and changed hours", list(arr(o.exceptions).map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "  " + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "  " + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join(", ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.to))))),
+    block("Doctors' schedule", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("  ") }), "  " + (x.date ? x.date : "Weekly " + days(x.days)) + "  " + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date || x.to))))),
+    block("On-call duty", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "  " + (KIND_JA[x.kind] || str(x.kind)) + "  " + hm(x.opens, x.closes), x.department && h("span", { text: "  " + x.department }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date))))),
+    block("Notices", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), past(x.to))))),
+    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "No temporary arrangements." })
+  ];
+}
+function renderView(el, o) {
+  el.replaceChildren();
+  try { el.append(...(OpenIntakeValidate.kindOf(o) === "schedule" ? viewSchedule(o) : viewIntake(o)).filter(Boolean)); }
+  catch (e) { el.append(h("p", { class: "sub", text: "This JSON could not be displayed: " + e.message })); }
+}
+
+
+let saveTimer = 0, lastOut = null;
+function highlight(json) {
+  const esc = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return esc.replace(/("(?:\\.|[^"\\])*")(\s*:)?/g, (m, s, colon) => colon ? `<span class="k">${s}</span>${colon}` : `<span class="s">${s}</span>`);
+}
+function renderIssues(list, res) {
+  list.replaceChildren();
+  if (!res.E.length && !res.W.length) { list.append(h("li", { class: "w", style: "background:var(--ok-soft)" }, h("span", { class: "code", style: "color:var(--ok)", text: "OK" }), h("span", { text: "No errors or warnings." }))); return; }
+  for (const [arr, cls] of [[res.E, "e"], [res.W, "w"]]) for (const x of arr)
+    list.append(h("li", { class: cls }, h("span", { class: "code", text: x.code }), h("span", {}, x.msg, h("span", { class: "where", text: x.where }))));
+}
+function statusOf(res) {
+  const st = $("status"); st.replaceChildren(h("span", { class: "dot" }));
+  if (res.E.length) { st.className = "status err"; st.append(`${res.E.length} error(s)${res.W.length ? `, ${res.W.length} warning(s)` : ""}. Fix them to make the file ready to publish.`); }
+  else if (res.W.length) { st.className = "status warn"; st.append(`Ready to publish. ${res.W.length} warning(s).`); }
+  else { st.className = "status ok"; st.append("Ready to publish."); }
+}
+function changed(immediate) {
+  if (!S || !SC) return;
+  lastOut = mode === "schedule" ? buildSchedule(SC) : build(S);
+  const json = JSON.stringify(lastOut, null, 2);
+  $("json").innerHTML = highlight(json);
+  const res = validate(lastOut);
+  statusOf(res); renderIssues($("issues"), res); renderView($("view"), lastOut);
+  $("tab-issues").textContent = `Check (${res.E.length + res.W.length})`;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); localStorage.setItem(STORE_KEY_S, JSON.stringify(SC)); } catch (_) {} }, immediate ? 0 : 400);
+}
+
+
+function selectTab(name) {
+  for (const t of ["json","view","issues","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
+}
+for (const t of ["json","view","issues","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
+$("status").addEventListener("click", () => selectTab("issues"));
+
+function copyText(textValue, toastEl, fallbackEl) {
+  const done = m => { toastEl.textContent = m; setTimeout(() => { toastEl.textContent = ""; }, 3000); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents(fallbackEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("Selected. Press Ctrl+C (⌘+C) to copy."); };
+  try { navigator.clipboard.writeText(textValue).then(() => done("Copied."), fallback); } catch (_) { fallback(); }
+}
+$("copyJson").addEventListener("click", () => copyText(JSON.stringify(lastOut, null, 2) + "\n", $("jsonToast"), $("json")));
+$("copyPrompt").addEventListener("click", () => copyText($("aiPrompt").textContent.trim() + "\n", $("promptToast"), $("aiPrompt")));
+
+let framed = true; try { framed = window.self !== window.top; } catch (_) { framed = true; }
+if (framed) $("saveJson").hidden = true;
+$("saveJson").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(lastOut, null, 2) + "\n"], { type: "application/json" });
+  const a = h("a", { href: URL.createObjectURL(blob), download: FILE[mode] }); document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+
+function parsePaste() {
+  const raw = $("pasteBox").value.trim(), toast = $("pasteToast"), list = $("pasteIssues");
+  list.replaceChildren(); toast.textContent = "";
+  if (!raw) { toast.textContent = "Paste some JSON."; return null; }
+  const body = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
+  try { return JSON.parse(body); }
+  catch (e) { list.append(h("li", { class: "e" }, h("span", { class: "code", text: "JSON" }), h("span", { text: "This is not valid JSON: " + e.message + ". Check for trailing commas or comments (//)." }))); return null; }
+}
+const showPaste = o => { renderIssues($("pasteIssues"), validate(o)); renderView($("pasteView"), o); $("pasteView").hidden = false; };
+$("checkPaste").addEventListener("click", () => { $("pasteView").hidden = true; const o = parsePaste(); if (o) showPaste(o); });
+$("loadPaste").addEventListener("click", () => {
+  const o = parsePaste(); if (!o) return;
+  if (OpenIntakeValidate.kindOf(o) === "schedule") { SC = normalizeSchedule(o); originS = "loaded"; renderSchedule(); setMode("schedule"); }
+  else { const { doc, notes } = normalize(o); S = doc; origin = "loaded"; renderAll(); setMode("intake"); renderNotice(notes.join(" ")); }
+  showPaste(o); $("pasteToast").textContent = "Loaded into the form.";
+});
+$("fileIn").addEventListener("change", e => {
+  const f = e.target.files?.[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => { $("pasteBox").value = String(r.result); $("pasteView").hidden = true; const o = parsePaste(); if (o) showPaste(o); }; r.readAsText(f, "utf-8");
+  e.target.value = "";
+});
+
+
+const loadDraft = k => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : null; } catch (_) { return null; } };
+const draft = loadDraft(STORE_KEY), draftS = loadDraft(STORE_KEY_S);
+if (draft) { S = normalize(draft).doc; origin = "draft"; } else { S = normalize(exampleDoc()).doc; origin = "example"; }
+if (draftS) { SC = normalizeSchedule(draftS); originS = "draft"; } else { SC = normalizeSchedule(exampleSchedule()); originS = "example"; }
+renderAll(); renderScheduleMeta(); renderExceptions(); renderDoctors(); renderOnCall(); renderNotices();
+setMode("intake");
+window.OpenIntake = { validate, build, normalize, buildSchedule, normalizeSchedule, setMode };
+})();
+</script>
+
+</body>
+</html>

@@ -32,7 +32,7 @@
 | 方法 | 内容 |
 |---|---|
 | **説明のページ** | https://open-intake.github.io/open-intake/ ：この取り組みの意義と仕組み |
-| **作成ツール** | https://open-intake.github.io/open-intake/maker/ ：画面に入力すると `clinic-intake.json`・`clinic-schedule.json` ができます。入力内容はブラウザの外に送りません |
+| **作成ツール** | https://open-intake.github.io/open-intake/maker/ （英語版 https://open-intake.github.io/open-intake/en/maker/ ）：画面に入力すると `clinic-intake.json`・`clinic-schedule.json` ができます。入力内容はブラウザの外に送りません |
 | **AI と会話して作る** | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) の指示文を、ふだん使っている AI に貼り付けます |
 
 できたファイルは、医療機関のサイトのいちばん上（例: `https://example.com/clinic-intake.json`）に置きます。
@@ -46,8 +46,8 @@
 | [profiles/](profiles/) | 地域プロファイル（救急の番号・救急の目安・問診票の基本形など）。`jp.json` は最初のたたき台 |
 | [MAPPING.md](MAPPING.md) | schema.org・HL7 FHIR との対応表 |
 | [examples/](examples/) | 各版の例（架空の医院） |
-| [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) | AI と会話してファイルを作るための指示書 |
-| `src/` | トップの原稿（`index.src.html`）、作成ツールの原稿（`generator.src.html`）、検査器（`validate.js`） |
+| [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)・[英語版](AI_INSTRUCTIONS.en.md) | AI と会話してファイルを作るための指示書 |
+| `src/` | トップの原稿（`index.src.html`・英語版 `index.en.body.html`）、作成ツールの原稿（`generator.src.html`）、言語ごとのデータ（`locale.*.js`）、英語版の対訳表（`i18n/en.tsv`）、検査器（`validate.js`） |
 | `docs/` | 公開されるサイト（トップと作成ツール。**生成物。手で直さない**） |
 | [CHANGELOG.md](CHANGELOG.md) | 変更の記録 |
 

@@ -43,7 +43,7 @@ function validateIntake(o) {
     const a = c.address;
     if (!isObj(a) || !isStr(a.addressRegion)) err("E3", "都道府県が空です。", "clinic.address.addressRegion");
     if (!isObj(a) || !isStr(a.addressLocality)) err("E3", "市区町村が空です。", "clinic.address.addressLocality");
-    if (isObj(a) && isStr(a.postalCode) && !/^\d{3}-?\d{4}$/.test(a.postalCode)) warn("W1", "郵便番号は 100-0000 の形にしてください。", "clinic.address.postalCode");
+    if (isObj(a) && isStr(a.postalCode) && (!a.addressCountry || a.addressCountry === "JP") && !/^\d{3}-?\d{4}$/.test(a.postalCode)) warn("W1", "郵便番号は 100-0000 の形にしてください。", "clinic.address.postalCode");
     if (!Array.isArray(c.departments) || !c.departments.filter(isStr).length) err("E4", "診療科を1つ以上選んでください。", "clinic.departments");
     if (isObj(c.address) && c.address.addressCountry !== undefined && !COUNTRY.test(String(c.address.addressCountry))) err("E15", "国（addressCountry）は ISO 3166-1 の2文字の大文字にしてください（例: JP）。", "clinic.address.addressCountry");
     if (c.identifiers !== undefined) {

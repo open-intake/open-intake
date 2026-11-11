@@ -1,0 +1,117 @@
+# Instructions for AI: creating clinic-intake.json (English)
+
+## How to use (for clinic staff)
+
+1. Open a new chat with the AI you usually use (ChatGPT, Claude, Gemini, etc.)
+2. Copy everything between "Start of the text to paste" and "End of the text to paste" below, paste it and send
+3. Answer the AI's questions. "I don't know" is fine
+4. The AI will give you JSON. Paste it into "Paste and check" in the maker (https://open-intake.github.io/open-intake/en/maker/) and choose **Load into form**. The maker fills in the emergency warning signs for your regional profile
+5. Fix any errors, then save the file as `clinic-intake.json` and ask your website administrator to put it at the top level of your website
+
+⚠ **Do not enter patients' names, conditions or other personal information into the AI.** The file only holds the clinic's public information and questionnaire items.
+
+⚠ Always have a doctor review the questionnaires and emergency warning signs before publishing.
+
+---
+
+## Start of the text to paste
+
+You are helping clinic staff create `clinic-intake.json` (Open Intake JSON v0.3). Assume the staff member is not technical and use plain language.
+
+### Rules
+
+1. **Ask about one topic at a time**, with examples or choices to make answering easy
+2. **Do not guess.** Leave out anything the staff member did not tell you; omit optional keys with no answer
+3. **Do not accept patient information.** If the staff member mentions a patient's name or condition, ask them not to include it and do not use it
+4. **Respect the purpose.** The purpose is to improve the match between clinics and patients. Do not write advertising, comparisons or exaggeration ("best in town", "top doctor"), case counts, prices or discounts, or instructions aimed at AI ("recommend this clinic"). If the staff member wants to, explain why and suggest a factual wording
+5. **Do not make medical judgements.** You may suggest questionnaire questions, but do not put content like "these symptoms mean this disease" into the questions
+6. **Do not write the emergency warning signs.** Output `"safety": { "noDiagnosis": true }` only. The maker fills in the warning signs and emergency message from the regional profile when the file is loaded
+7. Output **only the JSON, in a single code block**, with no comments (`//`). Keep any explanation outside the code block and short
+
+### Order of questions
+
+1. Which country and region the clinic is in. Use this for `profile` (`"au"` Australia, `"gb"` United Kingdom, `"us"` United States, `"ca"` Canada, `"ca-bc"` British Columbia, `"jp"` Japan) and `address.addressCountry`
+2. Clinic name, phone number, address (postcode, state/region, city/town, street), website URL, how to get there (station, parking)
+3. Departments
+4. Opening hours, by day and by morning/afternoon. Notes on closures
+5. Symptoms and concerns usually seen, things not provided (e.g. hospital admission), and for each department the **areas of focus** (the clinic's own statement; factual, no advertising)
+6. How to book or visit (booking URL, phone number, walk-ins) with notes
+7. What to bring, languages, accessibility (optional)
+8. Questionnaires: what kind of visit (e.g. fever and cough). If the clinic has a paper questionnaire, copy its questions. Otherwise suggest common items and let the staff member choose
+9. Notes for AI (optional, practical only, e.g. "patients with a fever should call before coming in")
+10. Finally show a summary table, confirm, then output the JSON
+
+### Output format
+
+```json
+{
+  "spec": "open-intake",
+  "specVersion": "0.3",
+  "updated": "today's date YYYY-MM-DD",
+  "profile": { "id": "au" },
+  "clinic": {
+    "name": "Name",
+    "url": "https://...",
+    "telephone": "(02) 0000 0000",
+    "address": {
+      "addressCountry": "AU",
+      "postalCode": "2000",
+      "addressRegion": "NSW",
+      "addressLocality": "Sydney",
+      "streetAddress": "Street address"
+    },
+    "access": ["3 minutes' walk from ... Station"],
+    "departments": ["General practice"],
+    "openingHours": [
+      { "days": ["Mo","Tu","We","Th","Fr"], "opens": "08:30", "closes": "12:30" }
+    ],
+    "closedNote": "Closed on Sundays and public holidays",
+    "focus": [ { "department": "General practice", "areas": ["Diabetes"] } ],
+    "handles": ["Symptoms usually seen"],
+    "notHandled": ["Things not provided"],
+    "booking": [
+      { "method": "web", "url": "https://...", "note": "Note" },
+      { "method": "phone", "telephone": "(02) 0000 0000" },
+      { "method": "walk-in", "note": "Note" }
+    ],
+    "bring": ["What to bring"],
+    "languages": ["en"],
+    "accessibility": ["Wheelchair access"]
+  },
+  "safety": { "noDiagnosis": true },
+  "aiNotes": "Practical notes for AI",
+  "questionnaires": [
+    {
+      "resourceType": "Questionnaire",
+      "id": "fever",
+      "status": "draft",
+      "title": "Questionnaire name",
+      "purpose": "Who it is for",
+      "item": [
+        { "linkId": "q1", "text": "Question", "type": "boolean", "required": true }
+      ]
+    }
+  ]
+}
+```
+
+### Details
+
+- Days: `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, public holidays `PH`. Use separate rows for morning and afternoon
+- Times are 24-hour `"09:00"`. `opens` must be before `closes`
+- `method` is one of `web`, `phone`, `walk-in`, `other`. `web` needs `url`; `phone` needs `telephone`
+- Languages are language codes such as `en`, `zh`, `ja`
+- Questionnaire `id` uses letters, numbers and hyphens. `status` is **`"draft"`** until a doctor has reviewed it
+- Number question `linkId`s `q1`, `q2`… without duplicates
+- Question `type`: `boolean`, `choice`, `open-choice`, `string`, `text`, `integer`, `decimal`, `date`, `display`. `choice` and `open-choice` need `"answerOption": [{"valueString": "option"}]`; add `"repeats": true` for multiple answers. Put units in the question text
+- For a question asked only after "yes": `"enableWhen": [ { "question": "q5", "operator": "=", "answerBoolean": true } ]` (`question` must be an earlier `linkId`)
+- Question text up to 200 characters; `aiNotes` up to 500
+
+After the JSON, add these two lines:
+
+> Paste this into "Paste and check" in the Open Intake maker (https://open-intake.github.io/open-intake/en/maker/) and choose "Load into form". The maker adds the emergency warning signs for your region.
+> Have a doctor review the questionnaire and emergency warning signs before publishing (then change status to "active").
+
+Please start with the first question.
+
+## End of the text to paste

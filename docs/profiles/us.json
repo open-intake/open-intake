@@ -12,7 +12,7 @@
     "en"
   ],
   "status": "draft",
-  "note": "Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region.",
+  "note": "Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region. Reference not quoted (reproduction not permitted): American College of Emergency Physicians, \"When Your Child Has an Emergency\" (2002), https://www.acep.org/siteassets/uploads/uploaded-files/acep/clinical-and-practice-management/resources/pediatrics/whenyourchildhasanemergency.pdf",
   "emergency": {
     "message": "If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.",
     "numbers": [

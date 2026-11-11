@@ -1,0 +1,406 @@
+# 作成ツールの英語版の対訳表。1行に「日本語<TAB>英語」。上から順に置き換える（長いもの・具体的なものを先に）。
+# 組み立て（tools/build.mjs）は、英語版に日本語が残ると止まる。日本語版の文を直したら、ここも直すこと。
+<title>オープン受診案内メーカー</title>	<title>Open Intake Maker</title>
+<h1>オープン受診案内メーカー</h1>	<h1>Open Intake Maker</h1>
+医療機関の情報と問診票を、AI が読める clinic-intake.json・clinic-schedule.json（オープン受診案内 v0.2）にまとめる作成ツール	A tool that turns a clinic's information and questionnaires into clinic-intake.json and clinic-schedule.json (Open Intake), readable by AI
+← オープン受診案内とは	← About Open Intake
+ · clinic-intake.json · clinic-schedule.json · v0.3 草案 · <a href="../en/maker/" hreflang="en" lang="en">English</a>	 · clinic-intake.json · clinic-schedule.json · v0.3 draft · <a href="../../maker/" hreflang="ja" lang="ja">&#26085;&#26412;&#35486;</a>
+医療機関の情報と問診票を入力すると、患者さんの AI が読める <code>clinic-intake.json</code> ができます。サーバーには何も送りません。入力はこのブラウザの中だけで扱います。	Enter your clinic's information and questionnaires to create <code>clinic-intake.json</code>, readable by patients' AI assistants. Nothing is sent to any server; your input stays in this browser.
+aria-label="作るファイル"	aria-label="File to create"
+名前・ふだんの診療時間・予約方法・問診票。年に数回の更新	Name, regular hours, booking, questionnaires. Updated a few times a year
+臨時の休診・担当医・当番・お知らせ。受付の方が毎週〜毎日更新	Temporary closures, doctors, on-call duty, notices. Updated weekly or daily by front-desk staff
+<strong>固定の情報</strong>	<strong>Regular information</strong>
+<strong>臨時の情報</strong>	<strong>Temporary information</strong>
+別の方法：AI と会話して作る	Another way: create it by talking with an AI
+ChatGPT・Claude・Gemini など、ふだん使っている AI のチャットを新しく開きます。	Open a new chat with the AI you usually use, such as ChatGPT, Claude or Gemini.
+下の指示文をコピーして貼り付け、送信します。AI の質問に順に答えます。	Copy the instructions below, paste them and send. Answer the AI's questions one by one.
+AI が出した JSON を、右の「貼り付けて確認」に貼り付けて確かめます。フォームに読み込んで直すこともできます。	Paste the JSON the AI gives you into "Paste and check" on the right. You can also load it into the form to edit.
+⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。	⚠ Do not enter personal information such as patients' names or conditions into the AI.
+指示文をコピー	Copy instructions
+aria-label="できあがり"	aria-label="Result"
+>表示</button>	>View</button>
+>チェック</button>	>Check</button>
+>貼り付けて確認</button>	>Paste and check</button>
+JSON をコピー	Copy JSON
+clinic-intake.json を保存	Save clinic-intake.json
+できあがりの JSON を、担当者が読みやすい形で表示します。公開の前に、書いた内容が意図どおりかを確かめてください。	Shows the resulting JSON in plain language. Before publishing, check that it says what you intended.
+AI が作った JSON や、公開中のファイルの中身を貼り付けて確かめます。チェックの結果と、読みやすく表示した内容が下に出ます。	Paste JSON made by an AI, or the content of a published file, to check it. The check results and a readable view appear below.
+>JSON を貼り付け</label>	>Paste JSON</label>
+>チェックする</button>	>Check</button>
+フォームに読み込む	Load into form
+ファイルを開く	Open file
+仕様: オープン受診案内（Open Intake）v0.2 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0	Specification: Open Intake v0.3 draft · Specification CC BY 4.0, this tool Apache-2.0
+このツールは診断をしません。問診票と救急の目安は、公開の前に必ず医師に確認してもらってください。	This tool does not diagnose. Always have a doctor review questionnaires and emergency warning signs before publishing.
+["web","Web 予約"],["phone","電話"],["walk-in","予約なしで来院"],["other","その他"]	["web","Online booking"],["phone","Phone"],["walk-in","Walk-in (no booking)"],["other","Other"]
+["boolean","はい／いいえ"],["choice","選ぶ"],["open-choice","選ぶか書く"],["string","短い文"],["text","長い文"],["integer","整数"],["decimal","小数"],["date","日付"],["display","説明文（答えなし）"]	["boolean","Yes / no"],["choice","Choose"],["open-choice","Choose or write"],["string","Short text"],["text","Long text"],["integer","Whole number"],["decimal","Decimal number"],["date","Date"],["display","Note (no answer)"]
+`「${q.title || q.id}」のグループ「${it.text || it.linkId}」は、平らな並びにして読み込みました。`	`Group "${it.text || it.linkId}" in "${q.title || q.id}" was flattened when loading.`
+`地域プロファイルを「${profileName(p)}」にし、救急の目安と緊急時の案内をその初期値に入れ替えました。`	`Regional profile set to "${profileName(p)}". Emergency warning signs and the emergency message were replaced with its defaults.`
+`${profileName(p)}（${p.id}）`	`${profileName(p)} (${p.id})`
+国や地域ごとの基本（救急の番号・救急の目安・問診票の基本形）です。変えると、救急の目安がその地域の初期値に入れ替わります。	Region-specific basics (emergency numbers, warning signs, base questionnaires). Changing it replaces the warning signs with that region's defaults.
+"地域プロファイル"	"Regional profile"
+"医療機関の情報"	"Clinic information"
+placeholder: "みどり台内科クリニック"	placeholder: "Greenfield Family Practice"
+placeholder: "東京都"	placeholder: "NSW"
+placeholder: "千代田区"	placeholder: "Sydney"
+placeholder: "100-0000"	placeholder: "2000"
+placeholder: "03-0000-0000"	placeholder: "(02) 0000 0000"
+"ISO の2文字（日本は JP）"	"Two-letter ISO code (e.g. AU, GB, US, JP)"
+"公的な名簿と照らし合わせて、本物の医療機関か確かめる手がかりになります。"	"Lets readers check against official registers that this is a real clinic."
+"地図アプリで場所を長押し（右クリック）すると出る数字"	"The numbers shown when you long-press (or right-click) the place in a map app"
+"○○駅から徒歩3分\n駐車場 3台"	"3 minutes' walk from the station\nParking for 3 cars"
+"発熱\nせき\n高血圧の相談"	"Fever\nCough\nBlood pressure checks"
+"1行に1つ。患者さんの AI が「この医院が合いそうか」を判断する手がかりになります。"	"One per line. Helps patients' AI judge whether this clinic is a good fit."
+"入院\n6か月未満の乳児"	"Hospital admission\nBabies under 6 months"
+"マイナ保険証\nお薬手帳"	"Health insurance card\nList of current medicines"
+"車椅子で入れる\n駐車場あり"	"Wheelchair access\nParking"
+"そのほか（言語コード: th, ne など）"	"Others (language codes, e.g. th, ne)"
+"そのほかの言語コード"	"Other language codes"
+"そのほかの診療科（読点で区切る）"	"Other departments (separate with commas)"
+"そのほかの診療科"	"Other departments"
+.join("、")	.join(", ")
+/[\u3001,\uff0c\s]+/	/[\u3001,\uff0c]+/
+"同じ診療科でも、どんな病気や相談に力を入れているかを書けます。患者さんの AI が、合う医療機関を探す手がかりになります。医療機関の自己申告として扱われます。事実を短く書いてください。宣伝・比較・誇張は書かず、医療広告ガイドラインの範囲で書きます（使い方の決まり: トップの「使用目的と使い方の決まり」）。"	"Even within the same department, you can state which conditions you focus on. This helps patients' AI find a clinic that fits. It is treated as the clinic's own statement. Keep it short and factual. No advertising, comparisons or exaggeration; stay within local rules on medical advertising (see \"Purpose and usage policy\" on the top page)."
+"得意分野・力を入れていること（自己申告）"	"Areas of focus (self-declared)"
+"（診療科を問わない）"	"(Any department)"
+`得意分野 ${i+1} を消す`	`Remove focus ${i+1}`
+"糖尿病\n甲状腺の病気"	"Diabetes\nThyroid disease"
+"得意分野（1行に1つ）"	"Areas of focus (one per line)"
+"補足（例: 第1・第3土曜に専門の外来）"	"Note (e.g. specialist clinic on the 1st and 3rd Saturday)"
+"＋ 得意分野を足す"	"+ Add area of focus"
+"午前と午後で分かれるときは、行を分けてください。"	"Use separate rows for morning and afternoon sessions."
+`${i+1} 行目の曜日`	`Days for row ${i+1}`
+`${i+1} 行目を消す`	`Remove row ${i+1}`
+"補足（例: 受付は30分前まで）"	"Note (e.g. last check-in 30 minutes before closing)"
+"＋ 行を足す"	"+ Add row"
+placeholder: "木曜午後・日曜・祝日は休診"	placeholder: "Closed Sundays and public holidays"
+"休診の補足"	"Closures note"
+"予約・受診の方法"	"Booking and visiting"
+`方法 ${i+1} を消す`	`Remove method ${i+1}`
+"予約ページの URL"	"Booking page URL"
+"予約用の電話番号"	"Booking phone number"
+placeholder: "初診は電話のみ など"	placeholder: "e.g. new patients by phone only"
+"＋ 方法を足す"	"+ Add method"
+"安全のための決まり"	"Safety rules"
+"患者さんの AI は、問診の前にここを確かめます。初期値は、選んだ地域プロファイルのもの（その地域の公的な資料から書き写したもの。出典は下）です。医師の確認はまだです。"	"Patients' AI checks this before any questionnaire. The defaults come from the selected regional profile (transcribed from that region's official sources; see the source below). They have not yet been reviewed by doctors."
+"公開の前に必ず医師に見てもらってください。"	" Always have a doctor review them before publishing."
+"診断をしない"	"No diagnosis"
+"この欄は変えられません。このファイルを読む AI は、病名の推定や診断をしません。"	"This cannot be changed. AI reading this file does not guess diseases or diagnose."
+"緊急時の案内"	"Emergency message"
+"予約より先に救急へ（目安の症状・おとな／年代がわからないとき）"	"Call emergency services before booking (warning signs: adults / age unknown)"
+"1行に1つ。減らすときは医師に確認してください。"	"One per line. Check with a doctor before removing any."
+`${g.label || k}の目安`	`Warning signs: ${g.label || k}`
+"目安の出典"	"Source of warning signs"
+"（" + s.redFlagsSource.edition + "）"	" (" + s.redFlagsSource.edition + ")"
+`${s.redFlagsSource.publisher || ""}「${s.redFlagsSource.title || ""}」	`${s.redFlagsSource.publisher || ""}, "${s.redFlagsSource.title || ""}"
+"原文（PDF）"	"Original source"
+"初期値に戻す"	"Reset to defaults"
+"受診の理由ごとに作れます。患者さんの AI はこの質問に沿って会話し、答えをまとめます。"	"Create one per reason for visiting. Patients' AI follows these questions in conversation and organises the answers."
+"（名前のない問診票）"	"(Untitled questionnaire)"
+"この問診票を消す"	"Remove this questionnaire"
+"問診票の名前"	"Questionnaire name"
+"ID（半角英数）"	"ID (letters and numbers)"
+"医師確認前（draft）"	"Not yet reviewed by a doctor (draft)"
+"使用中（active）"	"In use (active)"
+"どんな人向けか"	"Who it is for"
+placeholder: "発熱・せきで受診する方"	placeholder: "People visiting with fever or cough"
+"＋ 質問を足す"	"+ Add question"
+"＋ 空の問診票"	"+ Blank questionnaire"
+"条件の答え"	"Answer for the condition"
+"質問文（単位は文に入れる。例: いまの体温（℃））"	"Question text (put units in the text, e.g. Your temperature now (°C))"
+`Q${i+1} の質問文`	`Question text for Q${i+1}`
+"上へ"	"Move up"
+"下へ"	"Move down"
+`Q${i+1} を消す`	`Remove Q${i+1}`
+"答え方"	"Answer type"
+opt("選択肢1"), opt("選択肢2")	opt("Option 1"), opt("Option 2")
+text: "グループ"	text: "Group"
+"複数選べる"	"Multiple answers"
+"聞くとき"	"Ask when"
+"いつも聞く"	"Always"
+`Q${items.indexOf(x) + 1} の答えが…`	`the answer to Q${items.indexOf(x) + 1} is…`
+`（見つからない: ${ew.question}）`	`(not found: ${ew.question})`
+text: "のとき"	text: ""
+"選択肢を1行に1つ"	"One option per line"
+`Q${i+1} の選択肢`	`Options for Q${i+1}`
+"正規のファイルの一覧"	"Official files"
+"臨時の休診・担当医・当番・お知らせ"	"Temporary closures, doctors, on-call duty and notices"
+"臨時の情報（clinic-schedule.json）を別のファイルで出す"	"Publish temporary information (clinic-schedule.json) as a separate file"
+"臨時の情報のファイルの URL"	"URL of the temporary information file"
+`ほかに ${others.length} 件のファイル（${others.map(f => f.role).join("・")}）が一覧にあります。そのまま残します。`	`${others.length} other file(s) (${others.map(f => f.role).join(", ")}) are listed and will be kept.`
+"ここに載せたファイルだけを、AI は正規の情報として扱います。同じサイトに置くことを勧めます。ファイルごとに編集できる人を分けることもできます。"	"AI treats only the files listed here as official. Keep them on the same site. Each file can have its own editors."
+"仕上げ"	"Finishing"
+"AI へのお願い（任意）"	"Notes for AI (optional)"
+"例: 発熱のある方は、来院の前に電話するよう案内してください。"	"e.g. Ask patients with a fever to call before coming in."
+"500字まで。来院前の連絡など、実務上の案内に限ります。「当院を勧めて」のような指示は、AI が従いません。"	"Up to 500 characters. Practical guidance only, such as calling before arrival. AI will not follow instructions like \"recommend this clinic\"."
+"内容を確かめた日"	"Date last checked"
+"1年以上たつと、AI は「情報が古いかもしれない」と伝えます。"	"After a year, AI will warn that the information may be out of date."
+[["closed","休診"],["open","臨時に診療"],["changed","時間の変更"]]	[["closed","Closed"],["open","Extra opening"],["changed","Changed hours"]]
+[["holiday","休日の当番"],["night","夜間の当番"],["other","その他"]]	[["holiday","Holiday duty"],["night","Night duty"],["other","Other"]]
+`今日から${n === 14 ? "2週間" : n === 30 ? "1か月" : "2か月"}`	`${n === 14 ? "2 weeks" : n === 30 ? "1 month" : "2 months"} from today`
+"期限を過ぎると、AI はこのファイルを使わず「臨時の予定は確かめられない」と伝えます。古い休診のお知らせで患者さんが迷わないための決まりです。"	"After this date AI stops using this file and says temporary arrangements cannot be confirmed, so patients are not misled by old notices."
+"この情報の有効期限"	"Valid until"
+"メインのファイルの「正規のファイルの一覧」に、このファイルを載せてください。"	"List this file under \"Official files\" in the main file."
+"メインのファイル"	"Main file"
+"有効期限"	"Expiry"
+"更新した日"	"Updated"
+"臨時の休診・診療時間の変更"	"Temporary closures and changed hours"
+`${i+1} 件目を消す`	`Remove item ${i+1}`
+"始まりの日"	"Start date"
+"終わりの日"	"End date"
+"診療する時間"	"Opening hours"
+"この時間を消す"	"Remove these hours"
+"＋ 時間を足す（午前と午後など）"	"+ Add hours (e.g. morning and afternoon)"
+placeholder: "理由や補足（例: 年末年始の休診）"	placeholder: "Reason or note (e.g. closed over the holidays)"
+"臨時の休診や、祝日の臨時診療などを入れます。"	"Add temporary closures, extra openings on public holidays, and so on."
+"＋ 休診・変更を足す"	"+ Add closure or change"
+"専門外来や代診など。担当医の名前は任意です。サイトですでに公開している範囲で入れてください。"	"Specialist sessions, locum cover and so on. Doctors' names are optional; only include what is already public on your website."
+"担当医の予定"	"Doctors' schedule"
+"曜日か日付か"	"Weekly or a date"
+"毎週の曜日"	"Weekly"
+"日付を指定"	"Specific date"
+placeholder: "小児科"	placeholder: "Paediatrics"
+"担当医（任意）"	"Doctor (optional)"
+placeholder: "佐藤医師"	placeholder: "Dr Smith"
+"aria-label": "曜日"	"aria-label": "Days"
+"補足（例: 第2・第4週のみ）"	"Note (e.g. 2nd and 4th weeks only)"
+"曜日ごとの専門外来や、代診の予定を入れます。"	"Add weekly specialist sessions or locum cover."
+"＋ 担当医の予定を足す"	"+ Add doctor's schedule"
+"当番（休日・夜間）"	"On-call duty (holidays and nights)"
+"地域の休日当番医・夜間の当番など。終わりの時刻が始まりより早いときは、翌朝までと読みます。"	"Local holiday or night duty. If the end time is earlier than the start time, it means until the next morning."
+"診療科（例: 内科）"	"Department (e.g. General practice)"
+"補足（例: 電話してから来院してください）"	"Note (e.g. please call before coming in)"
+"当番の予定がなければ空のままで構いません。"	"Leave empty if there is no on-call duty."
+"＋ 当番を足す"	"+ Add on-call duty"
+"載せる期間（任意）"	"Show between (optional)"
+placeholder: "例: 発熱外来は予約制です。"	placeholder: "e.g. Fever clinic is by appointment only."
+"お知らせの本文"	"Notice text"
+"一時的なお知らせ（予約制の変更、混雑など）を入れます。"	"Add temporary notices (booking changes, busy periods and so on)."
+"＋ お知らせを足す"	"+ Add notice"
+`${FILE[m]} を保存`	`Save ${FILE[m]}`
+hint.append("できたファイルは ", h("code", { text: FILE.intake }), " という名前で、ホームページのいちばん上（例: ", h("code", { text: "https://あなたのサイト/clinic-intake.json" }), "）に置きます。");	hint.append("Name the file ", h("code", { text: FILE.intake }), " and put it at the top level of your website (e.g. ", h("code", { text: "https://your-site/clinic-intake.json" }), ").");
+hint.append("できたファイルは ", h("code", { text: FILE.schedule }), " という名前で、メインのファイルの「正規のファイルの一覧」に書いた場所に置きます。");	hint.append("Name the file ", h("code", { text: FILE.schedule }), " and put it where the main file's \"Official files\" says.");
+mode === "schedule" ? "臨時の情報" : "架空の医院"	mode === "schedule" ? "temporary information" : "a fictional clinic"
+example: [`${what}の例が入っています。`, "書き換えて使うか、空にして始めてください。"], draft: ["前回の下書きを開きました。", "このブラウザの中だけに保存されています。"], blank: ["空の用紙です。", "必須の欄から埋めてください。"], loaded: ["貼り付けた JSON を読み込みました。", ""]	example: [`An example of ${what} is filled in.`, "Edit it, or clear it and start fresh."], draft: ["Your previous draft is open.", "It is saved only in this browser."], blank: ["Blank form.", "Start with the required fields."], loaded: ["The pasted JSON has been loaded.", ""]
+"例を入れる"	"Fill in example"
+"空にする"	"Clear"
+STATUS_JA = { closed: "休診", open: "臨時に診療", changed: "時間の変更" }, KIND_JA = { holiday: "休日の当番", night: "夜間の当番", other: "その他の当番" }	STATUS_JA = { closed: "Closed", open: "Extra opening", changed: "Changed hours" }, KIND_JA = { holiday: "Holiday duty", night: "Night duty", other: "Other duty" }
+.map(d => DAY_JA[d] || d).join("・")	.map(d => DAY_JA[d] || d).join(", ")
+`${a} 〜 ${b}`	`${a} – ${b}`
+`${o}〜翌${c}`	`${o}–${c} (next day)`
+`${o || "?"}〜${c || "?"}`	`${o || "?"}–${c || "?"}`
+"（名前が空です）"	"(Name is empty)"
+"ふだんの診療時間"	"Regular hours"
+`${days(x.days)}　${hm(x.opens, x.closes)}${x.note ? "（" + x.note + "）" : ""}`	`${days(x.days)}  ${hm(x.opens, x.closes)}${x.note ? " (" + x.note + ")" : ""}`
+"得意分野・力を入れていること（医療機関の自己申告）"	"Areas of focus (the clinic's own statement)"
+"主に診ている症状・相談"	"Symptoms and concerns usually seen"
+"対応していないこと"	"Not provided"
+"持ち物・言語・設備"	"What to bring, languages, facilities"
+"noDiagnosis が true ではありません"	"noDiagnosis is not true"
+"予約より先に救急へ（目安・おとな／年代がわからないとき）:"	"Call emergency services before booking (warning signs: adults / age unknown):"
+`${str(g.label)}の目安:`	`Warning signs: ${str(g.label)}:`
+`出典: ${str(s.redFlagsSource.publisher)}「${str(s.redFlagsSource.title)}」${s.redFlagsSource.edition ? "（" + str(s.redFlagsSource.edition) + "）" : ""}	`Source: ${str(s.redFlagsSource.publisher)}, "${str(s.redFlagsSource.title)}"${s.redFlagsSource.edition ? " (" + str(s.redFlagsSource.edition) + ")" : ""}
+s.redFlagsSource.note ? "　" + s.redFlagsSource.note : ""	s.redFlagsSource.note ? "  " + s.redFlagsSource.note : ""
+"AI へのお願い"	"Notes for AI"
+text: f.role === "schedule" ? "臨時の情報" : str(f.role)	text: f.role === "schedule" ? "Temporary information" : str(f.role)
+`問診票: ${str(q.title) || str(q.id)}`	`Questionnaire: ${str(q.title) || str(q.id)}`
+text: q.status === "active" ? "使用中" : "医師の確認前"	text: q.status === "active" ? "In use" : "Not yet reviewed by a doctor"
+`Q${idx + 1} の答えが「${ew.answerBoolean === true ? "はい" : ew.answerBoolean === false ? "いいえ" : str(ew.answerString)}」のときだけ聞く`	`Asked only when the answer to Q${idx + 1} is "${ew.answerBoolean === true ? "Yes" : ew.answerBoolean === false ? "No" : str(ew.answerString)}"`
+"選択肢: "	"Options: "
+text: "必須"	text: "Required"
+text: "複数選べる"	text: "Multiple answers"
+"終わった予定"	"Past"
+`有効期限切れ（${o.validUntil}）: AI はこのファイルを使いません`	`Expired (${o.validUntil}): AI will not use this file`
+`有効: ${str(o.validUntil)} まで`	`Valid until ${str(o.validUntil)}`
+"毎週 "	"Weekly "
+`（${span(x.from, x.to)}）`	` (${span(x.from, x.to)})`
+"臨時の予定はありません。"	"No temporary arrangements."
+"この JSON は表示できませんでした: "	"This JSON could not be displayed: "
+"エラーも注意もありません。"	"No errors or warnings."
+`エラー ${res.E.length} 件${res.W.length ? `・注意 ${res.W.length} 件` : ""}。直すと公開できる形になります。`	`${res.E.length} error(s)${res.W.length ? `, ${res.W.length} warning(s)` : ""}. Fix them to make the file ready to publish.`
+`公開できる形です。注意が ${res.W.length} 件あります。`	`Ready to publish. ${res.W.length} warning(s).`
+"公開できる形です。"	"Ready to publish."
+`チェック（${res.E.length + res.W.length}）`	`Check (${res.E.length + res.W.length})`
+"コピーしました。"	"Copied."
+"選択しました。Ctrl+C（⌘+C）でコピーしてください。"	"Selected. Press Ctrl+C (⌘+C) to copy."
+"JSON を貼り付けてください。"	"Paste some JSON."
+"JSON として読めません: " + e.message + "。末尾のカンマやコメント（//）がないか確かめてください。"	"This is not valid JSON: " + e.message + ". Check for trailing commas or comments (//)."
+"フォームに読み込みました。"	"Loaded into the form."
+"医療機関の情報"	"Clinic information"
+"診療時間"	"Opening hours"
+"問診票"	"Questionnaires"
+"状態"	"Status"
+"必須"	"Required"
+"名前"	"Name"
+"電話番号"	"Phone"
+"ホームページ"	"Website"
+"郵便番号"	"Postcode"
+"都道府県"	"State / region"
+"市区町村"	"City / town"
+"町名・番地・建物"	"Street address"
+"国"	"Country"
+"緯度"	"Latitude"
+"経度"	"Longitude"
+"行き方"	"Getting there"
+"1行に1つ。"	"One per line."
+"診療科"	"Departments"
+"持ち物"	"What to bring"
+"バリアフリー・設備"	"Accessibility and facilities"
+"対応できる言語"	"Languages"
+"始まり"	"Start"
+"終わり"	"End"
+text: "〜"	text: "–"
+"方法"	"Method"
+"注意"	"Note"
+"補足"	"Note"
+"医師確認前"	"Not yet reviewed"
+"はい"	"Yes"
+"いいえ"	"No"
+"種類"	"Type"
+"お知らせ"	"Notices"
+"住所"	"Address"
+"位置"	"Location"
+"識別番号"	"Identifiers"
+"サイト"	"Website"
+"言語"	"Languages"
+"設備"	"Facilities"
+"当番"	"On-call duty"
+"日付"	"Date"
+"＋ " + t.title	"+ " + t.title
+["電話", str(c.telephone)]	["Phone", str(c.telephone)]
+a.postalCode && "〒" + a.postalCode	a.postalCode
+{ text: "臨時の情報" }	{ text: "Temporary information" }
+"　"	"  "
+.join("・")	.join(", ")
+# --- 検査のメッセージ（src/validate.js） ---
+specVersion ${o.specVersion} は、この検査器（${SUPPORTED_VERSIONS.join(", ")} に対応）より新しい版です。知らないキーは無視して検査しました。	specVersion ${o.specVersion} is newer than this checker (supports ${SUPPORTED_VERSIONS.join(", ")}). Unknown keys were ignored.
+識別番号 ${i+1}: system「${id.system}」は、この検査器が知らない名前です。URI（https:// や urn:）で書くことを勧めます。	Identifier ${i+1}: system "${id.system}" is not known to this checker. A URI (https:// or urn:) is recommended.
+profile（地域プロファイル）は、id を持つ { }（例: {\"id\": \"jp\", \"url\": \"…\"}）にしてください。	profile (regional profile) must be an object with id (e.g. {\"id\": \"jp\", \"url\": \"…\"}).
+${label}: status は closed（休診）・open（臨時に診療）・changed（時間の変更）のどれかにしてください。	${label}: status must be closed, open (extra opening) or changed (changed hours).
+ファイルの一覧 ${i+1}: url は空白を含まない URL にしてください（例: /clinic-schedule.json）。	File ${i+1}: url must be a URL without spaces (e.g. /clinic-schedule.json).
+予約の方法 ${i+1}: method が決まった値（web / phone / walk-in / other）ではありません。	Booking method ${i+1}: method is not one of web / phone / walk-in / other.
+${i+1} 件目: url（その医療機関の clinic-intake.json の場所）を https:// で入れてください。	Entry ${i+1}: enter url (where the clinic's clinic-intake.json is) starting with https://.
+有効期限（${o.validUntil}）が過ぎています。AI はこのファイルを使いません。内容を確かめて期限を延ばしてください。	The expiry date (${o.validUntil}) has passed. AI will not use this file. Check the content and extend the date.
+${label}: kind は holiday（休日の当番）・night（夜間の当番）・other のどれかにしてください。	${label}: kind must be holiday (holiday duty), night (night duty) or other.
+位置（geo）は、latitude（緯度 -90〜90）と longitude（経度 -180〜180）の数にしてください。	Location (geo) must have numbers latitude (-90 to 90) and longitude (-180 to 180).
+診療時間 ${i+1} 行目: 始まり（${h.opens}）が終わり（${h.closes}）より後になっています。	Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).
+ファイルの一覧 ${i+1}: 医療機関のサイトと別のサイトにあります。AI が正規のファイルと確かめにくくなります。	File ${i+1}: it is on a different site from the clinic's website, which makes it harder for AI to confirm it is official.
+${label}: 表示の条件が、それより前にない質問（${ew?.question || "空"}）を指しています。	${label}: the condition refers to a question that is not earlier in the list (${ew?.question || "empty"}).
+臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定はない」と AI に伝わります。	There is no temporary information. Even with nothing scheduled, publishing this file tells AI there are no temporary arrangements.
+救急の目安（redFlags）がまだ空です。公的な資料から書き写すまで、このプロファイルは下書きのままにしてください。	The emergency warning signs (redFlags) are still empty. Keep this profile as a draft until they are transcribed from an official source.
+ファイルの一覧 ${i+1}: 役割「${f.role}」は、この検査器が知らないものです（読む側は無視します）。	File ${i+1}: role "${f.role}" is not known to this checker (readers will ignore it).
+国（addressCountry）は ISO 3166-1 の2文字の大文字にしてください（例: JP）。	Country (addressCountry) must be a two-letter upper-case ISO 3166-1 code (e.g. JP).
+ファイルの一覧 ${i+1}: 役割「${f.role}」のファイルが2つあります。1つにしてください。	File ${i+1}: there are two files with role "${f.role}". Keep only one.
+基本形 ${i+1}: url（ほかのファイルが derivedFrom で指す場所）を入れてください。	Base questionnaire ${i+1}: enter url (what other files point to with derivedFrom).
+${label}: 表示の条件の operator は "=" か "exists" にしてください。	${label}: the condition operator must be "=" or "exists".
+${name}: derivedFrom（元にした問診票の基本形）は URL の配列にしてください。	${name}: derivedFrom (the base questionnaire it was made from) must be an array of URLs.
+${label}: 質問文が長すぎます（${it.text.length} 字・200 字まで）。	${label}: the question text is too long (${it.text.length} characters; up to 200).
+有効期限が更新日から半年以上先です。臨時の情報は、短めの期限にして、こまめに見直すことを勧めます。	The expiry date is more than six months after the date updated. Keep temporary information short-lived and review it often.
+${label}: 始まり（${opens}）が終わり（${closes}）より後になっています。	${label}: the start (${opens}) is after the end (${closes}).
+得意分野 ${i+1}: 診療科「${f.department}」が、診療科の一覧にありません。	Area of focus ${i+1}: department "${f.department}" is not in the list of departments.
+問診票が1つもありません。医院の情報だけでも使えますが、問診票があると受診前の記入に役立ちます。	There are no questionnaires. The clinic information works on its own, but a questionnaire helps patients prepare before their visit.
+${name}: resourceType は "Questionnaire" にしてください。	${name}: resourceType must be "Questionnaire".
+${i+1} 件目: geo は latitude と longitude の数にしてください。	Entry ${i+1}: geo must have numbers latitude and longitude.
+年代「${k}」は、この検査器が知らないものです（older・child が決まっています）。	Age group "${k}" is not known to this checker (older and child are defined).
+validUntil（この情報の有効期限）は YYYY-MM-DD の形で必ず入れてください。	validUntil (expiry of this information) is required, in the form YYYY-MM-DD.
+${label}: 本文が長すぎます（${x.text.length} 字・200 字まで）。	${label}: the text is too long (${x.text.length} characters; up to 200).
+最後に確かめた日（updated）が1年以上前です。内容を確かめて日付を新しくしてください。	The date last checked (updated) is more than a year ago. Check the content and update the date.
+識別番号 ${i+1}: system（どの体系か）と value（番号）を入れてください。	Identifier ${i+1}: enter system (which scheme) and value (the number).
+AI へのお願いが長すぎます（${o.aiNotes.length} 字・500 字まで）。	Notes for AI are too long (${o.aiNotes.length} characters; up to 500).
+${name} は医師の確認前（draft）です。確認が済んだら「使用中」にしてください。	${name} has not yet been reviewed by a doctor (draft). Change it to "In use" after review.
+specVersion ${o.specVersion} は、この検査器より新しい版です。	specVersion ${o.specVersion} is newer than this checker.
+questionnaires（問診票の並び）がありません。空なら [] にしてください。	questionnaires is missing. Use [] if there are none.
+予約の方法 ${i+1}: 予約ページの URL が https で始まっていません。	Booking method ${i+1}: the booking page URL does not start with https.
+${label}: 期間（from・to）を YYYY-MM-DD で入れてください。	${label}: enter the period (from, to) in the form YYYY-MM-DD.
+ファイルの一覧 ${i+1}: 役割（role）が空です（例: schedule）。	File ${i+1}: role is empty (e.g. schedule).
+識別番号 ${i+1}: ${id.system} の番号の形が正しくありません。	Identifier ${i+1}: the number does not match the format for ${id.system}.
+safety.redFlagsByAge は、年代ごとの { } にしてください。	safety.redFlagsByAge must be an object ({ }) by age group.
+${name}: id は半角英数字とハイフンにしてください（例: fever）。	${name}: id must use letters, numbers and hyphens (e.g. fever).
+${name}: status は draft か active にしてください。	${name}: status must be draft or active.
+当番 ${i+1}: 日付（date）を YYYY-MM-DD で入れてください。	On-call duty ${i+1}: enter the date (date) in the form YYYY-MM-DD.
+spec は \"open-intake-schedule\" にしてください。	spec must be \"open-intake-schedule\".
+${label}: 日付（date）を YYYY-MM-DD で入れてください。	${label}: enter the date (date) in the form YYYY-MM-DD.
+id は小文字の英数字とハイフン（例: jp、jp-tokyo）にしてください。	id must use lower-case letters, numbers and hyphens (e.g. jp, jp-tokyo).
+診療時間 ${i+1} 行目: 曜日は Mo〜Su と PH だけが使えます。	Opening hours row ${i+1}: only Mo–Su and PH can be used as days.
+予約の方法 ${i+1}: Web 予約のページの URL を入れてください。	Booking method ${i+1}: enter the URL of the booking page.
+${label}: linkId「${it.linkId}」が重なっています。	${label}: linkId "${it.linkId}" is duplicated.
+${label}: derivedFrom は URL の配列にしてください。	${label}: derivedFrom must be an array of URLs.
+publisher.name（この一覧をまとめた団体の名前）を入れてください。	Enter publisher.name (the organisation that compiled this list).
+ファイルの一覧 ${i+1}: URL が https で始まっていません。	File ${i+1}: the URL does not start with https.
+年代「${k}」の救急の目安に、症状（items）を1つ以上入れてください。	Enter at least one warning sign (items) for age group "${k}".
+${label}: 答え方（type）「${it.type}」は使えません。	${label}: answer type "${it.type}" cannot be used.
+診療時間 ${i+1} 行目: 時刻を 09:00 の形で入れてください。	Opening hours row ${i+1}: enter times in the form 09:00.
+updated（更新した日）は YYYY-MM-DD の形にしてください。	updated (date updated) must be in the form YYYY-MM-DD.
+area.addressCountry（国。例: JP）を入れてください。	Enter area.addressCountry (country, e.g. JP).
+policy は、url（決まりの場所）を持つ { } にしてください。	policy must be an object ({ }) with url (where the policy is).
+${name}: id「${q.id}」がほかの問診票と重なっています。	${name}: id "${q.id}" is used by another questionnaire.
+${label}は、もう終わった予定です。消してよいか確かめてください。	${label} has already ended. Check whether it can be removed.
+${label}: 曜日（days）か日付（date）を入れてください。	${label}: enter days (days) or a date (date).
+${label}: from は YYYY-MM-DD にしてください。	${label}: from must be YYYY-MM-DD.
+${label}: ${k} は YYYY-MM-DD にしてください。	${label}: ${k} must be YYYY-MM-DD.
+specVersion は \"0.1\" のような形にしてください。	specVersion must look like \"0.1\".
+得意分野 ${i+1}: 内容（areas）を1つ以上入れてください。	Area of focus ${i+1}: enter at least one item (areas).
+updated は YYYY-MM-DD の形の日付にしてください。	updated must be a date in the form YYYY-MM-DD.
+safety.noDiagnosis は true にしてください。	safety.noDiagnosis must be true.
+${label}: to は YYYY-MM-DD にしてください。	${label}: to must be YYYY-MM-DD.
+identifiers（識別番号）は配列（[ ]）にしてください。	identifiers must be an array ([ ]).
+files（正規のファイルの一覧）は配列（[ ]）にしてください。	files (official files) must be an array ([ ]).
+${label}: 曜日は Mo〜Su と PH だけが使えます。	${label}: only Mo–Su and PH can be used as days.
+当番 ${i+1}: 医療機関の名前（name）を入れてください。	On-call duty ${i+1}: enter the clinic name (name).
+safety（安全のための決まり）がありません。省略できません。	safety (safety rules) is missing. It cannot be left out.
+${label}: 始まりの日が終わりの日より後になっています。	${label}: the start date is after the end date.
+${label}: 診療する時間（hours）を入れてください。	${label}: enter the opening hours (hours).
+当番 ${i+1}: 時刻を 09:00 の形で入れてください。	On-call duty ${i+1}: enter times in the form 09:00.
+spec は \"open-intake\" にしてください。	spec must be \"open-intake\".
+予約の方法 ${i+1}: 予約用の電話番号を入れてください。	Booking method ${i+1}: enter the booking phone number.
+${label}: linkId は半角英数字にしてください。	${label}: linkId must use letters and numbers.
+有効期限（validUntil）が更新日より前になっています。	The expiry date (validUntil) is before the date updated.
+${label}: 時刻を 09:00 の形で入れてください。	${label}: enter times in the form 09:00.
+${label}: 診療科か担当医のどちらかを入れてください。	${label}: enter a department or a doctor.
+updated は YYYY-MM-DD の形にしてください。	updated must be in the form YYYY-MM-DD.
+${i+1} 件目: 医療機関の名前（name）がありません。	Entry ${i+1}: the clinic name (name) is missing.
+JSON の一番外側がオブジェクト（{ }）ではありません。	The outermost JSON value is not an object ({ }).
+specVersion（例: \"0.1\"）がありません。	specVersion (e.g. \"0.1\") is missing.
+ホームページの URL が https で始まっていません。	The website URL does not start with https.
+specVersion（例: \"0.2\"）がありません。	specVersion (e.g. \"0.2\") is missing.
+specVersion（例: \"0.3\"）がありません。	specVersion (e.g. \"0.3\") is missing.
+emergency（緊急時の案内文と番号）を入れてください。	Enter emergency (the emergency message and numbers).
+entries（医療機関の一覧）を1件以上入れてください。	Enter at least one entry (clinic).
+${i+1} 件目: 同じ url がほかにもあります。	Entry ${i+1}: the same url appears more than once.
+redFlags（救急の目安）を1つ以上入れてください。	Enter at least one emergency warning sign (redFlags).
+focus（得意分野）は配列（[ ]）にしてください。	focus (areas of focus) must be an array ([ ]).
+診療時間 ${i+1} 行目: 曜日を選んでください。	Opening hours row ${i+1}: choose the days.
+ファイルの一覧 ${i+1}: 形が正しくありません。	File ${i+1}: the entry is not in the right form.
+${label}: 選択肢を1つ以上入れてください。	${label}: enter at least one option.
+${label}: グループの入れ子は2段までです。	${label}: groups can be nested at most two levels deep.
+questionnaires は配列にしてください。	questionnaires must be an array.
+電話番号に数字・ハイフン以外の文字が入っています。	The phone number contains characters other than digits and hyphens.
+郵便番号は 100-0000 の形にしてください。	Use the form 100-0000 for Japanese postcodes.
+onCall（地域の当番表）は配列にしてください。	onCall (local on-call schedule) must be an array.
+${label}: 質問の形が正しくありません。	${label}: the question is not in the right form.
+救急の目安になる症状を1つ以上入れてください。	Enter at least one emergency warning sign.
+${label}: 本文（text）が空です。	${label}: the text is empty.
+clinic（医療機関の情報）がありません。	clinic (clinic information) is missing.
+予約・受診の方法を1つ以上入れてください。	Enter at least one way to book or visit.
+${name}: 質問が1つもありません。	${name}: there are no questions.
+${k} は配列（[ ]）にしてください。	${k} must be an array ([ ]).
+${label}: 形が正しくありません。	${label}: not in the right form.
+${name} の形が正しくありません。	${name} is not in the right form.
+${name}: 問診票の名前が空です。	${name}: the questionnaire name is empty.
+${label} の時間 ${k+1}	${label}, hours ${k+1}
+specVersion がありません。	specVersion is missing.
+${label}: 質問文が空です。	${label}: the question text is empty.
+診療時間を1つ以上入れてください。	Enter at least one row of opening hours.
+診療科を1つ以上選んでください。	Choose at least one department.
+臨時の休診・変更 ${i+1}	Temporary closure or change ${i+1}
+${qi+1} 番目の問診票	Questionnaire ${qi+1}
+担当医の予定 ${i+1}	Doctor's schedule ${i+1}
+医療機関の名前が空です。	The clinic name is empty.
+緊急時の案内文が空です。	The emergency message is empty.
+「${q.title}」	"${q.title}"
+お知らせ ${i+1}	Notice ${i+1}
+電話番号が空です。	The phone number is empty.
+都道府県が空です。	State / region is empty.
+市区町村が空です。	City / town is empty.
+当番 ${i+1}	On-call duty ${i+1}
+"（"	" ("
+"）"	")"
