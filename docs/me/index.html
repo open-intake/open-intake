@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<title>自分の健康メモ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="持病・薬・アレルギーなどを、自分の責任で手元にまとめる my-health.json（自分の健康メモ）の作成ツール。受診のときに印刷したり画面で見せたりできます。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 左に記入欄、右に「受診用シート」と JSON。印刷はシートだけ。画面で見せるときはシートを大きく */
+:root {
+  --paper: #F1F0EC; --sheet: #FFFFFF; --ink: #1E2326; --muted: #5F676B; --rule: #D8D6CF; --field: #FAFAF8;
+  --accent: #3D5A80; --accent-ink: #FFFFFF; --accent-soft: #E3E9F2;
+  --req: #B3261E; --req-soft: #FBE9E7; --warn: #8A5300; --warn-soft: #FFF2D9; --ok: #1D7238; --ok-soft: #E2F3E6;
+  --code-bg: #1B2128; --code-fg: #DDE3E8; --code-key: #9EC3F0; --code-str: #F2D49B;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121517; --sheet: #1B2023; --ink: #E6E9EA; --muted: #9AA3A7; --rule: #30373B; --field: #20262A;
+    --accent: #8DB0DE; --accent-ink: #10161D; --accent-soft: #233041;
+    --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+    --code-bg: #0C1014; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #121517; --sheet: #1B2023; --ink: #E6E9EA; --muted: #9AA3A7; --rule: #30373B; --field: #20262A;
+  --accent: #8DB0DE; --accent-ink: #10161D; --accent-soft: #233041;
+  --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+  --code-bg: #0C1014; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.7; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: 0.86em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+header.top { padding-block: 28px 16px; display: grid; gap: 6px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+header.top h1 { font-size: clamp(24px, 3.4vw, 34px); }
+header.top p { margin: 0; color: var(--muted); max-width: 64ch; }
+.notice { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+.notice .spacer { flex: 1; }
+.caution { background: var(--warn-soft); color: var(--ink); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 14px; display: grid; gap: 4px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); gap: 24px; align-items: start; }
+@media (max-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.form { display: grid; gap: 16px; min-width: 0; }
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px 18px; display: grid; gap: 12px; min-width: 0; }
+.card > header { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+.card > header h2 { font-size: 18px; }
+.card > header .k { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.lead { margin: 0; color: var(--muted); font-size: 14px; }
+.grid { display: grid; gap: 10px 14px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.field { display: grid; gap: 3px; min-width: 0; }
+.field > label { font-size: 13.5px; font-weight: 500; }
+input[type="text"], input[type="number"], input[type="date"], select, textarea { font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 9px; width: 100%; min-width: 0; }
+textarea { resize: vertical; min-height: 70px; }
+.tri { display: flex; flex-wrap: wrap; gap: 6px; }
+.tri label { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; font-size: 13.5px; cursor: pointer; background: var(--field); }
+.tri label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.tri input { accent-color: var(--accent); margin: 0; }
+.rows { display: grid; gap: 10px; }
+.row { border: 1px dashed var(--rule); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 8px; min-width: 0; }
+.row-head { display: flex; gap: 8px; align-items: center; }
+.row-head .num { font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+.row-head .spacer { flex: 1; }
+details.src { font-size: 13px; }
+details.src summary { cursor: pointer; color: var(--muted); }
+details.src .grid { margin-top: 6px; }
+.badge { font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: 3px; }
+.badge.warn { color: var(--warn); background: var(--warn-soft); }
+.badge.ok { color: var(--ok); background: var(--ok-soft); }
+button { font: inherit; cursor: pointer; border-radius: 4px; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 6px 14px; font-weight: 500; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.small { padding: 3px 10px; font-size: 13px; }
+.icon-btn { border: 1px solid var(--rule); background: var(--field); color: var(--req); min-width: 30px; height: 28px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+details.ai { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
+details.ai > summary { cursor: pointer; padding: 12px 16px; font-family: var(--font-display); font-weight: 700; }
+details.ai .body { padding: 0 16px 16px; display: grid; gap: 10px; }
+.prompt { background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 10px; max-height: 200px; overflow: auto; white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; margin: 0; }
+aside.out { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; min-width: 0; }
+@media (max-width: 1000px) { aside.out { position: static; } }
+.status { display: flex; gap: 10px; align-items: center; border-radius: var(--radius); padding: 10px 14px; font-weight: 500; cursor: pointer; }
+.status.ok { background: var(--ok-soft); color: var(--ok); } .status.warn { background: var(--warn-soft); color: var(--warn); } .status.err { background: var(--req-soft); color: var(--req); }
+.status .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--rule); }
+.tab { white-space: nowrap; border: 0; background: transparent; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid transparent; border-radius: 0; font-weight: 500; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.panel { display: grid; gap: 10px; min-width: 0; }
+pre.json { background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius); padding: 12px; margin: 0; overflow: auto; max-height: 56vh; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; }
+pre.json .k { color: var(--code-key); } pre.json .s { color: var(--code-str); }
+.issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.issues li { display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 6px 10px; border-radius: 4px; }
+.issues li.e { background: var(--req-soft); } .issues li.w { background: var(--warn-soft); } .issues li.o { background: var(--ok-soft); }
+.issues .code { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; }
+.toast { min-height: 1.4em; font-size: 13px; color: var(--ok); }
+.small { font-size: 13px; color: var(--muted); }
+
+/* 受診用シート */
+.sheetview { background: #FFFFFF; color: #111111; border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 20px; display: grid; gap: 12px; font-size: 14px; }
+.sheetview h3 { font-size: 18px; color: #111111; }
+.sheetview .meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: #444444; }
+.sheetview .self { border: 1px solid #999999; padding: 6px 10px; font-size: 12.5px; color: #333333; }
+.sheetview h4 { font-family: var(--font-display); font-size: 14.5px; margin: 0 0 4px; color: #111111; border-left: 4px solid #3D5A80; padding-left: 8px; }
+.sheetview table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sheetview th, .sheetview td { border: 1px solid #BBBBBB; padding: 4px 6px; text-align: left; vertical-align: top; }
+.sheetview th { background: #F0F0F0; font-weight: 500; }
+.sheetview ul { margin: 0; padding-left: 1.2em; }
+.sheetview .none { color: #555555; }
+.sheetview .unk { color: #888888; }
+.sheetview .alert { color: #B3261E; font-weight: 700; }
+.sheetview .unchecked { font-size: 11px; color: #8A5300; }
+.sheetview .visit { white-space: pre-wrap; border: 1px solid #999999; min-height: 4em; padding: 6px 8px; }
+body.showing .wrap > *:not(.layout), body.showing .form, body.showing aside.out > *:not(#panel-sheet), body.showing #panel-sheet > *:not(.sheetview):not(#exitShow) { display: none !important; }
+body.showing .layout { grid-template-columns: 1fr; }
+body.showing .sheetview { font-size: 20px; max-width: 900px; margin: 0 auto; }
+body.showing .sheetview table { font-size: 18px; }
+body.showing #exitShow { display: inline-flex !important; position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); right: max(12px, env(safe-area-inset-right, 0px)); z-index: 5; }
+@media print {
+  body { background: #FFFFFF; }
+  .wrap > *:not(.layout), .form, aside.out > *:not(#panel-sheet), #panel-sheet > *:not(.sheetview) { display: none !important; }
+  #panel-sheet { display: block !important; }
+  .layout { display: block; }
+  .sheetview { border: 0; padding: 0; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow"><a href="../">← オープン受診案内とは</a> · my-health.json · 自分の健康メモ v0.1 草案</div>
+    <h1>自分の健康メモ</h1>
+    <p>持病・飲んでいる薬・アレルギーなどを、<strong>自分の責任で</strong>まとめる <code>my-health.json</code> を作ります。体調が悪いときに AI へ今の症状と一緒に渡したり、受診のときに印刷したり画面で見せたりできます。<strong>入力はこのブラウザの外には送りません。</strong></p>
+  </header>
+
+  <div class="caution">
+    <strong>はじめに</strong>
+    <span>・ここに書くのは<strong>ご自身の申告</strong>です。正しいかどうかは、ご自身で確かめてください。医療記録の代わりにはなりません。</span>
+    <span>・<strong>氏名・住所・電話番号・保険証やマイナンバーなどの番号は書かないでください。</strong></span>
+    <span>・このツールは診断をしません。命に関わるかもしれない症状があるときは、すぐ救急（日本は119）に電話してください。</span>
+  </div>
+
+  <div class="notice" id="notice"></div>
+
+  <div class="layout">
+    <main class="form" id="form">
+      <details class="ai" id="aiBox">
+        <summary>別の方法：AI と相談して作る（お薬手帳の写真からも）</summary>
+        <div class="body">
+          <p class="small">指示書を AI に渡すと、AI が1つずつ質問して my-health.json を作ります。お薬手帳・薬袋・領収書の写真から書き起こしてもらうこともできます（AI は読み間違えることがあるので、原本と見比べてください）。写真を送るときは、氏名や番号が写らないようにしてください。</p>
+          <div class="actions">
+            <a class="btn" href="AI_INSTRUCTIONS_PERSONAL.md" download="AI_INSTRUCTIONS_PERSONAL.md">指示書をダウンロード</a>
+            <button class="btn ghost" type="button" id="copyMake">「作るとき」の指示文をコピー</button>
+            <button class="btn ghost" type="button" id="copyUse">「体調が悪いとき」の指示文をコピー</button>
+            <span class="toast" id="promptToast" role="status"></span>
+          </div>
+          <pre class="prompt" id="promptMake">あなたは、私が自分の健康メモ `my-health.json`（自分の健康メモ JSON v0.1）を作るのを手伝う係です。
+
+### 守ること
+
+1. **一度に聞くのは1つの話題だけ**。選択肢や例を添えて、答えやすくする
+2. **推測で埋めない**。私が答えていないことは書かない。「ない」と答えた項目は空の配列 `[]`、答えていない・わからない項目はキーごと省く
+3. **氏名・住所・電話番号・保険証やマイナンバーなどの番号は受け取らない・書かない**。私が書いてしまったら、使わずに知らせる
+4. **診断しない**。病名を推測したり、薬をやめる・増やすなどの助言をしたりしない
+5. 私がお薬手帳・薬袋・領収書（明細書）・健診の結果の写真を渡したら、そこから薬の名前・量・飲み方・日付を**表記のまま**書き起こす。読み取れない字は推測せず「読めない」と伝える。書き起こした項目は `"source": { "type": "（書類の種類）", "date": "（書類の日付）", "transcribedBy": "ai", "checkedByMe": false }` とし、**最後に私に原本と見比べてもらい、確かめたものだけ `checkedByMe` を `true` にする**
+6. 最後の出力は JSON だけを1つのコードブロックに。コメントを入れない
+
+### 聞く順番
+
+1. 生まれた年、性別（答えたくなければ省く）、話せる言語、住んでいる国と都道府県（州）
+2. 薬や食べ物のアレルギー（ないなら「ない」）
+3. いま使っている薬（お薬手帳の写真があれば、それを使う）。必要なときだけ使う薬も
+4. 持病・これまでの大きな病気
+5. 手術・大きな処置
+6. 予防接種（わかる範囲で）
+7. 妊娠（あてはまる場合）、たばこ・お酒
+8. そのほか、医師に知っておいてほしいこと
+9. 全体を表にして見せ、確かめてから JSON を出す
+
+### 出力の形
+
+```json
+{
+  "spec": "open-intake-personal",
+  "specVersion": "0.1",
+  "updated": "今日の日付 YYYY-MM-DD",
+  "selfReported": true,
+  "person": { "birthYear": 1960, "sex": "female", "languages": ["ja"], "addressCountry": "JP", "addressRegion": "東京都" },
+  "allergies": [ { "substance": "何に対して", "category": "medication", "reaction": "どうなったか", "severity": "moderate" } ],
+  "medications": [ { "name": "薬の名前（表記のまま）", "dose": "1回の量", "frequency": "飲み方", "status": "active", "source": { "type": "medication-notebook", "date": "YYYY-MM-DD", "transcribedBy": "ai", "checkedByMe": true } } ],
+  "conditions": [ { "name": "病名（医師から聞いた名前）", "status": "active", "since": "YYYY" } ],
+  "procedures": [ { "name": "手術・処置", "date": "YYYY" } ],
+  "immunizations": [ { "name": "予防接種", "date": "YYYY-MM" } ],
+  "pregnancy": { "status": "not-applicable" },
+  "lifestyle": { "smoking": "never", "alcohol": "occasional" },
+  "notes": "そのほか"
+}
+```
+
+決まった値:
+- `sex`: `female`・`male`・`other`・`unknown`
+- `category`: `medication`・`food`・`environment`・`other`。`severity`: `mild`・`moderate`・`severe`・`unknown`
+- 薬の `status`: `active`（使っている）・`stopped`（やめた）・`as-needed`（必要なときだけ）。病気の `status`: `active`・`resolved`・`unknown`
+- `source.type`: `self`・`medication-notebook`・`medication-label`・`receipt`・`checkup`・`clinician-document`・`other`
+- `pregnancy.status`: `pregnant`・`not-pregnant`・`possible`・`not-applicable`・`unknown`
+- `smoking`: `never`・`former`・`current`・`unknown`。`alcohol`: `none`・`occasional`・`regular`・`unknown`
+- 日付は `YYYY`・`YYYY-MM`・`YYYY-MM-DD`
+
+JSON のあとに次を添える:
+&gt; 作成ツール（https://open-intake.github.io/open-intake/me/）の「貼り付けて確認」に貼り付けて確かめ、「保存」で my-health.json として手元に保存してください。
+
+では、最初の質問から始めてください。</pre>
+          <pre class="prompt" id="promptUse" hidden>これから、私の健康メモ（my-health.json・本人の申告）と、今の症状を伝えます。次の決まりに従って手伝ってください。
+
+1. **まず救急の目安を確かめる。** 命に関わるかもしれない症状（胸の痛み、息苦しさ、意識がおかしい、顔や手足のまひ、ろれつが回らない、突然の激しい頭痛、大量の出血など）があれば、ほかのことより先に、すぐ救急の番号（日本は119、迷うときは #7119 など）に電話するよう伝える。健康メモの確認のために遅らせない
+2. **診断しない。** 病名を挙げたり「〜の可能性が高い」と言ったりしない。薬をやめる・増やす・飲み合わせの判断をしない
+3. **医師が診断に必要とする情報を整理する。** 足りないところだけ、1つずつ質問する:
+   - いつから（始まった日時、急にか、だんだんか）
+   - どこが（場所、広がり）
+   - どんなふうに・どのくらい（性質、強さ 0〜10、続いているか、波があるか）
+   - ほかの症状（熱、せき、吐き気、下痢など）
+   - きっかけ・悪くなること・楽になること
+   - 自分でした対処（飲んだ薬とその量・時刻）
+   - 健康メモのうち、今回に関係がありそうなこと（持病・飲んでいる薬・アレルギー）
+4. 整理した内容を、**医療機関の窓口や医師に見せられる短いまとめ**にする（箇条書き、病名は書かない、本人の申告であることを書く）
+5. 受診したほうがよいか、いつ・どの診療科か、の**目安**を伝える。最後は本人が決め、迷うときは相談窓口や医療機関に電話するよう添える
+6. 受診先を探すときは、医療機関が公開している情報（clinic-intake.json があれば、それ）を使う。**私の持病や薬を理由に候補を減らさない。** 予約の段階で医療機関に伝えるのは、受診の理由と最低限だけにする
+7. 健康メモのうち、AI が書き起こして本人が確かめていない項目（`transcribedBy: "ai"` で `checkedByMe` が true でないもの）は、そう断ったうえで使う</pre>
+        </div>
+      </details>
+      <section class="card" id="sec-person"></section>
+      <section class="card" id="sec-allergies"></section>
+      <section class="card" id="sec-medications"></section>
+      <section class="card" id="sec-conditions"></section>
+      <section class="card" id="sec-procedures"></section>
+      <section class="card" id="sec-immunizations"></section>
+      <section class="card" id="sec-other"></section>
+    </main>
+
+    <aside class="out" aria-label="できあがり">
+      <div class="status" id="status" role="status"></div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-sheet" aria-selected="true" type="button">受診用シート</button>
+        <button class="tab" role="tab" id="tab-json" aria-selected="false" type="button">JSON</button>
+        <button class="tab" role="tab" id="tab-issues" aria-selected="false" type="button">チェック</button>
+        <button class="tab" role="tab" id="tab-load" aria-selected="false" type="button">読み込み</button>
+      </div>
+      <div class="panel" id="panel-sheet" role="tabpanel">
+        <details class="src" id="visitBox" open>
+          <summary>今回の症状を整理する（ファイルには保存しません。印刷と画面にだけ出ます）</summary>
+          <p class="small" style="margin:6px 0">診断するためではなく、医師が判断しやすいように整理します。わかるところだけで構いません。</p>
+          <div class="grid" id="visitFields"></div>
+        </details>
+        <div class="actions">
+          <button class="btn" type="button" id="printBtn">印刷する</button>
+          <button class="btn ghost" type="button" id="showBtn">画面で大きく見せる</button>
+        </div>
+        <button class="btn" type="button" id="exitShow" hidden>元の画面に戻る</button>
+        <div class="sheetview" id="sheet"></div>
+      </div>
+      <div class="panel" id="panel-json" role="tabpanel" hidden>
+        <div class="actions">
+          <button class="btn" type="button" id="saveJson">my-health.json を保存</button>
+          <button class="btn ghost" type="button" id="copyJson">コピー</button>
+          <span class="toast" id="jsonToast" role="status"></span>
+        </div>
+        <pre class="json" id="json" tabindex="0"></pre>
+        <p class="small">保存したファイルは、ご自身の端末に置いてください。体調が悪いときは、このファイルを AI に添付し、今の症状を伝えます。</p>
+      </div>
+      <div class="panel" id="panel-issues" role="tabpanel" hidden><ul class="issues" id="issues"></ul></div>
+      <div class="panel" id="panel-load" role="tabpanel" hidden>
+        <p class="small">前に保存した my-health.json や、AI が作った JSON を読み込みます。</p>
+        <textarea id="pasteBox" rows="8" spellcheck="false" aria-label="JSON を貼り付け" placeholder='{ "spec": "open-intake-personal", ... }'></textarea>
+        <div class="actions">
+          <button class="btn" type="button" id="loadPaste">読み込む</button>
+          <label class="btn ghost" for="fileIn">ファイルを開く</label>
+          <input type="file" id="fileIn" accept=".json,application/json" hidden>
+        </div>
+        <div class="toast" id="pasteToast" role="status"></div>
+        <ul class="issues" id="pasteIssues"></ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>/*
+ * オープン受診案内（Open Intake）の検査器 — SPEC.md §7 の規則をそのまま書いたもの。
+ * ブラウザでは作成サイトに埋め込まれ（グローバル OpenIntakeValidate）、node では require で読める。
+ * 互換の決まり（SPEC.md §8）: 知らないキーは見ない。古い版のファイルもエラーにしない。
+ * License: Apache-2.0
+ */
+var OpenIntakeValidate = (function () {
+"use strict";
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
+const KNOWN_ROLES = ["schedule"];
+// 識別番号の体系（SPEC §4c）。URI か、この表にある名前を使う
+const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
+const COUNTRY = /^[A-Z]{2}$/;
+const KNOWN_AGE_GROUPS = ["older", "child"];
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+const todayStr = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 864e5);
+const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
+const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
+const CHOICE = new Set(["choice","open-choice"]);
+function validateIntake(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!isObj(o)) { err("E1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (o.spec !== "open-intake") err("E1", "spec は \"open-intake\" にしてください。", "spec");
+  if (!isStr(o.specVersion)) err("E1", "specVersion（例: \"0.1\"）がありません。", "specVersion");
+  else if (!/^\d+\.\d+$/.test(o.specVersion)) err("E1", "specVersion は \"0.1\" のような形にしてください。", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器（${SUPPORTED_VERSIONS.join("・")} に対応）より新しい版です。知らないキーは無視して検査しました。`, "specVersion");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(o.updated || "")) err("E2", "updated は YYYY-MM-DD の形の日付にしてください。", "updated");
+  else { const age = (Date.now() - new Date(o.updated + "T00:00:00").getTime()) / 864e5; if (age > 365) warn("W2", "最後に確かめた日（updated）が1年以上前です。内容を確かめて日付を新しくしてください。", "updated"); }
+  const c = o.clinic;
+  if (!isObj(c)) err("E3", "clinic（医療機関の情報）がありません。", "clinic");
+  else {
+    if (!isStr(c.name)) err("E3", "医療機関の名前が空です。", "clinic.name");
+    if (!isStr(c.telephone)) err("E3", "電話番号が空です。", "clinic.telephone");
+    else if (!/^[0-9+()\- ]{6,}$/.test(c.telephone)) warn("W1", "電話番号に数字・ハイフン以外の文字が入っています。", "clinic.telephone");
+    if (isStr(c.url) && !/^https:\/\//.test(c.url)) warn("W1", "ホームページの URL が https で始まっていません。", "clinic.url");
+    const a = c.address;
+    if (!isObj(a) || !isStr(a.addressRegion)) err("E3", "都道府県が空です。", "clinic.address.addressRegion");
+    if (!isObj(a) || !isStr(a.addressLocality)) err("E3", "市区町村が空です。", "clinic.address.addressLocality");
+    if (isObj(a) && isStr(a.postalCode) && (!a.addressCountry || a.addressCountry === "JP") && !/^\d{3}-?\d{4}$/.test(a.postalCode)) warn("W1", "郵便番号は 100-0000 の形にしてください。", "clinic.address.postalCode");
+    if (!Array.isArray(c.departments) || !c.departments.filter(isStr).length) err("E4", "診療科を1つ以上選んでください。", "clinic.departments");
+    if (isObj(c.address) && c.address.addressCountry !== undefined && !COUNTRY.test(String(c.address.addressCountry))) err("E15", "国（addressCountry）は ISO 3166-1 の2文字の大文字にしてください（例: JP）。", "clinic.address.addressCountry");
+    if (c.identifiers !== undefined) {
+      if (!Array.isArray(c.identifiers)) err("E15", "identifiers（識別番号）は配列（[ ]）にしてください。", "clinic.identifiers");
+      else c.identifiers.forEach((id, i) => {
+        const w = `clinic.identifiers[${i}]`;
+        if (!isObj(id) || !isStr(id.system) || !isStr(id.value)) { err("E15", `識別番号 ${i+1}: system（どの体系か）と value（番号）を入れてください。`, w); return; }
+        const re = KNOWN_ID_SYSTEMS[id.system];
+        if (re && !re.test(id.value)) err("E15", `識別番号 ${i+1}: ${id.system} の番号の形が正しくありません。`, w + ".value");
+        if (!re && !/^(https?:|urn:)/.test(id.system)) warn("W15", `識別番号 ${i+1}: system「${id.system}」は、この検査器が知らない名前です。URI（https:// や urn:）で書くことを勧めます。`, w + ".system");
+      });
+    }
+    if (c.geo !== undefined) {
+      const g = c.geo, okNum = (v, lo, hi) => typeof v === "number" && isFinite(v) && v >= lo && v <= hi;
+      if (!isObj(g) || !okNum(g.latitude, -90, 90) || !okNum(g.longitude, -180, 180)) err("E15", "位置（geo）は、latitude（緯度 -90〜90）と longitude（経度 -180〜180）の数にしてください。", "clinic.geo");
+    }
+    if (c.focus !== undefined) {
+      if (!Array.isArray(c.focus)) err("E13", "focus（得意分野）は配列（[ ]）にしてください。", "clinic.focus");
+      else c.focus.forEach((f, i) => {
+        const w = `clinic.focus[${i}]`;
+        if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `得意分野 ${i+1}: 内容（areas）を1つ以上入れてください。`, w + ".areas");
+        else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `得意分野 ${i+1}: 診療科「${f.department}」が、診療科の一覧にありません。`, w + ".department");
+      });
+    }
+    if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "診療時間を1つ以上入れてください。", "clinic.openingHours");
+    else c.openingHours.forEach((h, i) => {
+      const w = `clinic.openingHours[${i}]`;
+      if (!Array.isArray(h.days) || !h.days.length) err("E5", `診療時間 ${i+1} 行目: 曜日を選んでください。`, w + ".days");
+      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `診療時間 ${i+1} 行目: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
+      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `診療時間 ${i+1} 行目: 時刻を 09:00 の形で入れてください。`, w);
+      else if (h.opens >= h.closes) err("E5", `診療時間 ${i+1} 行目: 始まり（${h.opens}）が終わり（${h.closes}）より後になっています。`, w);
+    });
+    if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "予約・受診の方法を1つ以上入れてください。", "clinic.booking");
+    else c.booking.forEach((b, i) => {
+      const w = `clinic.booking[${i}]`;
+      if (!["web","phone","walk-in","other"].includes(b.method)) err("E6", `予約の方法 ${i+1}: method が決まった値（web / phone / walk-in / other）ではありません。`, w + ".method");
+      if (b.method === "web" && !isStr(b.url)) err("E6", `予約の方法 ${i+1}: Web 予約のページの URL を入れてください。`, w + ".url");
+      if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `予約の方法 ${i+1}: 予約ページの URL が https で始まっていません。`, w + ".url");
+      if (b.method === "phone" && !isStr(b.telephone)) err("E6", `予約の方法 ${i+1}: 予約用の電話番号を入れてください。`, w + ".telephone");
+    });
+  }
+  if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy は、url（決まりの場所）を持つ { } にしてください。", "policy");
+  if (o.profile !== undefined && !(isStr(o.profile) || (isObj(o.profile) && isStr(o.profile.id)))) err("E16", "profile（地域プロファイル）は、id を持つ { }（例: {\"id\": \"jp\", \"url\": \"…\"}）にしてください。", "profile");
+  if (o.files !== undefined) {
+    if (!Array.isArray(o.files)) err("E12", "files（正規のファイルの一覧）は配列（[ ]）にしてください。", "files");
+    else {
+      const roles = new Map();
+      o.files.forEach((f, i) => {
+        const w = `files[${i}]`;
+        if (!isObj(f)) { err("E12", `ファイルの一覧 ${i+1}: 形が正しくありません。`, w); return; }
+        if (!isStr(f.role)) err("E12", `ファイルの一覧 ${i+1}: 役割（role）が空です（例: schedule）。`, w + ".role");
+        else if (!KNOWN_ROLES.includes(f.role)) warn("W11", `ファイルの一覧 ${i+1}: 役割「${f.role}」は、この検査器が知らないものです（読む側は無視します）。`, w + ".role");
+        else if (roles.has(f.role)) err("E12", `ファイルの一覧 ${i+1}: 役割「${f.role}」のファイルが2つあります。1つにしてください。`, w + ".role");
+        if (isStr(f.role)) roles.set(f.role, true);
+        if (typeof f.url !== "string" || !f.url.trim() || /\s/.test(f.url)) err("E12", `ファイルの一覧 ${i+1}: url は空白を含まない URL にしてください（例: /clinic-schedule.json）。`, w + ".url");
+        else if (/^http:\/\//.test(f.url)) warn("W1", `ファイルの一覧 ${i+1}: URL が https で始まっていません。`, w + ".url");
+        else if (/^https?:\/\//.test(f.url) && isStr(o.clinic?.url)) {
+          try { if (new URL(f.url).host !== new URL(o.clinic.url).host) warn("W12", `ファイルの一覧 ${i+1}: 医療機関のサイトと別のサイトにあります。AI が正規のファイルと確かめにくくなります。`, w + ".url"); } catch (_) {}
+        }
+      });
+    }
+  }
+  const s = o.safety;
+  if (!isObj(s)) err("E7", "safety（安全のための決まり）がありません。省略できません。", "safety");
+  else {
+    if (s.noDiagnosis !== true) err("E7", "safety.noDiagnosis は true にしてください。", "safety.noDiagnosis");
+    if (!isStr(s.emergency)) err("E7", "緊急時の案内文が空です。", "safety.emergency");
+    if (!Array.isArray(s.redFlags) || !s.redFlags.filter(isStr).length) err("E7", "救急の目安になる症状を1つ以上入れてください。", "safety.redFlags");
+    if (s.redFlagsByAge !== undefined) {
+      if (!isObj(s.redFlagsByAge)) err("E7", "safety.redFlagsByAge は、年代ごとの { } にしてください。", "safety.redFlagsByAge");
+      else for (const [k, g] of Object.entries(s.redFlagsByAge)) {
+        if (!isObj(g) || !Array.isArray(g.items) || !g.items.filter(isStr).length) err("E7", `年代「${k}」の救急の目安に、症状（items）を1つ以上入れてください。`, `safety.redFlagsByAge.${k}`);
+        else if (!KNOWN_AGE_GROUPS.includes(k)) warn("W13", `年代「${k}」は、この検査器が知らないものです（older・child が決まっています）。`, `safety.redFlagsByAge.${k}`);
+      }
+    }
+  }
+  if (typeof o.aiNotes === "string" && o.aiNotes.length > 500) warn("W5", `AI へのお願いが長すぎます（${o.aiNotes.length} 字・500 字まで）。`, "aiNotes");
+  if (!Array.isArray(o.questionnaires)) err("E8", "questionnaires（問診票の並び）がありません。空なら [] にしてください。", "questionnaires");
+  else {
+    if (!o.questionnaires.length) warn("W4", "問診票が1つもありません。医院の情報だけでも使えますが、問診票があると受診前の記入に役立ちます。", "questionnaires");
+    const qids = new Set();
+    o.questionnaires.forEach((q, qi) => {
+      const w = `questionnaires[${qi}]`, name = (isObj(q) && isStr(q.title)) ? `「${q.title}」` : `${qi+1} 番目の問診票`;
+      if (!isObj(q)) { err("E8", `${name} の形が正しくありません。`, w); return; }
+      if (q.resourceType !== "Questionnaire") err("E8", `${name}: resourceType は "Questionnaire" にしてください。`, w + ".resourceType");
+      if (!/^[A-Za-z0-9\-.]{1,64}$/.test(q.id || "")) err("E8", `${name}: id は半角英数字とハイフンにしてください（例: fever）。`, w + ".id");
+      else if (qids.has(q.id)) err("E8", `${name}: id「${q.id}」がほかの問診票と重なっています。`, w + ".id");
+      else qids.add(q.id);
+      if (!["draft","active"].includes(q.status)) err("E8", `${name}: status は draft か active にしてください。`, w + ".status");
+      else if (q.status === "draft") warn("W3", `${name} は医師の確認前（draft）です。確認が済んだら「使用中」にしてください。`, w + ".status");
+      if (!isStr(q.title)) err("E8", `${name}: 問診票の名前が空です。`, w + ".title");
+      if (q.derivedFrom !== undefined && !(Array.isArray(q.derivedFrom) && q.derivedFrom.every(isStr))) err("E8", `${name}: derivedFrom（元にした問診票の基本形）は URL の配列にしてください。`, w + ".derivedFrom");
+      if (!Array.isArray(q.item) || !q.item.length) { err("E8", `${name}: 質問が1つもありません。`, w + ".item"); return; }
+      const seen = new Map();
+      const walk = (items, path, depth) => items.forEach((it, i) => {
+        const p = `${path}[${i}]`, label = `${name} Q${i+1}`;
+        if (!isObj(it)) { err("E8", `${label}: 質問の形が正しくありません。`, p); return; }
+        if (!/^[A-Za-z0-9\-._]{1,64}$/.test(it.linkId || "")) err("E9", `${label}: linkId は半角英数字にしてください。`, p + ".linkId");
+        else if (seen.has(it.linkId)) err("E9", `${label}: linkId「${it.linkId}」が重なっています。`, p + ".linkId");
+        if (!isStr(it.text)) err("E8", `${label}: 質問文が空です。`, p + ".text");
+        else if (it.text.length > 200) warn("W5", `${label}: 質問文が長すぎます（${it.text.length} 字・200 字まで）。`, p + ".text");
+        if (it.derivedFrom !== undefined && !(Array.isArray(it.derivedFrom) && it.derivedFrom.every(isStr))) err("E8", `${label}: derivedFrom は URL の配列にしてください。`, p + ".derivedFrom");
+        if (!TYPE_KEYS.includes(it.type)) err("E10", `${label}: 答え方（type）「${it.type}」は使えません。`, p + ".type");
+        if (CHOICE.has(it.type) && (!Array.isArray(it.answerOption) || !it.answerOption.filter(x => isStr(x?.valueString)).length)) err("E10", `${label}: 選択肢を1つ以上入れてください。`, p + ".answerOption");
+        if (Array.isArray(it.enableWhen)) it.enableWhen.forEach((ew, k) => {
+          const target = seen.get(ew?.question);
+          if (!target) err("E11", `${label}: 表示の条件が、それより前にない質問（${ew?.question || "空"}）を指しています。`, `${p}.enableWhen[${k}]`);
+          if (!["=","exists"].includes(ew?.operator)) err("E11", `${label}: 表示の条件の operator は "=" か "exists" にしてください。`, `${p}.enableWhen[${k}].operator`);
+        });
+        if (isStr(it.linkId)) seen.set(it.linkId, it);
+        if (Array.isArray(it.item)) { if (depth >= 2) err("E8", `${label}: グループの入れ子は2段までです。`, p + ".item"); walk(it.item, p + ".item", depth + 1); }
+      });
+      walk(q.item, w + ".item", 1);
+    });
+  }
+  return { E, W };
+}
+
+// ---------- 臨時の情報（clinic-schedule.json・v0.2 から） ----------
+function validateSchedule(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const isDate = v => typeof v === "string" && DATE.test(v) && !isNaN(Date.parse(v + "T00:00:00Z"));
+  const today = todayStr();
+  if (!isObj(o)) { err("S1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (o.spec !== "open-intake-schedule") err("S1", "spec は \"open-intake-schedule\" にしてください。", "spec");
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("S1", "specVersion（例: \"0.2\"）がありません。", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器（${SUPPORTED_VERSIONS.join("・")} に対応）より新しい版です。知らないキーは無視して検査しました。`, "specVersion");
+  if (!isDate(o.updated)) err("S2", "updated（更新した日）は YYYY-MM-DD の形にしてください。", "updated");
+  if (!isDate(o.validUntil)) err("S3", "validUntil（この情報の有効期限）は YYYY-MM-DD の形で必ず入れてください。", "validUntil");
+  else {
+    if (isDate(o.updated) && o.validUntil < o.updated) err("S3", "有効期限（validUntil）が更新日より前になっています。", "validUntil");
+    if (o.validUntil < today) warn("W7", `有効期限（${o.validUntil}）が過ぎています。AI はこのファイルを使いません。内容を確かめて期限を延ばしてください。`, "validUntil");
+    if (isDate(o.updated) && dayDiff(o.updated, o.validUntil) > 180) warn("W8", "有効期限が更新日から半年以上先です。臨時の情報は、短めの期限にして、こまめに見直すことを勧めます。", "validUntil");
+  }
+  const old = (end, where, label) => { if (isDate(end) && end < today) warn("W9", `${label}は、もう終わった予定です。消してよいか確かめてください。`, where); };
+  const hoursOk = (opens, closes, where, label, overnightOk) => {
+    if (!TIME_RE.test(opens || "") || !TIME_RE.test(closes || "")) { err("S4", `${label}: 時刻を 09:00 の形で入れてください。`, where); return; }
+    if (!overnightOk && opens >= closes) err("S4", `${label}: 始まり（${opens}）が終わり（${closes}）より後になっています。`, where);
+  };
+  const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} は配列（[ ]）にしてください。`, k); return []; } return o[k]; };
+  list("exceptions").forEach((x, i) => {
+    const w = `exceptions[${i}]`, label = `臨時の休診・変更 ${i+1}`;
+    if (!isObj(x)) { err("S4", `${label}: 形が正しくありません。`, w); return; }
+    if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: 期間（from・to）を YYYY-MM-DD で入れてください。`, w);
+    else { if (x.from > x.to) err("S4", `${label}: 始まりの日が終わりの日より後になっています。`, w); old(x.to, w, label); }
+    if (!["closed","open","changed"].includes(x.status)) err("S4", `${label}: status は closed（休診）・open（臨時に診療）・changed（時間の変更）のどれかにしてください。`, w + ".status");
+    if (x.status === "open" || x.status === "changed") {
+      if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: 診療する時間（hours）を入れてください。`, w + ".hours");
+      else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label} の時間 ${k+1}`, false));
+    }
+  });
+  list("doctorSchedule").forEach((x, i) => {
+    const w = `doctorSchedule[${i}]`, label = `担当医の予定 ${i+1}`;
+    if (!isObj(x)) { err("S5", `${label}: 形が正しくありません。`, w); return; }
+    if (!isStr(x.department) && !isStr(x.name)) err("S5", `${label}: 診療科か担当医のどちらかを入れてください。`, w);
+    const hasDays = Array.isArray(x.days) && x.days.length, hasDate = isDate(x.date);
+    if (!hasDays && !hasDate) err("S5", `${label}: 曜日（days）か日付（date）を入れてください。`, w);
+    if (hasDays && x.days.some(d => !DAY_KEYS.includes(d))) err("S5", `${label}: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
+    hoursOk(x.opens, x.closes, w, label, false);
+    if (x.from !== undefined && !isDate(x.from)) err("S5", `${label}: from は YYYY-MM-DD にしてください。`, w + ".from");
+    if (x.to !== undefined && !isDate(x.to)) err("S5", `${label}: to は YYYY-MM-DD にしてください。`, w + ".to");
+    old(hasDate ? x.date : x.to, w, label);
+  });
+  list("onCall").forEach((x, i) => {
+    const w = `onCall[${i}]`, label = `当番 ${i+1}`;
+    if (!isObj(x)) { err("S6", `${label}: 形が正しくありません。`, w); return; }
+    if (!isDate(x.date)) err("S6", `${label}: 日付（date）を YYYY-MM-DD で入れてください。`, w + ".date");
+    if (!["holiday","night","other"].includes(x.kind)) err("S6", `${label}: kind は holiday（休日の当番）・night（夜間の当番）・other のどれかにしてください。`, w + ".kind");
+    hoursOk(x.opens, x.closes, w, label, true);
+    old(x.date, w, label);
+  });
+  list("notices").forEach((x, i) => {
+    const w = `notices[${i}]`, label = `お知らせ ${i+1}`;
+    if (!isObj(x) || !isStr(x.text)) { err("S7", `${label}: 本文（text）が空です。`, w); return; }
+    if (x.text.length > 200) warn("W5", `${label}: 本文が長すぎます（${x.text.length} 字・200 字まで）。`, w + ".text");
+    for (const k of ["from","to"]) if (x[k] !== undefined && !isDate(x[k])) err("S7", `${label}: ${k} は YYYY-MM-DD にしてください。`, `${w}.${k}`);
+    if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: 始まりの日が終わりの日より後になっています。`, w);
+    old(x.to, w, label);
+  });
+  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+    warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定はない」と AI に伝わります。", "$");
+  return { E, W };
+}
+
+// ---------- 地域の一覧（open-intake-directory・v0.3 から） ----------
+function validateDirectory(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("D1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("D1", "specVersion（例: \"0.3\"）がありません。", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器より新しい版です。`, "specVersion");
+  if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("D2", "updated は YYYY-MM-DD の形にしてください。", "updated");
+  if (!isObj(o.publisher) || !isStr(o.publisher.name)) err("D3", "publisher.name（この一覧をまとめた団体の名前）を入れてください。", "publisher");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("D3", "area.addressCountry（国。例: JP）を入れてください。", "area");
+  if (!Array.isArray(o.entries) || !o.entries.length) err("D4", "entries（医療機関の一覧）を1件以上入れてください。", "entries");
+  else {
+    const urls = new Set();
+    o.entries.forEach((e, i) => {
+      const w = `entries[${i}]`;
+      if (!isObj(e) || !isStr(e.name)) err("D4", `${i+1} 件目: 医療機関の名前（name）がありません。`, w);
+      if (!isObj(e) || typeof e.url !== "string" || !/^https:\/\/\S+$/.test(e.url)) err("D4", `${i+1} 件目: url（その医療機関の clinic-intake.json の場所）を https:// で入れてください。`, w + ".url");
+      else if (urls.has(e.url)) err("D4", `${i+1} 件目: 同じ url がほかにもあります。`, w + ".url"); else urls.add(e.url);
+      if (isObj(e) && e.geo !== undefined && !(isObj(e.geo) && typeof e.geo.latitude === "number" && typeof e.geo.longitude === "number")) err("D4", `${i+1} 件目: geo は latitude と longitude の数にしてください。`, w + ".geo");
+    });
+  }
+  if (o.onCall !== undefined) {
+    if (!Array.isArray(o.onCall)) err("D5", "onCall（地域の当番表）は配列にしてください。", "onCall");
+    else o.onCall.forEach((x, i) => {
+      const w = `onCall[${i}]`;
+      if (!isObj(x) || !(typeof x.date === "string" && DATE.test(x.date))) err("D5", `当番 ${i+1}: 日付（date）を YYYY-MM-DD で入れてください。`, w);
+      if (!isObj(x) || !isStr(x.name)) err("D5", `当番 ${i+1}: 医療機関の名前（name）を入れてください。`, w);
+      if (isObj(x) && (!TIME_RE.test(x.opens || "") || !TIME_RE.test(x.closes || ""))) err("D5", `当番 ${i+1}: 時刻を 09:00 の形で入れてください。`, w);
+    });
+  }
+  return { E, W };
+}
+
+// ---------- 地域プロファイル（open-intake-profile・v0.3 から） ----------
+function validateProfile(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("P1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (!isStr(o.id) || !/^[a-z0-9-]{2,32}$/.test(o.id)) err("P1", "id は小文字の英数字とハイフン（例: jp、jp-tokyo）にしてください。", "id");
+  if (!isStr(o.specVersion)) err("P1", "specVersion がありません。", "specVersion");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("P2", "area.addressCountry（国。例: JP）を入れてください。", "area");
+  if (!isObj(o.emergency) || !isStr(o.emergency.message) || !Array.isArray(o.emergency.numbers) || !o.emergency.numbers.length) err("P3", "emergency（緊急時の案内文と番号）を入れてください。", "emergency");
+  if (!Array.isArray(o.redFlags) || !o.redFlags.filter(isStr).length) {
+    if (o.status === "draft") W.push({ code: "W16", msg: "救急の目安（redFlags）がまだ空です。公的な資料から書き写すまで、このプロファイルは下書きのままにしてください。", where: "redFlags" });
+    else err("P3", "redFlags（救急の目安）を1つ以上入れてください。", "redFlags");
+  }
+  if (o.questionnaires !== undefined) {
+    if (!Array.isArray(o.questionnaires)) err("P4", "questionnaires は配列にしてください。", "questionnaires");
+    else { const r = validateIntake({ spec: "open-intake", specVersion: o.specVersion, updated: o.updated, clinic: { name: "x", telephone: "000000", address: { addressRegion: "x", addressLocality: "x" }, departments: ["x"], openingHours: [{ days: ["Mo"], opens: "09:00", closes: "10:00" }], booking: [{ method: "walk-in" }] }, safety: { noDiagnosis: true, emergency: "x", redFlags: ["x"] }, questionnaires: o.questionnaires });
+      for (const e of r.E) if (e.where.startsWith("questionnaires")) E.push({ ...e, code: "P4" });
+      o.questionnaires.forEach((q, i) => { if (!isStr(q?.url)) err("P4", `基本形 ${i+1}: url（ほかのファイルが derivedFrom で指す場所）を入れてください。`, `questionnaires[${i}].url`); }); }
+  }
+  return { E, W };
+}
+
+// ---------- 自分の健康メモ（open-intake-personal・PERSONAL.md） ----------
+function validatePersonal(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const PDATE = /^\d{4}(-\d{2}(-\d{2})?)?$/;
+  if (!isObj(o)) { err("H1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (!isStr(o.specVersion)) err("H1", "specVersion（例: \"0.1\"）がありません。", "specVersion");
+  if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("H2", "updated（最後に確かめた日）は YYYY-MM-DD の形にしてください。", "updated");
+  else if ((Date.now() - Date.parse(o.updated + "T00:00:00")) / 864e5 > 365) warn("H8", "最後に確かめた日（updated）が1年以上前です。薬や持病が変わっていないか確かめてください。", "updated");
+  if (o.selfReported !== true) err("H3", "selfReported は true にしてください（本人の申告であるという宣言）。", "selfReported");
+  if (o.person !== undefined) {
+    if (!isObj(o.person)) err("H4", "person は { } にしてください。", "person");
+    else for (const k of Object.keys(o.person)) if (!["birthYear","sex","languages","addressCountry","addressRegion"].includes(k)) warn("H7", `person に「${k}」があります。氏名・住所・番号などは書かないでください。`, "person." + k);
+  }
+  const checkSrc = (x, w, label) => {
+    if (x.source === undefined) return;
+    if (!isObj(x.source)) { err("H4", `${label}: source は { } にしてください。`, w + ".source"); return; }
+    if (x.source.date !== undefined && !PDATE.test(String(x.source.date))) err("H5", `${label}: source.date は YYYY・YYYY-MM・YYYY-MM-DD のどれかにしてください。`, w + ".source.date");
+    if (x.source.transcribedBy === "ai" && x.source.checkedByMe !== true) warn("H6", `${label}: AI が書き起こした内容を、まだ本人が確かめていません。原本と見比べてください。`, w + ".source");
+  };
+  const LISTS = { allergies: ["substance", "アレルギー"], medications: ["name", "薬"], conditions: ["name", "持病・病気"], procedures: ["name", "手術・処置"], immunizations: ["name", "予防接種"] };
+  const ENUMS = { severity: ["mild","moderate","severe","unknown"], category: ["medication","food","environment","other"], status: null };
+  const STATUS = { medications: ["active","stopped","as-needed"], conditions: ["active","resolved","unknown"] };
+  for (const [k, [key, name]] of Object.entries(LISTS)) {
+    if (o[k] === undefined) continue;
+    if (!Array.isArray(o[k])) { err("H4", `${k} は配列（[ ]）にしてください。ないときは [] と書きます。`, k); continue; }
+    o[k].forEach((x, i) => {
+      const w = `${k}[${i}]`, label = `${name} ${i+1}`;
+      if (!isObj(x) || !isStr(x[key])) { err("H4", `${label}: ${key} が空です。`, w); return; }
+      if (k === "allergies") for (const f of ["severity","category"]) if (x[f] !== undefined && !ENUMS[f].includes(x[f])) err("H4", `${label}: ${f} は ${ENUMS[f].join("・")} のどれかにしてください。`, `${w}.${f}`);
+      if (STATUS[k] && x.status !== undefined && !STATUS[k].includes(x.status)) err("H4", `${label}: status は ${STATUS[k].join("・")} のどれかにしてください。`, w + ".status");
+      for (const f of ["since","until","date"]) if (x[f] !== undefined && !PDATE.test(String(x[f]))) err("H5", `${label}: ${f} は YYYY・YYYY-MM・YYYY-MM-DD のどれかにしてください。`, `${w}.${f}`);
+      checkSrc(x, w, label);
+    });
+  }
+  if (typeof o.notes === "string" && o.notes.length > 500) warn("W5", `そのほか伝えたいことが長すぎます（${o.notes.length} 字・500 字まで）。`, "notes");
+  return { E, W };
+}
+
+// 中身を見て、どちらのファイルかを判断して検査する
+function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : s === "open-intake-personal" ? "personal" : "intake"; }
+function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : k === "personal" ? validatePersonal(o) : validateIntake(o); }
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+})();
+if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
+</script>
+<script>
+(() => {
+"use strict";
+const STORE = "open-intake-personal-draft-v1";
+const POLICY = { url: "https://open-intake.github.io/open-intake/#personal", summary: "本人が自分の責任で書いた健康のメモ（自己申告）。読む AI は診断・病名の推定・薬の指示をせず、救急の目安を先に確かめ、問診票の下書きは本人に確かめてもらう。渡された範囲だけを受診先探しと受診の準備に使う。" };
+const today = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const SRC_TYPES = [["self","自分の記憶"],["medication-notebook","お薬手帳"],["medication-label","薬袋・説明書"],["receipt","領収書・明細書"],["checkup","健康診断の結果"],["clinician-document","医療機関からの書類"],["other","そのほか"]];
+const LISTS = {
+  allergies: { title: "アレルギー", lead: "薬・食べ物などで起きたアレルギー。", key: "substance", fields: [
+    ["substance", "何に対して", "text", "例: ペニシリン、えび"], ["category", "種類", "select", [["", "—"],["medication","薬"],["food","食べ物"],["environment","花粉・動物など"],["other","そのほか"]]],
+    ["reaction", "どうなったか", "text", "例: じんましん"], ["severity", "重さ", "select", [["", "—"],["mild","軽い"],["moderate","中くらい"],["severe","重い"],["unknown","わからない"]]], ["since", "いつ（年・年月）", "text", "例: 2015"]] },
+  medications: { title: "使っている薬", lead: "お薬手帳や薬袋の表記のまま書くと、医師に伝わりやすくなります。", key: "name", fields: [
+    ["name", "薬の名前", "text", "例: アムロジピン錠5mg"], ["dose", "1回の量", "text", "例: 1回1錠"], ["frequency", "飲み方", "text", "例: 1日1回 朝食後"],
+    ["status", "状態", "select", [["", "—"],["active","使っている"],["as-needed","必要なときだけ"],["stopped","やめた"]]], ["since", "使い始め", "text", "例: 2020-04"], ["prescriber", "出した医療機関・薬局（任意）", "text", ""], ["reason", "何のための薬か（任意）", "text", "例: 血圧"]] },
+  conditions: { title: "持病・これまでの病気", lead: "医師から聞いた名前で書きます。", key: "name", fields: [
+    ["name", "病気の名前", "text", "例: 高血圧"], ["status", "状態", "select", [["", "—"],["active","いまもある"],["resolved","治った"],["unknown","わからない"]]], ["since", "いつから", "text", "例: 2020"], ["note", "補足", "text", ""]] },
+  procedures: { title: "手術・大きな処置", lead: "", key: "name", fields: [["name", "手術・処置", "text", "例: 虫垂の切除"], ["date", "いつ", "text", "例: 1995"], ["note", "補足", "text", ""]] },
+  immunizations: { title: "予防接種", lead: "わかる範囲で。", key: "name", fields: [["name", "予防接種", "text", "例: インフルエンザ"], ["date", "いつ", "text", "例: 2025-11"], ["note", "補足", "text", ""]] }
+};
+const SEX = [["", "答えない"],["female","女性"],["male","男性"],["other","そのほか"],["unknown","わからない"]];
+const PREG = [["", "—"],["not-applicable","あてはまらない"],["not-pregnant","妊娠していない"],["possible","可能性がある"],["pregnant","妊娠している"],["unknown","わからない"]];
+const SMOKE = [["", "—"],["never","吸わない"],["former","以前吸っていた"],["current","吸っている"],["unknown","わからない"]];
+const ALC = [["", "—"],["none","飲まない"],["occasional","ときどき"],["regular","よく飲む"],["unknown","わからない"]];
+const label = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
+// 今回の症状を整理する項目（PERSONAL.md §5a）。ファイルには保存しない
+const VISIT = [["onset", "いつから", "例: 昨日の夜から・急に"], ["where", "どこが", "例: 頭の右側・こめかみ"], ["quality", "どんなふうに", "例: ずきずき・締めつけられる"], ["severity", "どのくらい（0〜10）", "例: 7"],
+  ["timing", "続く時間・起きるタイミング", "例: 30分ほど続く・朝に強い"], ["associated", "ほかの症状", "例: 吐き気・熱 38.2℃"], ["factors", "きっかけ・悪くなる/楽になること", "例: 動くと悪化・横になると楽"], ["selfcare", "自分でした対処", "例: 市販の鎮痛剤を21時に1錠"]];
+const V = {};
+
+function blank() { return { spec: "open-intake-personal", specVersion: "0.1", updated: today(), selfReported: true, policy: POLICY, person: { languages: ["ja"], addressCountry: "JP" } }; }
+function example() {
+  return { spec: "open-intake-personal", specVersion: "0.1", updated: today(), selfReported: true, policy: POLICY,
+    person: { birthYear: 1960, sex: "female", languages: ["ja"], addressCountry: "JP", addressRegion: "東京都" },
+    allergies: [{ substance: "ペニシリン系の抗菌薬", category: "medication", reaction: "じんましん", severity: "moderate", since: "2015", source: { type: "self", transcribedBy: "self", checkedByMe: true } }],
+    medications: [{ name: "アムロジピン錠5mg", dose: "1回1錠", frequency: "1日1回 朝食後", status: "active", since: "2020-04", reason: "血圧", source: { type: "medication-notebook", date: "2026-10-01", transcribedBy: "ai", checkedByMe: true } },
+                  { name: "ロキソプロフェン錠60mg", dose: "1回1錠", frequency: "痛いとき", status: "as-needed", source: { type: "medication-label", date: "2026-08-20", transcribedBy: "ai", checkedByMe: false } }],
+    conditions: [{ name: "高血圧", status: "active", since: "2020" }, { name: "虫垂炎", status: "resolved", since: "1995" }],
+    procedures: [{ name: "虫垂の切除", date: "1995" }], immunizations: [{ name: "インフルエンザ", date: "2025-11" }],
+    pregnancy: { status: "not-applicable" }, lifestyle: { smoking: "never", alcohol: "occasional" }, notes: "（架空の例）" };
+}
+let D, origin = "";
+
+// ---------- DOM ----------
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag); let value, checked;
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v; else if (k === "text") el.textContent = v;
+    else if (k === "value") value = v; else if (k === "checked") checked = v;
+    else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  if (value !== undefined) el.value = value; if (checked !== undefined) el.checked = checked;
+  return el;
+}
+const $ = id => document.getElementById(id);
+const field = (id, lab, control) => h("div", { class: "field" }, h("label", { for: id, text: lab }), control);
+const input = (id, get, set, ph, type = "text") => h("input", { type, id, value: get() ?? "", placeholder: ph || null, oninput: e => { set(e.target.value); changed(); } });
+const select = (id, opts, get, set) => h("select", { id, value: get() ?? "", onchange: e => { set(e.target.value); changed(); } }, opts.map(([v, n]) => h("option", { value: v, text: n })));
+const clean = o => { for (const k of Object.keys(o)) if (o[k] === "" || o[k] == null) delete o[k]; return o; };
+
+function renderPerson() {
+  const el = $("sec-person"), p = D.person = D.person || {}; el.replaceChildren();
+  el.append(h("header", {}, h("h2", { text: "わたしについて" }), h("span", { class: "k", text: "person" })),
+    h("p", { class: "lead", text: "年代や地域に合った救急の目安を選ぶのに使います。氏名・住所は書きません。" }),
+    h("div", { class: "grid" },
+      field("p-year", "生まれた年", input("p-year", () => p.birthYear, v => { const n = parseInt(v, 10); if (n) p.birthYear = n; else delete p.birthYear; }, "例: 1960", "number")),
+      field("p-sex", "性別（任意）", select("p-sex", SEX, () => p.sex, v => { if (v) p.sex = v; else delete p.sex; })),
+      field("p-lang", "話せる言語（コード）", input("p-lang", () => (p.languages || []).join(", "), v => { const a = v.split(/[,\s\u3001]+/).filter(Boolean); if (a.length) p.languages = a; else delete p.languages; }, "例: ja, en")),
+      field("p-country", "国（2文字）", input("p-country", () => p.addressCountry, v => { if (v.trim()) p.addressCountry = v.trim().toUpperCase(); else delete p.addressCountry; }, "JP")),
+      field("p-region", "都道府県・州", input("p-region", () => p.addressRegion, v => { if (v.trim()) p.addressRegion = v.trim(); else delete p.addressRegion; }, "例: 東京都"))));
+}
+function renderList(k) {
+  const cfg = LISTS[k], el = $("sec-" + k); el.replaceChildren();
+  const arr = D[k], state = arr === undefined ? "unknown" : arr.length ? "some" : "none";
+  const setState = s => { if (s === "unknown") delete D[k]; else if (s === "none") D[k] = []; else if (!D[k] || !D[k].length) D[k] = [{}]; renderList(k); changed(); };
+  el.append(h("header", {}, h("h2", { text: cfg.title }), h("span", { class: "k", text: k })),
+    cfg.lead && h("p", { class: "lead", text: cfg.lead }),
+    h("div", { class: "tri", role: "radiogroup", "aria-label": cfg.title },
+      [["unknown", "まだ書いていない"], ["none", "ない"], ["some", "ある"]].map(([v, n]) => h("label", {}, h("input", { type: "radio", name: "st-" + k, id: `st-${k}-${v}`, checked: state === v, onchange: () => setState(v) }), n))));
+  if (state !== "some") return;
+  el.append(h("div", { class: "rows" }, D[k].map((it, i) => {
+    it.source = it.source || {};
+    const s = it.source, unchecked = s.transcribedBy === "ai" && s.checkedByMe !== true;
+    return h("div", { class: "row" },
+      h("div", { class: "row-head" }, h("span", { class: "num", text: String(i + 1) }), unchecked && h("span", { class: "badge warn", text: "AI の書き起こし・未確認" }), h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn", "aria-label": `${cfg.title} ${i + 1} を消す`, onclick: () => { D[k].splice(i, 1); if (!D[k].length) D[k] = [{}]; renderList(k); changed(); } }, "×")),
+      h("div", { class: "grid" }, cfg.fields.map(([f, lab, type, extra]) => {
+        const id = `${k}-${i}-${f}`;
+        return field(id, lab, type === "select" ? select(id, extra, () => it[f], v => { if (v) it[f] = v; else delete it[f]; }) : input(id, () => it[f], v => { if (v.trim()) it[f] = v.trim(); else delete it[f]; }, extra));
+      })),
+      h("details", { class: "src", open: unchecked || null }, h("summary", { text: "出どころ（どこから書いたか・確かめたか）" }),
+        h("div", { class: "grid" },
+          field(`${k}-${i}-st`, "どこから", select(`${k}-${i}-st`, [["", "—"], ...SRC_TYPES], () => s.type, v => { if (v) s.type = v; else delete s.type; })),
+          field(`${k}-${i}-sd`, "書類の日付", input(`${k}-${i}-sd`, () => s.date, v => { if (v.trim()) s.date = v.trim(); else delete s.date; }, "例: 2026-10-01")),
+          field(`${k}-${i}-sb`, "書いたのは", select(`${k}-${i}-sb`, [["", "—"], ["self", "自分"], ["ai", "AI（写真などから）"]], () => s.transcribedBy, v => { if (v) s.transcribedBy = v; else delete s.transcribedBy; renderList(k); })),
+          h("label", { class: "field", style: "align-self:end" }, h("span", {}, h("input", { type: "checkbox", id: `${k}-${i}-sc`, checked: !!s.checkedByMe, onchange: e => { if (e.target.checked) s.checkedByMe = true; else delete s.checkedByMe; renderList(k); changed(); } }), " 原本と見比べて確かめた")))));
+  })), h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { D[k].push({}); renderList(k); changed(); } }, "＋ 足す")));
+}
+function renderOther() {
+  const el = $("sec-other"); el.replaceChildren();
+  const pg = D.pregnancy = D.pregnancy || {}, ls = D.lifestyle = D.lifestyle || {};
+  el.append(h("header", {}, h("h2", { text: "そのほか" })),
+    h("div", { class: "grid" },
+      field("o-preg", "妊娠", select("o-preg", PREG, () => pg.status, v => { if (v) { pg.status = v; pg.asOf = today().slice(0, 7); } else { delete pg.status; delete pg.asOf; } })),
+      field("o-smoke", "たばこ", select("o-smoke", SMOKE, () => ls.smoking, v => { if (v) ls.smoking = v; else delete ls.smoking; })),
+      field("o-alc", "お酒", select("o-alc", ALC, () => ls.alcohol, v => { if (v) ls.alcohol = v; else delete ls.alcohol; })),
+      field("o-upd", "内容を確かめた日", input("o-upd", () => D.updated, v => { D.updated = v; }, "", "date"))),
+    field("o-notes", "そのほか医師に知っておいてほしいこと（500字まで）", h("textarea", { id: "o-notes", maxlength: 500, value: D.notes || "", oninput: e => { if (e.target.value.trim()) D.notes = e.target.value; else delete D.notes; changed(); } })));
+}
+function renderVisit() {
+  const el = $("visitFields"); if (el.childElementCount) return;
+  el.append(...VISIT.map(([k, lab, ph]) => field("v-" + k, lab, h("input", { type: "text", id: "v-" + k, placeholder: ph, oninput: e => { V[k] = e.target.value.trim(); renderSheet(); } }))));
+}
+function renderAll() { renderVisit(); renderPerson(); for (const k of Object.keys(LISTS)) renderList(k); renderOther(); renderNotice(); changed(true); }
+
+// ---------- 出力 ----------
+function build() {
+  const o = { spec: "open-intake-personal", specVersion: "0.1", updated: D.updated || today(), selfReported: true, policy: POLICY };
+  const p = clean({ ...D.person }); if (Object.keys(p).length) o.person = p;
+  for (const k of Object.keys(LISTS)) {
+    if (D[k] === undefined) continue;
+    const order = LISTS[k].fields.map(f => f[0]);
+    o[k] = D[k].map(it => {
+      const x = {}; for (const f of order) if (it[f] !== undefined && it[f] !== "") x[f] = it[f];
+      for (const f of Object.keys(it)) if (!order.includes(f) && f !== "source" && it[f] !== "" && it[f] != null) x[f] = it[f];
+      if (it.source) { const s = clean({ ...it.source }); if (Object.keys(s).length) x.source = s; }
+      return x;
+    }).filter(x => x[LISTS[k].key]);
+  }
+  const pg = clean({ ...(D.pregnancy || {}) }); if (pg.status) o.pregnancy = pg;
+  const ls = clean({ ...(D.lifestyle || {}) }); if (Object.keys(ls).length) o.lifestyle = ls;
+  if (D.notes && D.notes.trim()) o.notes = D.notes.trim();
+  return o;
+}
+let out = null, saveT = 0;
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function changed(now) {
+  if (!D) return;
+  out = build();
+  $("json").innerHTML = esc(JSON.stringify(out, null, 2)).replace(/("(?:\\.|[^"\\])*")(\s*:)?/g, (m, s, c) => c ? `<span class="k">${s}</span>${c}` : `<span class="s">${s}</span>`);
+  const r = OpenIntakeValidate.validate(out);
+  const st = $("status"); st.replaceChildren(h("span", { class: "dot" }));
+  if (r.E.length) { st.className = "status err"; st.append(`直すところが ${r.E.length} 件${r.W.length ? `、確かめるところが ${r.W.length} 件` : ""}あります。`); }
+  else if (r.W.length) { st.className = "status warn"; st.append(`保存できます。確かめるところが ${r.W.length} 件あります。`); }
+  else { st.className = "status ok"; st.append("保存できます。"); }
+  issues($("issues"), r); renderSheet();
+  clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(STORE, JSON.stringify(D)); } catch (_) {} }, now ? 0 : 400);
+}
+function issues(list, r) {
+  list.replaceChildren();
+  if (!r.E.length && !r.W.length) { list.append(h("li", { class: "o" }, h("span", { class: "code", text: "OK" }), h("span", { text: "直すところはありません。" }))); return; }
+  for (const [a, c] of [[r.E, "e"], [r.W, "w"]]) for (const x of a) list.append(h("li", { class: c }, h("span", { class: "code", text: x.code }), h("span", { text: x.msg })));
+}
+
+// ---------- 受診用シート ----------
+function renderSheet() {
+  const o = out, el = $("sheet"); el.replaceChildren();
+  const p = o.person || {}, age = p.birthYear ? new Date().getFullYear() - p.birthYear : null;
+  const listOrState = (k, render) => o[k] === undefined ? h("p", { class: "unk", text: "（書いていない）" }) : !o[k].length ? h("p", { class: "none", text: "なし（本人の申告）" }) : render(o[k]);
+  const un = it => it.source && it.source.transcribedBy === "ai" && it.source.checkedByMe !== true ? h("span", { class: "unchecked", text: "［AI の書き起こし・未確認］" }) : null;
+  const visit = VISIT.filter(([k]) => V[k]);
+  el.append(
+    h("h3", { text: "受診用メモ" }),
+    h("div", { class: "meta" }, h("span", { text: `作成: ${o.updated}` }), age != null && h("span", { text: `年齢: 約${age}歳（${p.birthYear}年生まれ）` }), p.sex && h("span", { text: `性別: ${label(SEX, p.sex)}` }), p.languages && h("span", { text: `言語: ${p.languages.join(", ")}` })),
+    h("div", { class: "self", text: "これは本人が自分の責任で書いたメモ（自己申告）です。医療機関の記録ではありません。診療の参考としてお使いください。" }),
+    visit.length > 0 && h("section", {}, h("h4", { text: "今回の症状（本人の申告）" }), h("table", {}, h("tbody", {}, visit.map(([k, lab]) => h("tr", {}, h("th", { text: lab, style: "width:34%" }), h("td", { text: V[k] })))))),
+    h("section", {}, h("h4", { text: "アレルギー" }), listOrState("allergies", a => h("ul", {}, a.map(x => h("li", {}, h("span", { class: "alert", text: x.substance }), x.reaction ? `：${x.reaction}` : "", x.severity ? `（${label(LISTS.allergies.fields[3][3], x.severity)}）` : "", un(x)))))),
+    h("section", {}, h("h4", { text: "使っている薬" }), listOrState("medications", a => h("table", {}, h("thead", {}, h("tr", {}, ["薬の名前", "量・飲み方", "状態", "出どころ"].map(t => h("th", { text: t })))),
+      h("tbody", {}, a.map(x => h("tr", {}, h("td", {}, x.name, un(x)), h("td", { text: [x.dose, x.frequency].filter(Boolean).join(" ") }), h("td", { text: x.status ? label(LISTS.medications.fields[3][3], x.status) : "" }), h("td", { text: x.source ? [label(SRC_TYPES, x.source.type || ""), x.source.date].filter(Boolean).join(" ") : "" }))))))),
+    h("section", {}, h("h4", { text: "持病・これまでの病気" }), listOrState("conditions", a => h("ul", {}, a.map(x => h("li", {}, x.name, x.status ? `（${label(LISTS.conditions.fields[1][3], x.status)}${x.since ? "・" + x.since + "〜" : ""}）` : x.since ? `（${x.since}〜）` : "", un(x)))))),
+    h("section", {}, h("h4", { text: "手術・大きな処置" }), listOrState("procedures", a => h("ul", {}, a.map(x => h("li", {}, x.name, x.date ? `（${x.date}）` : "", un(x)))))),
+    h("section", {}, h("h4", { text: "予防接種" }), listOrState("immunizations", a => h("ul", {}, a.map(x => h("li", {}, x.name, x.date ? `（${x.date}）` : "", un(x)))))),
+    (o.pregnancy || o.lifestyle) && h("section", {}, h("h4", { text: "そのほか" }), h("ul", {}, o.pregnancy && h("li", { text: `妊娠: ${label(PREG, o.pregnancy.status)}` }), o.lifestyle && o.lifestyle.smoking && h("li", { text: `たばこ: ${label(SMOKE, o.lifestyle.smoking)}` }), o.lifestyle && o.lifestyle.alcohol && h("li", { text: `お酒: ${label(ALC, o.lifestyle.alcohol)}` }))),
+    o.notes && h("section", {}, h("h4", { text: "医師に知っておいてほしいこと" }), h("p", { style: "margin:0;white-space:pre-wrap", text: o.notes })));
+}
+
+// ---------- 帯・タブ・ボタン ----------
+function renderNotice(extra) {
+  const el = $("notice"); el.replaceChildren();
+  const m = { blank: "空の用紙です。わかるところから書いてください。", draft: "前回の続きを開きました（このブラウザの中だけに残っています）。", example: "架空の例を表示しています。自分の内容を書く前に「空にする」を押してください。", loaded: "読み込みました。" }[origin] || "";
+  el.append(h("span", { text: m }), extra ? h("span", { text: extra }) : "", h("span", { class: "spacer" }),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { D = example(); origin = "example"; renderAll(); } }, "例を見る"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { D = blank(); origin = "blank"; renderAll(); } }, "空にする"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { try { localStorage.removeItem(STORE); } catch (_) {} D = blank(); origin = "blank"; renderAll(); renderNotice("このブラウザに残っていた内容を消しました。"); } }, "このブラウザから消す"));
+}
+for (const t of ["sheet", "json", "issues", "load"]) $("tab-" + t).addEventListener("click", () => { for (const u of ["sheet", "json", "issues", "load"]) { $("tab-" + u).setAttribute("aria-selected", String(u === t)); $("panel-" + u).hidden = u !== t; } });
+$("status").addEventListener("click", () => $("tab-issues").click());
+$("printBtn").addEventListener("click", () => { renderSheet(); window.print(); });
+$("showBtn").addEventListener("click", () => { document.body.classList.add("showing"); $("exitShow").hidden = false; window.scrollTo(0, 0); });
+$("exitShow").addEventListener("click", () => { document.body.classList.remove("showing"); $("exitShow").hidden = true; });
+function copy(text, toast, el) {
+  const done = m => { toast.textContent = m; setTimeout(() => { toast.textContent = ""; }, 3000); };
+  const fb = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("選択しました。Ctrl+C（⌘+C）でコピーしてください。"); };
+  try { navigator.clipboard.writeText(text).then(() => done("コピーしました。"), fb); } catch (_) { fb(); }
+}
+$("copyJson").addEventListener("click", () => copy(JSON.stringify(out, null, 2) + "\n", $("jsonToast"), $("json")));
+$("copyMake").addEventListener("click", () => { $("promptUse").hidden = true; $("promptMake").hidden = false; copy($("promptMake").textContent.trim() + "\n", $("promptToast"), $("promptMake")); });
+$("copyUse").addEventListener("click", () => { $("promptMake").hidden = true; $("promptUse").hidden = false; copy($("promptUse").textContent.trim() + "\n", $("promptToast"), $("promptUse")); });
+$("saveJson").addEventListener("click", () => {
+  const b = new Blob([JSON.stringify(out, null, 2) + "\n"], { type: "application/json" });
+  const a = h("a", { href: URL.createObjectURL(b), download: "my-health.json" }); document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+function load(text) {
+  const list = $("pasteIssues"), toast = $("pasteToast"); list.replaceChildren(); toast.textContent = "";
+  let o; try { o = JSON.parse(text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "")); }
+  catch (e) { list.append(h("li", { class: "e" }, h("span", { class: "code", text: "JSON" }), h("span", { text: "JSON として読めません: " + e.message }))); return; }
+  if (!o || o.spec !== "open-intake-personal") { list.append(h("li", { class: "e" }, h("span", { class: "code", text: "spec" }), h("span", { text: "自分の健康メモ（spec が open-intake-personal）のファイルではありません。" }))); return; }
+  D = JSON.parse(JSON.stringify(o)); origin = "loaded"; renderAll(); issues(list, OpenIntakeValidate.validate(o)); toast.textContent = "読み込みました。";
+}
+$("loadPaste").addEventListener("click", () => load($("pasteBox").value));
+$("fileIn").addEventListener("change", e => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("pasteBox").value = String(r.result); load(String(r.result)); }; r.readAsText(f, "utf-8"); e.target.value = ""; });
+
+// ---------- 起動 ----------
+let saved = null; try { const s = localStorage.getItem(STORE); if (s) saved = JSON.parse(s); } catch (_) {}
+if (saved && saved.spec === "open-intake-personal") { D = saved; origin = "draft"; } else { D = blank(); origin = "blank"; }
+renderAll();
+window.OpenIntakePersonal = { build, load, example };
+})();
+</script>
+
+</body>
+</html>

@@ -52,6 +52,14 @@ const page = (b, lang = "ja") => `<!doctype html>\n<html lang="${lang}">\n<head>
 const outputs = new Map();
 outputs.set("docs/maker/index.html", page(body));   // 作成ツール
 outputs.set("docs/en/maker/index.html", page(makeMaker("en"), "en"));   // 作成ツールの英語版
+{ // 自分の健康メモの作成ツール（患者の側）と、その AI 向けの指示書
+  const md = read("AI_INSTRUCTIONS_PERSONAL.md");
+  const pick = name => { const r = new RegExp(`## ここから（${name}）\\n([\\s\\S]*?)\\n## ここまで（${name}）`).exec(md); if (!r) throw new Error(`AI_INSTRUCTIONS_PERSONAL.md に「ここから（${name}）」がありません`); return esc(r[1].trim()); };
+  const ps = read("src/personal.src.html");
+  for (const mark of ["<!--PROMPT_MAKE-->", "<!--PROMPT_USE-->", "/*VALIDATE*/"]) if (!ps.includes(mark)) throw new Error(`src/personal.src.html に ${mark} がありません`);
+  outputs.set("docs/me/index.html", page(ps.replace("<!--PROMPT_MAKE-->", () => pick("作るとき")).replace("<!--PROMPT_USE-->", () => pick("体調が悪いとき")).replace("/*VALIDATE*/", () => validateJs)));
+  outputs.set("docs/me/AI_INSTRUCTIONS_PERSONAL.md", md);
+}
 outputs.set("docs/index.html", page(read("src/index.src.html")));   // トップ（取り組みの説明）
 { // 英語版のトップ: 日本語版と同じ <style> を使い、本文だけ差し替える
   const ja = read("src/index.src.html"), st = ja.slice(ja.indexOf("<style>"), ja.indexOf("</style>") + 8);
