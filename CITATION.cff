@@ -23,8 +23,8 @@ identifiers:
 repository-code: "https://github.com/open-intake/open-intake"
 url: "https://open-intake.github.io/open-intake/"
 license: Apache-2.0
-version: "0.3.1"
-date-released: "2026-11-11"
+version: "0.4.0"
+date-released: "2026-11-12"
 keywords:
   - healthcare
   - patient intake
