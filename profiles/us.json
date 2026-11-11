@@ -1,0 +1,38 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "us",
+  "url": "https://open-intake.github.io/open-intake/profiles/us.json",
+  "title": "United States (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "US"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile. Emergency numbers are filled in; emergency warning signs (redFlags) are empty until they are transcribed from an official public source for this region. To be discussed and maintained by a community in this region.",
+  "emergency": {
+    "message": "If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.",
+    "numbers": [
+      {
+        "number": "911",
+        "label": "Emergency services (ambulance, fire, police)"
+      },
+      {
+        "number": "988",
+        "label": "Suicide & Crisis Lifeline (call or text)"
+      }
+    ]
+  },
+  "redFlags": [],
+  "identifierSystems": [
+    {
+      "system": "http://hl7.org/fhir/sid/us-npi",
+      "label": "National Provider Identifier (NPI)",
+      "pattern": "^\\d{10}$"
+    }
+  ],
+  "questionnaires": []
+}

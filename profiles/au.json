@@ -1,0 +1,36 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "au",
+  "url": "https://open-intake.github.io/open-intake/profiles/au.json",
+  "title": "Australia (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "AU"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile. Emergency numbers are filled in; emergency warning signs (redFlags) are empty until they are transcribed from an official public source for this region. To be discussed and maintained by a community in this region.",
+  "emergency": {
+    "message": "In a life-threatening emergency, call Triple Zero (000) now. If you are not sure whether to seek care, you can call the healthdirect helpline on 1800 022 222.",
+    "numbers": [
+      {
+        "number": "000",
+        "label": "Triple Zero (ambulance, fire, police)"
+      },
+      {
+        "number": "112",
+        "label": "Emergency number from mobile phones"
+      },
+      {
+        "number": "1800 022 222",
+        "label": "healthdirect helpline (health advice)"
+      }
+    ]
+  },
+  "redFlags": [],
+  "identifierSystems": [],
+  "questionnaires": []
+}

@@ -1,0 +1,36 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "gb",
+  "url": "https://open-intake.github.io/open-intake/profiles/gb.json",
+  "title": "United Kingdom (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "GB"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile. Emergency numbers are filled in; emergency warning signs (redFlags) are empty until they are transcribed from an official public source for this region. To be discussed and maintained by a community in this region.",
+  "emergency": {
+    "message": "If someone is seriously ill or injured and their life is at risk, call 999 now. If you need medical help urgently but it is not life-threatening, call NHS 111 or use NHS 111 online.",
+    "numbers": [
+      {
+        "number": "999",
+        "label": "Emergency services"
+      },
+      {
+        "number": "112",
+        "label": "Emergency services (also works)"
+      },
+      {
+        "number": "111",
+        "label": "NHS 111 (urgent but not life-threatening)"
+      }
+    ]
+  },
+  "redFlags": [],
+  "identifierSystems": [],
+  "questionnaires": []
+}

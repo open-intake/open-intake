@@ -780,7 +780,10 @@ function validateProfile(o) {
   if (!isStr(o.specVersion)) err("P1", "specVersion がありません。", "specVersion");
   if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("P2", "area.addressCountry（国。例: JP）を入れてください。", "area");
   if (!isObj(o.emergency) || !isStr(o.emergency.message) || !Array.isArray(o.emergency.numbers) || !o.emergency.numbers.length) err("P3", "emergency（緊急時の案内文と番号）を入れてください。", "emergency");
-  if (!Array.isArray(o.redFlags) || !o.redFlags.filter(isStr).length) err("P3", "redFlags（救急の目安）を1つ以上入れてください。", "redFlags");
+  if (!Array.isArray(o.redFlags) || !o.redFlags.filter(isStr).length) {
+    if (o.status === "draft") W.push({ code: "W16", msg: "救急の目安（redFlags）がまだ空です。公的な資料から書き写すまで、このプロファイルは下書きのままにしてください。", where: "redFlags" });
+    else err("P3", "redFlags（救急の目安）を1つ以上入れてください。", "redFlags");
+  }
   if (o.questionnaires !== undefined) {
     if (!Array.isArray(o.questionnaires)) err("P4", "questionnaires は配列にしてください。", "questionnaires");
     else { const r = validateIntake({ spec: "open-intake", specVersion: o.specVersion, updated: o.updated, clinic: { name: "x", telephone: "000000", address: { addressRegion: "x", addressLocality: "x" }, departments: ["x"], openingHours: [{ days: ["Mo"], opens: "09:00", closes: "10:00" }], booking: [{ method: "walk-in" }] }, safety: { noDiagnosis: true, emergency: "x", redFlags: ["x"] }, questionnaires: o.questionnaires });

@@ -94,10 +94,10 @@
     },
     "redFlags": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "string"
-      }
+      },
+      "description": "救急の目安。下書き（status: draft）の間は空でもよい（W16）"
     },
     "redFlagsByAge": {
       "type": "object",
