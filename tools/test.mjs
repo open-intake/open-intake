@@ -79,6 +79,11 @@ for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r 
   d.clinic.focus[0].areas = []; ok(codes(validate(d)).includes("E13"), "得意分野の内容が空なら E13");
   d.clinic.focus = [{ department: "眼科", areas: ["白内障"] }]; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W14"), "診療科の一覧にない科は注意（W14）"); }
 
+// 使い方の決まり（policy）
+{ const d = JSON.parse(fs.readFileSync("examples/v0.2/clinic-intake.json", "utf8"));
+  ok(d.policy && d.policy.url && d.policy.summary, "例に決まりの場所と要点（policy）がある");
+  d.policy = { summary: "x" }; ok(codes(validate(d)).includes("E14"), "policy に url がなければ E14"); }
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }

@@ -251,8 +251,26 @@
       "description": "メインのファイル（clinic-intake.json）のありか。読む側は、メインの files にこのファイルが載っているかを確かめる"
     },
     "policy": {
-      "type": "string",
-      "description": "使用目的と使い方の決まりの場所（SPEC §1b）"
+      "description": "使用目的と使い方の決まり（SPEC §1b）。url（決まりの場所）と summary（要点）",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     }
   }
 }

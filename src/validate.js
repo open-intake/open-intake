@@ -67,6 +67,7 @@ function validateIntake(o) {
       if (b.method === "phone" && !isStr(b.telephone)) err("E6", `予約の方法 ${i+1}: 予約用の電話番号を入れてください。`, w + ".telephone");
     });
   }
+  if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy は、url（決まりの場所）を持つ { } にしてください。", "policy");
   if (o.files !== undefined) {
     if (!Array.isArray(o.files)) err("E12", "files（正規のファイルの一覧）は配列（[ ]）にしてください。", "files");
     else {
