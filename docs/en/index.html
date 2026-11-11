@@ -226,6 +226,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         <ul>
           <li>Fill in the form in the creation tool, save the file and put it on your website</li>
           <li>Or build it in conversation with an AI you already use</li>
+          <li>Clinic-specific rules that do not fit a field can be added in plain text</li>
           <li>Check what you wrote in plain language in the creation tool's "View" tab</li>
         </ul>
       </div>
@@ -436,6 +437,26 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </dl>
       </div>
     </div>
+    <div class="compare">
+      <div class="case now">
+        <h3>Booking systems: only the slots they provide</h3>
+        <ul>
+          <li>Days and hours must fit the format the system decides</li>
+          <li>Clinic-specific rules such as "open only on the 2nd and 4th Saturdays" or "afternoons are only for patients registered in the morning" cannot be entered without a matching slot</li>
+          <li>Adding or changing a slot often means a separate discussion with the system vendor or web developer and a modification, costing money, effort and time each time</li>
+        </ul>
+      </div>
+      <div class="case next">
+        <h3>This format: fixed fields for what matters, plain text for the rest</h3>
+        <ul>
+          <li>Days, hours, booking methods and other things that cause trouble if wrong go in <strong>fixed fields</strong>, which AI is unlikely to misread</li>
+          <li>Rules that do not fit a field can be added as <strong>plain-text notes</strong>, just as you would say them (for example "Registration closes 30 minutes before closing" or "Afternoons are only for patients registered in the morning")</li>
+          <li>AI reads text too, so these notes are used when guiding patients, without building special slots</li>
+          <li>Clinic staff add the notes themselves. No modification work by a vendor is needed</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">The format provides only a minimal frame. Much of the rest is covered by the reading ability of the general-purpose AI people already use. AI can still misread, though, so rules that would cause trouble for patients if misread will move into fixed fields as we see how the format is used. Older files keep working.</p>
     <div class="model">
       <h3>Model case: a year at an internal medicine clinic</h3>
       <div class="roles">
