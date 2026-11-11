@@ -178,8 +178,6 @@ section.block > .intro { color: var(--muted); }
 .benefit::before { counter-increment: b; content: counter(b); grid-row: span 2; font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1.2; }
 .benefit h3 { font-size: 18px; }
 .benefit p { color: var(--ink); }
-.benefit.risk { border-color: var(--alert); }
-.benefit.risk::before { color: var(--alert); }
 
 /* 原則 */
 .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 22px; margin: 0; padding: 0; list-style: none; }
@@ -506,7 +504,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <div class="benefit"><h3>Safe</h3><p>No patient information is sent to or stored by the clinic. The file holds only information that is fine to publish. The format itself requires that AI does not diagnose, and that it recommends emergency services before booking when warning signs apply.</p></div>
       <div class="benefit"><h3>Future-proof</h3><p>Fast-changing AI is kept separate from slow-changing information such as hours and questionnaire items, so the file keeps working as AI changes. The format follows international standards (HL7 FHIR and schema.org) and has rules so older versions remain readable.</p></div>
       <div class="benefit"><h3>Show what you focus on</h3><p>Two clinics in the same department can differ: one may focus on diabetes, another on thyroid disease. Clinics can state their areas of focus, helping AI find a clinic that fits the symptoms. This is treated as the clinic's own statement and written within local advertising rules.</p></div>
-      <div class="benefit risk"><h3>Without it, wrong information gets used</h3><p>If clinics do not publish their own information, AI can only guess from maps and old pages. "Arrived on a closed day" and "could not find the on-call clinic" will become more common in the age of AI. For example, if a holiday closure is missing from a map, a family with a feverish child may arrive at a locked door. Clinics cannot always get map listings corrected quickly.</p></div>
+      <div class="benefit"><h3>Less risk of patients being guided with wrong information</h3><p>With information the clinic wrote itself, AI does not have to guess from maps and old pages. Mix-ups such as "arrived on a closed day" or "could not find the on-call clinic" become less likely. This is the kind of thing it prevents: if a holiday closure is missing from a map, a family with a feverish child may arrive at a locked door. Clinics cannot always get map listings corrected quickly.</p></div>
     </div>
   </section>
 

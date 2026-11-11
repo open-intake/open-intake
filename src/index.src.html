@@ -170,8 +170,6 @@ section.block > .intro { color: var(--muted); }
 .benefit::before { counter-increment: b; content: counter(b); grid-row: span 2; font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1.2; }
 .benefit h3 { font-size: 18px; }
 .benefit p { color: var(--ink); }
-.benefit.risk { border-color: var(--alert); }
-.benefit.risk::before { color: var(--alert); }
 
 /* 原則 */
 .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 22px; margin: 0; padding: 0; list-style: none; }
@@ -499,7 +497,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <div class="benefit"><h3>安全</h3><p>患者さんの情報を医療機関のサーバーに送らず、ためません。ファイルに入るのは公開してよい情報だけです。AI には診断をさせず、救急の目安に当てはまれば予約より先に119番を勧めるよう、形式そのもので決めています。</p></div>
       <div class="benefit"><h3>将来も使える</h3><p>変わりやすい AI と、変わりにくい情報（診療時間や問診票の項目）を分けました。AI が入れ替わっても、ファイルは直さずに使えます。形式は国際標準（HL7 FHIR・schema.org）に合わせ、古い版のファイルも読めるよう決まりを設けています。</p></div>
       <div class="benefit"><h3>自分の特徴を伝えられる</h3><p>同じ「内科」でも、糖尿病に力を入れている、甲状腺を診ている、など医療機関ごとに違います。その得意分野を医療機関が自分で書けるので、AI が症状に合う医療機関を探すときの手がかりになります（医療機関の自己申告として扱われ、医療広告ガイドラインの範囲で書きます）。</p></div>
-      <div class="benefit risk"><h3>置かないと、間違った情報が使われる</h3><p>医療機関が自分で情報を出さなければ、AI は地図サービスや古いページから推し量るしかありません。「休診日に来てしまった」「当番医を探せなかった」ということが、AI の時代にはもっと起こりやすくなります。たとえば、年末年始の臨時の休診が地図に出ていなければ、熱のある子どもを連れた家族が、閉まった医院の前に着いてしまいます。地図の表示は、医療機関が直そうとしても、すぐには直らないことがあります。</p></div>
+      <div class="benefit"><h3>間違った情報で案内されるリスクが減る</h3><p>医療機関が自分で書いた情報があれば、AI は地図サービスや古いページから推し量らずにすみます。「休診日に来てしまった」「当番医を探せなかった」という行き違いを減らせます。防げるのは、たとえばこんなことです。年末年始の臨時の休診が地図に出ていなければ、熱のある子どもを連れた家族が、閉まった医院の前に着いてしまいます。地図の表示は、医療機関が直そうとしても、すぐには直らないことがあります。</p></div>
     </div>
   </section>
 
