@@ -12,6 +12,9 @@ identifiers:
     value: "10.5281/zenodo.24121889"
     description: "全体の DOI（いつも最新版）"
   - type: doi
+    value: "10.5281/zenodo.24124491"
+    description: "v0.3.0 の DOI"
+  - type: doi
     value: "10.5281/zenodo.24121890"
     description: "v0.2.0 の DOI"
 repository-code: "https://github.com/open-intake/open-intake"
