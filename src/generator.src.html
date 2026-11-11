@@ -291,6 +291,8 @@ const DEFAULT_EMERGENCY = "命に関わるかもしれない症状があると�
 const DEFAULT_RED = ["顔: 顔半分が動きにくい、または、しびれる", "顔: ニッコリ笑うと口や顔の片方がゆがむ", "顔: ろれつがまわりにくく、うまく話せない", "顔: 見える範囲が狭くなる", "顔: 突然、周りが二重に見える", "顔: 顔色が明らかに悪い", "頭: 突然の激しい頭痛", "頭: 突然の高熱", "頭: 支えなしで立てないぐらい急にふらつく", "胸や背中: 突然の激痛", "胸や背中: 急な息切れ、呼吸困難", "胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く", "胸や背中: 痛む場所が移動する", "おなか: 突然の激しい腹痛", "おなか: 激しい腹痛が持続する", "おなか: 血を吐く", "おなか: 便に血が混ざる、または、真っ黒い便が出る", "手・足: 突然のしびれ", "手・足: 突然、片方の腕や足に力が入らなくなる", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "意識の障害: ぐったりしている", "吐き気: 冷や汗を伴うような強い吐き気", "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない", "けいれん: けいれんが止まらない", "けいれん: けいれんが止まっても、意識がもどらない", "けが・やけど: 大量の出血を伴うけが", "けが・やけど: 広範囲のやけど", "事故: 交通事故にあった（強い衝撃を受けた）", "事故: 水におぼれている", "事故: 高いところから落ちた", "その他: いつもと違う場合、様子がおかしい場合"];
 const DEFAULT_RED_BY_AGE = {"older": {"label": "高齢者", "items": ["顔: 顔半分が動きにくい、しびれる", "顔: 笑うと口や顔の片方がゆがむ", "顔: ろれつがまわりにくい", "顔: 見える範囲が狭くなる", "顔: 周りが二重に見える", "頭: 突然の激しい頭痛", "頭: 突然の高熱", "頭: 急にふらつき、立っていられない", "胸や背中: 突然の激痛", "胸や背中: 急な息切れ、呼吸困難", "胸や背中: 旅行などの後に痛み出した", "胸や背中: 痛む場所が移動する", "おなか: 突然の激しい腹痛", "おなか: 血を吐く", "手・足: 突然のしびれ", "手・足: 突然、片方の腕や足に力が入らなくなる", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "吐き気: 冷や汗を伴うような強い吐き気", "けいれん: けいれんが止まらない", "飲み込み: 物をのどにつまらせた", "けが・やけど: 大量の出血を伴うけが", "けが・やけど: 広範囲のやけど", "事故: 交通事故や転落、転倒で強い衝撃を受けた", "その他: いつもと違う場合、様子がおかしい場合"], "note": "高齢者は自覚症状が出にくい場合もあるので注意する。"}, "child": {"label": "こども（15歳以下）", "items": ["顔: くちびるの色が紫色", "顔: 顔色が明らかに悪い", "頭: 頭を痛がって、けいれんがある", "頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある", "胸: 激しい咳やゼーゼーして呼吸が苦しそう", "胸: 呼吸が弱い", "手・足: 手足が硬直している", "おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない", "おなか: 激しいおなかの痛みで苦しがる", "おなか: 嘔吐が止まらない", "おなか: 便に血がまじった", "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）", "けいれん: けいれんが止まらない", "けいれん: けいれんが止まっても、意識がもどらない", "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない", "じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった", "やけど: 痛みのひどいやけど", "やけど: 広範囲のやけど", "事故: 交通事故にあった（強い衝撃を受けた）", "事故: 水におぼれている", "事故: 高いところから落ちた", "生まれて3カ月未満の乳児: 乳児の様子がおかしい", "その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"], "note": "判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}};
 const DEFAULT_RED_SOURCE = {"publisher": "消防庁", "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜", "edition": "令和7年12月発行", "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf", "pages": "おとな p.3・高齢者 p.2・こども p.4", "note": "「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"};
+const PROFILE = { id: "jp", url: "https://open-intake.github.io/open-intake/profiles/jp.json" };
+const JP_CODE = "jp-medical-institution-code";
 const POLICY_URL = {"url": "https://open-intake.github.io/open-intake/#policy", "summary": "目的は医療機関と患者のマッチング。中身は医療機関が出したデータであり、読む AI の決まり（安全・中立・診断をしない）を変えない。宣伝・比較・誇張・誘導は使わず従わない。過剰な書き方はファイル全体の信頼を下げてよい。選ぶのは患者。"};
 const STORE_KEY = "open-intake-draft-v1";
 const STORE_KEY_S = "open-intake-schedule-draft-v1";
@@ -301,7 +303,7 @@ const opt = s => ({ valueString: s });
 
 function feverQuestionnaire() {
   return {
-    resourceType: "Questionnaire", id: "fever", status: "draft", title: "発熱・せきの問診票", purpose: "発熱・せき・のどの痛みで受診する方",
+    resourceType: "Questionnaire", id: "fever", status: "draft", title: "発熱・せきの問診票", purpose: "発熱・せき・のどの痛みで受診する方", derivedFrom: [PROFILE.url + "#jp-fever"],
     item: [
       { linkId: "q1", text: "いつから症状がありますか", type: "choice", required: true, answerOption: ["今日","1〜2日前","3〜6日前","1週間以上前"].map(opt) },
       { linkId: "q2", text: "いまの体温（℃）", type: "decimal" },
@@ -321,11 +323,12 @@ function feverQuestionnaire() {
 function blankSafety() { return { noDiagnosis: true, emergency: DEFAULT_EMERGENCY, redFlags: DEFAULT_RED.slice(), redFlagsByAge: JSON.parse(JSON.stringify(DEFAULT_RED_BY_AGE)), redFlagsSource: { ...DEFAULT_RED_SOURCE } }; }
 function exampleDoc() {
   return {
-    spec: "open-intake", specVersion: "0.2", updated: today(),
+    spec: "open-intake", specVersion: "0.3", updated: today(), profile: { ...PROFILE },
     files: [{ role: "schedule", url: "/clinic-schedule.json", note: "臨時の休診・担当医・当番・お知らせ" }],
     clinic: {
-      name: "みどり台内科クリニック（架空の例）", url: "https://example.com/", telephone: "03-0000-0000",
-      address: { postalCode: "100-0000", addressRegion: "東京都", addressLocality: "千代田区", streetAddress: "みどり台1-2-3 2階" },
+      name: "みどり台内科クリニック（架空の例）", url: "https://example.com/", identifiers: [{ system: JP_CODE, value: "1310000000" }], telephone: "03-0000-0000",
+      address: { addressCountry: "JP", postalCode: "100-0000", addressRegion: "東京都", addressLocality: "千代田区", streetAddress: "みどり台1-2-3 2階" },
+      geo: { latitude: 35.694, longitude: 139.7536 }, access: ["みどり台駅（架空）から徒歩3分", "駐車場 3台"],
       departments: ["内科","小児科"],
       openingHours: [
         { days: ["Mo","Tu","We","Th","Fr","Sa"], opens: "09:00", closes: "12:30", note: "受付は12:00まで" },
@@ -350,8 +353,8 @@ function exampleDoc() {
 }
 function blankDoc() {
   return {
-    spec: "open-intake", specVersion: "0.2", updated: today(), files: [],
-    clinic: { name: "", url: "", telephone: "", address: { postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" },
+    spec: "open-intake", specVersion: "0.3", updated: today(), profile: { ...PROFILE }, files: [],
+    clinic: { name: "", url: "", identifiers: [], telephone: "", address: { addressCountry: "JP", postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" }, geo: null, access: [],
       departments: [], openingHours: [{ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "12:00" }], closedNote: "",
       handles: [], notHandled: [], booking: [{ method: "phone", telephone: "" }], bring: [], languages: ["ja"], accessibility: [] },
     safety: blankSafety(), aiNotes: "", questionnaires: []
@@ -366,12 +369,17 @@ function normalize(doc) {
   const d = (doc && typeof doc === "object") ? JSON.parse(JSON.stringify(doc)) : {};
   const notes = [];
   d.spec = "open-intake"; d.specVersion = typeof d.specVersion === "string" ? d.specVersion : "0.1";
+  if (d.profile === undefined) d.profile = { ...PROFILE };
   if (typeof d.updated !== "string") d.updated = today();
   d.files = Array.isArray(d.files) ? d.files.filter(f => f && typeof f === "object").map(f => ({ ...f, role: String(f.role ?? ""), url: String(f.url ?? "") })) : [];
   const c = d.clinic = (d.clinic && typeof d.clinic === "object") ? d.clinic : {};
   for (const k of ["name","url","telephone","closedNote"]) if (typeof c[k] !== "string") c[k] = "";
   c.address = (c.address && typeof c.address === "object") ? c.address : {};
   for (const k of ["postalCode","addressRegion","addressLocality","streetAddress"]) if (typeof c.address[k] !== "string") c.address[k] = "";
+  if (typeof c.address.addressCountry !== "string") c.address.addressCountry = "JP";
+  c.identifiers = Array.isArray(c.identifiers) ? c.identifiers.filter(x => x && typeof x === "object") : [];
+  c.geo = (c.geo && typeof c.geo === "object" && typeof c.geo.latitude === "number" && typeof c.geo.longitude === "number") ? { latitude: c.geo.latitude, longitude: c.geo.longitude } : null;
+  c.access = Array.isArray(c.access) ? c.access.filter(x => typeof x === "string") : [];
   for (const k of ["departments","handles","notHandled","bring","languages","accessibility"]) c[k] = Array.isArray(c[k]) ? c[k].filter(x => typeof x === "string") : [];
   c.focus = Array.isArray(c.focus) ? c.focus.filter(f => f && typeof f === "object").map(f => ({ ...f, department: typeof f.department === "string" ? f.department : "", areas: Array.isArray(f.areas) ? f.areas.filter(x => typeof x === "string") : [], note: typeof f.note === "string" ? f.note : "" })) : [];
   c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.map(h => ({ days: Array.isArray(h?.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h?.opens || "", closes: h?.closes || "", ...(h?.note ? { note: h.note } : {}) })) : [];
@@ -405,14 +413,19 @@ function normalize(doc) {
 const clean = s => (typeof s === "string" ? s.trim() : s);
 const cleanList = a => (a || []).map(clean).filter(Boolean);
 function build(d) {
-  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.2", updated: d.updated, policy: POLICY_URL };
+  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.3", updated: d.updated, policy: POLICY_URL };
+  if (d.profile) out.profile = d.profile;
   const files = (d.files || []).map(f => { const o = { ...f, role: clean(f.role), url: clean(f.url) }; if (!clean(o.note)) delete o.note; return o; }).filter(f => f.role || f.url);
   if (files.length) out.files = files;
   const clinic = { name: clean(c.name) };
   if (clean(c.url)) clinic.url = clean(c.url);
+  const ids = c.identifiers.map(x => ({ ...x, system: clean(x.system), value: clean(x.value) })).filter(x => x.system && x.value);
+  if (ids.length) clinic.identifiers = ids;
   clinic.telephone = clean(c.telephone);
-  const a = {}; for (const k of ["postalCode","addressRegion","addressLocality","streetAddress"]) { const v = clean(c.address[k]); if (v || k === "addressRegion" || k === "addressLocality") a[k] = v; }
+  const a = {}; for (const k of ["addressCountry","postalCode","addressRegion","addressLocality","streetAddress"]) { const v = clean(c.address[k]); if (v || k === "addressRegion" || k === "addressLocality") a[k] = v; }
   clinic.address = a;
+  if (c.geo) clinic.geo = { latitude: c.geo.latitude, longitude: c.geo.longitude };
+  { const v = cleanList(c.access); if (v.length) clinic.access = v; }
   clinic.departments = cleanList(c.departments);
   clinic.openingHours = c.openingHours.map(h => { const o = { days: DAY_KEYS.filter(k => h.days.includes(k)), opens: h.opens, closes: h.closes }; if (clean(h.note)) o.note = clean(h.note); return o; });
   if (clean(c.closedNote)) clinic.closedNote = clean(c.closedNote);
@@ -428,6 +441,8 @@ function build(d) {
   out.questionnaires = d.questionnaires.map(q => {
     const o = { resourceType: "Questionnaire", id: clean(q.id), status: q.status, title: clean(q.title) };
     if (clean(q.purpose)) o.purpose = clean(q.purpose);
+    if (clean(q.url)) o.url = clean(q.url);
+    if (Array.isArray(q.derivedFrom) && q.derivedFrom.length) o.derivedFrom = q.derivedFrom;
     o.item = q.item.map(it => {
       const x = { linkId: it.linkId, text: clean(it.text), type: it.type };
       if (it.required && it.type !== "display") x.required = true;
@@ -474,6 +489,8 @@ function sheetHead(no, title, key) { return h("header", {}, h("span", { class: "
 // ---------- 各欄の描画 ----------
 function renderClinic() {
   const c = S.clinic, a = c.address, el = $("sec-clinic"); el.replaceChildren();
+  const geoDraft = { latitude: c.geo ? String(c.geo.latitude) : "", longitude: c.geo ? String(c.geo.longitude) : "" };
+  const setGeo = (k, v) => { geoDraft[k] = v.trim(); const la = parseFloat(geoDraft.latitude), lo = parseFloat(geoDraft.longitude); c.geo = (geoDraft.latitude && geoDraft.longitude && isFinite(la) && isFinite(lo)) ? { latitude: la, longitude: lo } : (geoDraft.latitude || geoDraft.longitude ? { latitude: NaN, longitude: NaN } : null); };
   const others = c.departments.filter(x => !DEPTS.includes(x));
   const setDepts = () => {
     const picked = DEPTS.filter(dp => el.querySelector(`[data-dept="${dp}"]`)?.checked);
@@ -496,7 +513,13 @@ function renderClinic() {
       field("f-zip", "郵便番号", "postalCode", text("f-zip", () => a.postalCode, v => a.postalCode = v, { placeholder: "100-0000", inputmode: "numeric" })),
       field("f-pref", "都道府県", "addressRegion", text("f-pref", () => a.addressRegion, v => a.addressRegion = v, { placeholder: "東京都" }), { req: true }),
       field("f-city", "市区町村", "addressLocality", text("f-city", () => a.addressLocality, v => a.addressLocality = v, { placeholder: "千代田区" }), { req: true }),
-      field("f-street", "町名・番地・建物", "streetAddress", text("f-street", () => a.streetAddress, v => a.streetAddress = v))),
+      field("f-street", "町名・番地・建物", "streetAddress", text("f-street", () => a.streetAddress, v => a.streetAddress = v)),
+      field("f-country", "国", "addressCountry", text("f-country", () => a.addressCountry, v => a.addressCountry = v.toUpperCase(), { placeholder: "JP", maxlength: 2 }), { hint: "ISO の2文字（日本は JP）" })),
+    h("div", { class: "grid" },
+      field("f-code", "医療機関コード（10桁）", "identifiers", text("f-code", () => (c.identifiers.find(x => x.system === JP_CODE) || {}).value || "", v => { const t = v.replace(/\D/g, ""); const i = c.identifiers.findIndex(x => x.system === JP_CODE); if (!t) { if (i >= 0) c.identifiers.splice(i, 1); } else if (i >= 0) c.identifiers[i].value = t; else c.identifiers.push({ system: JP_CODE, value: t }); }, { inputmode: "numeric", placeholder: "1310000000" }), { hint: "保険医療機関の番号。公的な名簿（医療情報ネット）と照らし合わせて、本物か確かめる手がかりになります。" }),
+      field("f-lat", "緯度", "geo.latitude", text("f-lat", () => c.geo ? String(c.geo.latitude) : "", v => { setGeo("latitude", v); }, { inputmode: "decimal", placeholder: "35.6940" }), { hint: "地図アプリで場所を長押し（右クリック）すると出る数字" }),
+      field("f-lng", "経度", "geo.longitude", text("f-lng", () => c.geo ? String(c.geo.longitude) : "", v => { setGeo("longitude", v); }, { inputmode: "decimal", placeholder: "139.7536" }))),
+    field("f-access", "行き方", "access", lines("f-access", () => c.access, v => c.access = v, { rows: 2, placeholder: "○○駅から徒歩3分\n駐車場 3台" }), { hint: "1行に1つ。" }),
     h("div", { class: "field" },
       h("div", { class: "label" }, "診療科", h("span", { class: "badge req", text: "必須" }), h("span", { class: "k", text: "departments" })),
       h("div", { class: "chips" }, DEPTS.map(dp => h("label", { class: "chip" }, h("input", { type: "checkbox", id: fid("dept", DEPTS.indexOf(dp)), "data-dept": dp, checked: c.departments.includes(dp), onchange: setDepts }), dp))),
@@ -680,7 +703,7 @@ const EXC_STATUS = [["closed","休診"],["open","臨時に診療"],["changed","�
 const ONCALL_KIND = [["holiday","休日の当番"],["night","夜間の当番"],["other","その他"]];
 function exampleSchedule() {
   const t = today();
-  return { spec: "open-intake-schedule", specVersion: "0.2", updated: t, validUntil: addDays(t, 60), main: "/clinic-intake.json",
+  return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: addDays(t, 60), main: "/clinic-intake.json",
     exceptions: [
       { from: addDays(t, 13), to: addDays(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日ですが、午前のみ診療します" },
       { from: addDays(t, 30), to: addDays(t, 31), status: "closed", note: "院内研修のため休診" }],
@@ -688,10 +711,10 @@ function exampleSchedule() {
     onCall: [{ date: addDays(t, 13), kind: "holiday", opens: "09:00", closes: "17:00", department: "内科", note: "地域の休日当番医（午後も受け付けます）" }],
     notices: [{ from: t, to: addDays(t, 30), text: "インフルエンザの予防接種は予約制です。Web か電話で予約してください。" }] };
 }
-function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.2", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
+function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
 function normalizeSchedule(o) {
   const d = (o && typeof o === "object") ? JSON.parse(JSON.stringify(o)) : {};
-  d.spec = "open-intake-schedule"; d.specVersion = "0.2";
+  d.spec = "open-intake-schedule"; d.specVersion = "0.3";
   for (const k of ["updated","validUntil","main"]) if (typeof d[k] !== "string") d[k] = k === "updated" ? today() : k === "validUntil" ? addDays(today(), 30) : "";
   for (const k of ["exceptions","doctorSchedule","onCall","notices"]) d[k] = Array.isArray(d[k]) ? d[k].filter(x => x && typeof x === "object") : [];
   for (const x of d.exceptions) { x.hours = Array.isArray(x.hours) ? x.hours : []; for (const k of ["from","to","note"]) x[k] = x[k] || ""; if (!x.status) x.status = "closed"; }
@@ -702,7 +725,7 @@ function normalizeSchedule(o) {
 }
 function buildSchedule(d) {
   const keep = (o, keys) => { const r = {}; for (const k of keys) { const v = clean(o[k]); if (v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)) r[k] = v; } return r; };
-  const out = { spec: "open-intake-schedule", specVersion: "0.2", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
+  const out = { spec: "open-intake-schedule", specVersion: "0.3", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
   if (clean(d.main)) out.main = clean(d.main);
   if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]); if (x.status !== "closed") r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes })); if (clean(x.note)) r.note = clean(x.note); return r; });
   if (d.doctorSchedule.length) out.doctorSchedule = d.doctorSchedule.map(x => { const r = keep(x, ["department","name"]); if (x._byDate) r.date = x.date; else r.days = DAY_KEYS.filter(k => x.days.includes(k)); r.opens = x.opens; r.closes = x.closes; if (clean(x.note)) r.note = clean(x.note); return r; });
@@ -829,7 +852,7 @@ function viewIntake(o) {
   const qs = arr(o.questionnaires);
   return [
     h("h3", { text: str(c.name) || "（名前が空です）" }),
-    dl([["電話", str(c.telephone)], ["住所", [a.postalCode && "〒" + a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["サイト", str(c.url)], ["診療科", arr(c.departments)], ["内容を確かめた日", str(o.updated)]]),
+    dl([["電話", str(c.telephone)], ["住所", [a.addressCountry, a.postalCode && "〒" + a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["行き方", arr(c.access)], ["位置", c.geo ? `${c.geo.latitude}, ${c.geo.longitude}` : ""], ["識別番号", arr(c.identifiers).map(x => `${x.system === JP_CODE ? "医療機関コード" : str(x.system)} ${str(x.value)}`)], ["サイト", str(c.url)], ["診療科", arr(c.departments)], ["地域プロファイル", o.profile ? str(o.profile.id || o.profile) : ""], ["内容を確かめた日", str(o.updated)]]),
     block("ふだんの診療時間", list(arr(c.openingHours).map(x => `${days(x.days)}　${hm(x.opens, x.closes)}${x.note ? "（" + x.note + "）" : ""}`)), c.closedNote && h("div", { class: "sub", text: c.closedNote })),
     block("予約・受診の方法", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "　" + b.url }), b.telephone && h("span", { text: "　" + b.telephone }), b.note && h("span", { class: "sub", text: "（" + b.note + "）" }))))),
     block("得意分野・力を入れていること（医療機関の自己申告）", list(arr(c.focus).map(f => h("span", {}, f.department && h("strong", { text: str(f.department) + "　" }), arr(f.areas).join("、"), f.note && h("span", { class: "sub", text: "（" + f.note + "）" }))))),

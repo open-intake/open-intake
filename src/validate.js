@@ -6,8 +6,11 @@
  */
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1", "0.2"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
 const KNOWN_ROLES = ["schedule"];
+// 識別番号の体系（SPEC §4c）。URI か、この表にある名前を使う
+const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
+const COUNTRY = /^[A-Z]{2}$/;
 const KNOWN_AGE_GROUPS = ["older", "child"];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -42,6 +45,21 @@ function validateIntake(o) {
     if (!isObj(a) || !isStr(a.addressLocality)) err("E3", "市区町村が空です。", "clinic.address.addressLocality");
     if (isObj(a) && isStr(a.postalCode) && !/^\d{3}-?\d{4}$/.test(a.postalCode)) warn("W1", "郵便番号は 100-0000 の形にしてください。", "clinic.address.postalCode");
     if (!Array.isArray(c.departments) || !c.departments.filter(isStr).length) err("E4", "診療科を1つ以上選んでください。", "clinic.departments");
+    if (isObj(c.address) && c.address.addressCountry !== undefined && !COUNTRY.test(String(c.address.addressCountry))) err("E15", "国（addressCountry）は ISO 3166-1 の2文字の大文字にしてください（例: JP）。", "clinic.address.addressCountry");
+    if (c.identifiers !== undefined) {
+      if (!Array.isArray(c.identifiers)) err("E15", "identifiers（識別番号）は配列（[ ]）にしてください。", "clinic.identifiers");
+      else c.identifiers.forEach((id, i) => {
+        const w = `clinic.identifiers[${i}]`;
+        if (!isObj(id) || !isStr(id.system) || !isStr(id.value)) { err("E15", `識別番号 ${i+1}: system（どの体系か）と value（番号）を入れてください。`, w); return; }
+        const re = KNOWN_ID_SYSTEMS[id.system];
+        if (re && !re.test(id.value)) err("E15", `識別番号 ${i+1}: ${id.system} の番号の形が正しくありません。`, w + ".value");
+        if (!re && !/^(https?:|urn:)/.test(id.system)) warn("W15", `識別番号 ${i+1}: system「${id.system}」は、この検査器が知らない名前です。URI（https:// や urn:）で書くことを勧めます。`, w + ".system");
+      });
+    }
+    if (c.geo !== undefined) {
+      const g = c.geo, okNum = (v, lo, hi) => typeof v === "number" && isFinite(v) && v >= lo && v <= hi;
+      if (!isObj(g) || !okNum(g.latitude, -90, 90) || !okNum(g.longitude, -180, 180)) err("E15", "位置（geo）は、latitude（緯度 -90〜90）と longitude（経度 -180〜180）の数にしてください。", "clinic.geo");
+    }
     if (c.focus !== undefined) {
       if (!Array.isArray(c.focus)) err("E13", "focus（得意分野）は配列（[ ]）にしてください。", "clinic.focus");
       else c.focus.forEach((f, i) => {
@@ -68,6 +86,7 @@ function validateIntake(o) {
     });
   }
   if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy は、url（決まりの場所）を持つ { } にしてください。", "policy");
+  if (o.profile !== undefined && !(isStr(o.profile) || (isObj(o.profile) && isStr(o.profile.id)))) err("E16", "profile（地域プロファイル）は、id を持つ { }（例: {\"id\": \"jp\", \"url\": \"…\"}）にしてください。", "profile");
   if (o.files !== undefined) {
     if (!Array.isArray(o.files)) err("E12", "files（正規のファイルの一覧）は配列（[ ]）にしてください。", "files");
     else {
@@ -116,6 +135,7 @@ function validateIntake(o) {
       if (!["draft","active"].includes(q.status)) err("E8", `${name}: status は draft か active にしてください。`, w + ".status");
       else if (q.status === "draft") warn("W3", `${name} は医師の確認前（draft）です。確認が済んだら「使用中」にしてください。`, w + ".status");
       if (!isStr(q.title)) err("E8", `${name}: 問診票の名前が空です。`, w + ".title");
+      if (q.derivedFrom !== undefined && !(Array.isArray(q.derivedFrom) && q.derivedFrom.every(isStr))) err("E8", `${name}: derivedFrom（元にした問診票の基本形）は URL の配列にしてください。`, w + ".derivedFrom");
       if (!Array.isArray(q.item) || !q.item.length) { err("E8", `${name}: 質問が1つもありません。`, w + ".item"); return; }
       const seen = new Map();
       const walk = (items, path, depth) => items.forEach((it, i) => {
@@ -125,6 +145,7 @@ function validateIntake(o) {
         else if (seen.has(it.linkId)) err("E9", `${label}: linkId「${it.linkId}」が重なっています。`, p + ".linkId");
         if (!isStr(it.text)) err("E8", `${label}: 質問文が空です。`, p + ".text");
         else if (it.text.length > 200) warn("W5", `${label}: 質問文が長すぎます（${it.text.length} 字・200 字まで）。`, p + ".text");
+        if (it.derivedFrom !== undefined && !(Array.isArray(it.derivedFrom) && it.derivedFrom.every(isStr))) err("E8", `${label}: derivedFrom は URL の配列にしてください。`, p + ".derivedFrom");
         if (!TYPE_KEYS.includes(it.type)) err("E10", `${label}: 答え方（type）「${it.type}」は使えません。`, p + ".type");
         if (CHOICE.has(it.type) && (!Array.isArray(it.answerOption) || !it.answerOption.filter(x => isStr(x?.valueString)).length)) err("E10", `${label}: 選択肢を1つ以上入れてください。`, p + ".answerOption");
         if (Array.isArray(it.enableWhen)) it.enableWhen.forEach((ew, k) => {
@@ -211,9 +232,66 @@ function validateSchedule(o) {
   return { E, W };
 }
 
+// ---------- 地域の一覧（open-intake-directory・v0.3 から） ----------
+function validateDirectory(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("D1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("D1", "specVersion（例: \"0.3\"）がありません。", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器より新しい版です。`, "specVersion");
+  if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("D2", "updated は YYYY-MM-DD の形にしてください。", "updated");
+  if (!isObj(o.publisher) || !isStr(o.publisher.name)) err("D3", "publisher.name（この一覧をまとめた団体の名前）を入れてください。", "publisher");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("D3", "area.addressCountry（国。例: JP）を入れてください。", "area");
+  if (!Array.isArray(o.entries) || !o.entries.length) err("D4", "entries（医療機関の一覧）を1件以上入れてください。", "entries");
+  else {
+    const urls = new Set();
+    o.entries.forEach((e, i) => {
+      const w = `entries[${i}]`;
+      if (!isObj(e) || !isStr(e.name)) err("D4", `${i+1} 件目: 医療機関の名前（name）がありません。`, w);
+      if (!isObj(e) || typeof e.url !== "string" || !/^https:\/\/\S+$/.test(e.url)) err("D4", `${i+1} 件目: url（その医療機関の clinic-intake.json の場所）を https:// で入れてください。`, w + ".url");
+      else if (urls.has(e.url)) err("D4", `${i+1} 件目: 同じ url がほかにもあります。`, w + ".url"); else urls.add(e.url);
+      if (isObj(e) && e.geo !== undefined && !(isObj(e.geo) && typeof e.geo.latitude === "number" && typeof e.geo.longitude === "number")) err("D4", `${i+1} 件目: geo は latitude と longitude の数にしてください。`, w + ".geo");
+    });
+  }
+  if (o.onCall !== undefined) {
+    if (!Array.isArray(o.onCall)) err("D5", "onCall（地域の当番表）は配列にしてください。", "onCall");
+    else o.onCall.forEach((x, i) => {
+      const w = `onCall[${i}]`;
+      if (!isObj(x) || !(typeof x.date === "string" && DATE.test(x.date))) err("D5", `当番 ${i+1}: 日付（date）を YYYY-MM-DD で入れてください。`, w);
+      if (!isObj(x) || !isStr(x.name)) err("D5", `当番 ${i+1}: 医療機関の名前（name）を入れてください。`, w);
+      if (isObj(x) && (!TIME_RE.test(x.opens || "") || !TIME_RE.test(x.closes || ""))) err("D5", `当番 ${i+1}: 時刻を 09:00 の形で入れてください。`, w);
+    });
+  }
+  return { E, W };
+}
+
+// ---------- 地域プロファイル（open-intake-profile・v0.3 から） ----------
+function validateProfile(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("P1", "JSON の一番外側がオブジェクト（{ }）ではありません。", "$"); return { E, W }; }
+  if (!isStr(o.id) || !/^[a-z0-9-]{2,32}$/.test(o.id)) err("P1", "id は小文字の英数字とハイフン（例: jp、jp-tokyo）にしてください。", "id");
+  if (!isStr(o.specVersion)) err("P1", "specVersion がありません。", "specVersion");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("P2", "area.addressCountry（国。例: JP）を入れてください。", "area");
+  if (!isObj(o.emergency) || !isStr(o.emergency.message) || !Array.isArray(o.emergency.numbers) || !o.emergency.numbers.length) err("P3", "emergency（緊急時の案内文と番号）を入れてください。", "emergency");
+  if (!Array.isArray(o.redFlags) || !o.redFlags.filter(isStr).length) err("P3", "redFlags（救急の目安）を1つ以上入れてください。", "redFlags");
+  if (o.questionnaires !== undefined) {
+    if (!Array.isArray(o.questionnaires)) err("P4", "questionnaires は配列にしてください。", "questionnaires");
+    else { const r = validateIntake({ spec: "open-intake", specVersion: o.specVersion, updated: o.updated, clinic: { name: "x", telephone: "000000", address: { addressRegion: "x", addressLocality: "x" }, departments: ["x"], openingHours: [{ days: ["Mo"], opens: "09:00", closes: "10:00" }], booking: [{ method: "walk-in" }] }, safety: { noDiagnosis: true, emergency: "x", redFlags: ["x"] }, questionnaires: o.questionnaires });
+      for (const e of r.E) if (e.where.startsWith("questionnaires")) E.push({ ...e, code: "P4" });
+      o.questionnaires.forEach((q, i) => { if (!isStr(q?.url)) err("P4", `基本形 ${i+1}: url（ほかのファイルが derivedFrom で指す場所）を入れてください。`, `questionnaires[${i}].url`); }); }
+  }
+  return { E, W };
+}
+
 // 中身を見て、どちらのファイルかを判断して検査する
-function kindOf(o) { return (o && typeof o === "object" && o.spec === "open-intake-schedule") ? "schedule" : "intake"; }
-function validate(o) { return kindOf(o) === "schedule" ? validateSchedule(o) : validateIntake(o); }
-return { KNOWN_ROLES, validate, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : "intake"; }
+function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : validateIntake(o); }
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;

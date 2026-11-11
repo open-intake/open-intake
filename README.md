@@ -42,7 +42,9 @@
 | ファイル | 中身 |
 |---|---|
 | [SPEC.md](SPEC.md) | 仕様書（形式、必須の項目、安全の決まり、検査の規則、版と互換の決まり） |
-| [schema/](schema/) | JSON Schema（draft 2020-12）。固定の情報と臨時の情報の2つ |
+| [schema/](schema/) | JSON Schema（draft 2020-12）。固定の情報・臨時の情報・地域の一覧・地域プロファイル |
+| [profiles/](profiles/) | 地域プロファイル（救急の番号・救急の目安・問診票の基本形など）。`jp.json` は最初のたたき台 |
+| [MAPPING.md](MAPPING.md) | schema.org・HL7 FHIR との対応表 |
 | [examples/](examples/) | 各版の例（架空の医院） |
 | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) | AI と会話してファイルを作るための指示書 |
 | `src/` | トップの原稿（`index.src.html`）、作成ツールの原稿（`generator.src.html`）、検査器（`validate.js`） |

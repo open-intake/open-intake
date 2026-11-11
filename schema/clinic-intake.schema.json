@@ -86,6 +86,28 @@
           }
         }
       ]
+    },
+    "profile": {
+      "description": "地域プロファイル（v0.3 から。SPEC §4d）",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     }
   },
   "$defs": {
@@ -145,6 +167,11 @@
             },
             "streetAddress": {
               "type": "string"
+            },
+            "addressCountry": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "ISO 3166-1 alpha-2（v0.3 から）"
             }
           }
         },
@@ -306,6 +333,55 @@
               }
             }
           }
+        },
+        "identifiers": {
+          "description": "識別番号（v0.3 から）。system は URI か、仕様の表にある名前（jp-medical-institution-code など）",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "system",
+              "value"
+            ],
+            "properties": {
+              "system": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "geo": {
+          "description": "位置（v0.3 から）。schema.org GeoCoordinates と同じ名前",
+          "type": "object",
+          "required": [
+            "latitude",
+            "longitude"
+          ],
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          }
+        },
+        "access": {
+          "description": "行き方（最寄り駅・駐車場など。v0.3 から）",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
@@ -421,6 +497,16 @@
           "items": {
             "$ref": "#/$defs/item"
           }
+        },
+        "url": {
+          "type": "string"
+        },
+        "derivedFrom": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "元にした問診票の基本形（FHIR Questionnaire.derivedFrom）"
         }
       }
     },
@@ -519,6 +605,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/item"
+          }
+        },
+        "derivedFrom": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       },

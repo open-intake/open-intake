@@ -84,6 +84,18 @@ for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r 
   ok(d.policy && d.policy.url && d.policy.summary, "例に決まりの場所と要点（policy）がある");
   d.policy = { summary: "x" }; ok(codes(validate(d)).includes("E14"), "policy に url がなければ E14"); }
 
+// v0.3: 地域プロファイル・地域の一覧・識別番号
+for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { const r = validate(JSON.parse(fs.readFileSync("profiles/" + f, "utf8"))); ok(r.E.length === 0, `profiles/${f} がエラーなしで通る`, JSON.stringify(r.E)); }
+{ const d = JSON.parse(fs.readFileSync("examples/v0.3/clinic-intake.json", "utf8"));
+  d.clinic.identifiers[0].value = "123"; ok(codes(validate(d)).includes("E15"), "医療機関コードが10桁でなければ E15");
+  d.clinic.identifiers = [{ system: "http://hl7.org/fhir/sid/us-npi", value: "1234567890" }]; ok(validate(d).E.length === 0, "URI の体系の識別番号は通る");
+  d.clinic.geo = { latitude: 120, longitude: 0 }; ok(codes(validate(d)).includes("E15"), "緯度が範囲外なら E15");
+  delete d.clinic.geo; d.profile = { url: "x" }; ok(codes(validate(d)).includes("E16"), "profile に id がなければ E16"); }
+{ const d = JSON.parse(fs.readFileSync("examples/v0.3/clinic-directory.json", "utf8"));
+  d.entries[1].url = d.entries[0].url; ok(codes(validate(d)).includes("D4"), "地域の一覧で url が重なれば D4");
+  d.entries = []; ok(codes(validate(d)).includes("D4"), "地域の一覧が空なら D4"); }
+{ const d = JSON.parse(fs.readFileSync("profiles/jp.json", "utf8")); delete d.questionnaires[0].url; ok(codes(validate(d)).includes("P4"), "基本形に url がなければ P4"); }
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }

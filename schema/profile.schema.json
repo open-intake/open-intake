@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-intake.github.io/open-intake/schema/profile.schema.json",
+  "title": "Open Intake regional profile v0.3 (draft)",
+  "description": "地域プロファイル: 国や地域ごとの基本（救急の番号と案内、救急の目安、識別番号の体系、問診票の基本形）",
+  "type": "object",
+  "required": [
+    "spec",
+    "specVersion",
+    "id",
+    "area",
+    "emergency",
+    "redFlags"
+  ],
+  "properties": {
+    "spec": {
+      "const": "open-intake-profile"
+    },
+    "specVersion": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{2,32}$"
+    },
+    "url": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active"
+      ]
+    },
+    "area": {
+      "type": "object",
+      "required": [
+        "addressCountry"
+      ],
+      "properties": {
+        "addressCountry": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "addressRegion": {
+          "type": "string"
+        }
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "note": {
+      "type": "string"
+    },
+    "emergency": {
+      "type": "object",
+      "required": [
+        "message",
+        "numbers"
+      ],
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "numbers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "number"
+            ],
+            "properties": {
+              "number": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "redFlags": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "redFlagsByAge": {
+      "type": "object",
+      "description": "年代ごとの救急の目安（v0.2 から）。older（高齢者）・child（こども）が決まっている。年代がわかるときは redFlags の代わりにこちらを使う",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "redFlagsSource": {
+      "type": "object",
+      "properties": {
+        "publisher": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://"
+        },
+        "note": {
+          "type": "string"
+        },
+        "edition": {
+          "type": "string"
+        },
+        "pages": {
+          "type": "string"
+        }
+      }
+    },
+    "identifierSystems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "system"
+        ],
+        "properties": {
+          "system": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "questionnaires": {
+      "type": "array",
+      "items": {
+        "$ref": "clinic-intake.schema.json#/$defs/questionnaire"
+      }
+    }
+  }
+}
