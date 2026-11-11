@@ -6,7 +6,7 @@
  */
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4"];
 const KNOWN_ROLES = ["schedule"];
 // 識別番号の体系（SPEC §4c）。URI か、この表にある名前を使う
 const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
@@ -19,6 +19,35 @@ const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(
 const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
 const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
 const CHOICE = new Set(["choice","open-choice"]);
+// 受け付け方の欄（v0.4 から・SPEC §4 の openingHours・§6b の exceptions）
+const KNOWN_SERVICES = ["general","checkup","vaccination","procedure","rehabilitation","other"];
+const VISIT_TYPES = ["all","first","return"];
+const ENTRIES = ["walk-in","appointment","none"];
+const BOOKING_MODES = ["time-slot","queue","request"];
+// 受付の時刻・診療科・用途・受け付け方を見る。code はエラーの番号（E5 か S4）
+function checkReception(h, w, label, code, err, warn, departments) {
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  if (h.reception !== undefined) {
+    const r = h.reception;
+    if (!r || typeof r !== "object" || Array.isArray(r)) err(code, `${label}: 受付の時間（reception）は { } にしてください。`, w + ".reception");
+    else {
+      if (r.opens === undefined && r.closes === undefined) err(code, `${label}: 受付の時間に、始まり（opens）か締め切り（closes）を入れてください。`, w + ".reception");
+      for (const k of ["opens","closes"]) if (r[k] !== undefined && !TIME_RE.test(r[k])) err(code, `${label}: 受付の時刻を 09:00 の形で入れてください。`, `${w}.reception.${k}`);
+      if (TIME_RE.test(r.opens || "") && TIME_RE.test(r.closes || "") && r.opens >= r.closes) err(code, `${label}: 受付の始まり（${r.opens}）が締め切り（${r.closes}）より後になっています。`, w + ".reception");
+      if (TIME_RE.test(r.closes || "") && TIME_RE.test(h.closes || "") && r.closes > h.closes) warn("W19", `${label}: 受付の締め切り（${r.closes}）が、診療の終わり（${h.closes}）より後です。間違いでないか確かめてください。`, w + ".reception.closes");
+    }
+  }
+  if (h.department !== undefined) {
+    if (!isStr(h.department)) err(code, `${label}: 診療科（department）は文字にしてください。`, w + ".department");
+    else if (Array.isArray(departments) && !departments.includes(h.department)) warn("W20", `${label}: 診療科「${h.department}」が、診療科の一覧にありません。`, w + ".department");
+  }
+  if (h.service !== undefined) {
+    if (!Array.isArray(h.service) || !h.service.length || !h.service.every(isStr)) err(code, `${label}: 用途（service）は文字の配列にしてください。`, w + ".service");
+    else h.service.filter(x => !KNOWN_SERVICES.includes(x)).forEach(x => warn("W21", `${label}: 用途「${x}」は、この検査器が知らない値です（読む側は無視します）。`, w + ".service"));
+  }
+  if (h.visitType !== undefined && !VISIT_TYPES.includes(h.visitType)) err(code, `${label}: visitType は all（すべて）・first（初診）・return（再診）のどれかにしてください。`, w + ".visitType");
+  if (h.entry !== undefined && !ENTRIES.includes(h.entry)) err(code, `${label}: entry は walk-in（予約なしでも可）・appointment（予約の人だけ）・none（新しい受付はしない）のどれかにしてください。`, w + ".entry");
+}
 function validateIntake(o) {
   const E = [], W = [];
   const err = (code, msg, where) => E.push({ code, msg, where });
@@ -80,7 +109,12 @@ function validateIntake(o) {
       else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `診療時間 ${i+1} 行目: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
       if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `診療時間 ${i+1} 行目: 時刻を 09:00 の形で入れてください。`, w);
       else if (h.opens >= h.closes) err("E5", `診療時間 ${i+1} 行目: 始まり（${h.opens}）が終わり（${h.closes}）より後になっています。`, w);
+      checkReception(h, w, `診療時間 ${i+1} 行目`, "E5", err, warn, c.departments);
+      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `診療時間 ${i+1} 行目: mayEndEarly は true か false にしてください。`, w + ".mayEndEarly");
+      if (h.weeksOfMonth !== undefined && (!Array.isArray(h.weeksOfMonth) || !h.weeksOfMonth.length || h.weeksOfMonth.some(n => !Number.isInteger(n) || n < 1 || n > 5) || new Set(h.weeksOfMonth).size !== h.weeksOfMonth.length))
+        err("E5", `診療時間 ${i+1} 行目: 第何週（weeksOfMonth）は、1〜5 の数を重ならないように並べてください。`, w + ".weeksOfMonth");
     });
+    if (c.appointmentRequired !== undefined && typeof c.appointmentRequired !== "boolean") err("E17", "完全予約制か（appointmentRequired）は true か false にしてください。わからないときは書かないでください。", "clinic.appointmentRequired");
     if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "予約・受診の方法を1つ以上入れてください。", "clinic.booking");
     else c.booking.forEach((b, i) => {
       const w = `clinic.booking[${i}]`;
@@ -88,6 +122,18 @@ function validateIntake(o) {
       if (b.method === "web" && !isStr(b.url)) err("E6", `予約の方法 ${i+1}: Web 予約のページの URL を入れてください。`, w + ".url");
       if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `予約の方法 ${i+1}: 予約ページの URL が https で始まっていません。`, w + ".url");
       if (b.method === "phone" && !isStr(b.telephone)) err("E6", `予約の方法 ${i+1}: 予約用の電話番号を入れてください。`, w + ".telephone");
+      if (b.hours !== undefined) {
+        if (!Array.isArray(b.hours) || !b.hours.length) err("E6", `予約の方法 ${i+1}: 予約を受け付ける時間（hours）は配列（[ ]）にしてください。`, w + ".hours");
+        else b.hours.forEach((x, k) => {
+          const hw = `${w}.hours[${k}]`;
+          if (!isObj(x) || !Array.isArray(x.days) || !x.days.length || x.days.some(d => !DAY_KEYS.includes(d))) err("E6", `予約の方法 ${i+1} の受付時間 ${k+1}: 曜日（Mo〜Su・PH）を入れてください。`, hw + ".days");
+          if (!isObj(x) || !TIME.test(x.opens || "") || !TIME.test(x.closes || "")) err("E6", `予約の方法 ${i+1} の受付時間 ${k+1}: 時刻を 09:00 の形で入れてください。`, hw);
+          else if (x.opens >= x.closes) err("E6", `予約の方法 ${i+1} の受付時間 ${k+1}: 始まり（${x.opens}）が終わり（${x.closes}）より後になっています。`, hw);
+        });
+      }
+      if (b.mode !== undefined && !BOOKING_MODES.includes(b.mode)) err("E6", `予約の方法 ${i+1}: mode は time-slot（時刻の枠）・queue（当日の順番）・request（申し込んで返事を待つ）のどれかにしてください。`, w + ".mode");
+      if (b.visitType !== undefined && !VISIT_TYPES.includes(b.visitType)) err("E6", `予約の方法 ${i+1}: visitType は all（すべて）・first（初診）・return（再診）のどれかにしてください。`, w + ".visitType");
+      if (b.statusUrl !== undefined) { if (!isStr(b.statusUrl) || /\s/.test(b.statusUrl)) err("E6", `予約の方法 ${i+1}: 順番や空きを確かめるページ（statusUrl）の URL が正しくありません。`, w + ".statusUrl"); else if (!/^https:\/\//.test(b.statusUrl)) warn("W1", `予約の方法 ${i+1}: 順番や空きを確かめるページの URL が https で始まっていません。`, w + ".statusUrl"); }
     });
   }
   if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy は、url（決まりの場所）を持つ { } にしてください。", "policy");
@@ -203,6 +249,8 @@ function validateSchedule(o) {
       if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: 診療する時間（hours）を入れてください。`, w + ".hours");
       else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label} の時間 ${k+1}`, false));
     }
+    checkReception(x, w, label, "S4", err, warn, null);
+    if (x.status === "closed" && (x.reception !== undefined || x.entry !== undefined)) warn("W22", `${label}: 休診（closed）なのに、受付の時間や受け付け方が書いてあります。受付だけを変えるときは changed にしてください。`, w);
   });
   list("doctorSchedule").forEach((x, i) => {
     const w = `doctorSchedule[${i}]`, label = `担当医の予定 ${i+1}`;

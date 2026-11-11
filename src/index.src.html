@@ -210,7 +210,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
 
 <div class="wrap">
   <header class="hero">
-    <div class="topline"><div class="eyebrow">OPEN INTAKE · v0.3 草案</div><nav class="lang" aria-label="言語"><span aria-current="true">日本語</span><a href="en/" hreflang="en" lang="en">English</a></nav></div>
+    <div class="topline"><div class="eyebrow">OPEN INTAKE · v0.4 草案</div><nav class="lang" aria-label="言語"><span aria-current="true">日本語</span><a href="en/" hreflang="en" lang="en">English</a></nav></div>
     <h1>オープン受診案内<small>オープン受診案内 JSON · Open Intake</small></h1>
     <p class="lead">医療機関がホームページに<strong>小さなファイルを1つ置くだけ</strong>で、患者さんがふだん使っている AI が、<strong>正しい情報で受診を手伝える</strong>ようにする、開かれた仕組みです。</p>
     <div class="cta">
@@ -517,9 +517,9 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <div class="case next">
         <h3>わかったこと：枠を足すべきところ</h3>
         <ul>
-          <li><strong>受付の時間は、診療時間と別に書けるほうがよい。</strong>診療所でも約半数で、受付が先に締まる時間帯があります。いまの形式（0.3）では文章で書き添えるしかないので、次の版で「受付の始まりと締め切り」の欄を足す案を出しています</li>
-          <li><strong>診療科ごとの時間も、欄があるほうがよい。</strong>診療科が複数ある診療所の約3割で、科によって時間が違います。次の版で、診療時間に「診療科」を添えられるようにする案です</li>
-          <li>国のデータは「診療科・時間帯・曜日・診療と受付の時刻」で区切られています。次の版の欄もこれに合わせるので、<strong>国のデータとの対応表が作れます</strong></li>
+          <li><strong>受付の時間は、診療時間と別に書けるほうがよい。</strong>診療所でも約半数で、受付が先に締まる時間帯があります。0.3 までは文章で書き添えるしかなかったので、v0.4 で「受付の始まりと締め切り」の欄を設けました</li>
+          <li><strong>診療科ごとの時間も、欄があるほうがよい。</strong>診療科が複数ある診療所の約3割で、科によって時間が違います。v0.4 で、診療時間の行に「診療科」を添えられるようにしました</li>
+          <li>国のデータは「診療科・時間帯・曜日・診療と受付の時刻」で区切られています。v0.4 の欄もこれに合わせたので、<strong>国のデータとの対応表があります</strong>（仕様 §4e）</li>
         </ul>
       </div>
       <div class="case">
@@ -529,11 +529,11 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
           <li>初診と再診で受け付け方が違うか（初診は予約が要る、など）</li>
           <li>予約の方法（Web・電話・順番待ちのシステム）</li>
         </ul>
-        <p>これらは、医療機関のホームページの書き方を、全都道府県から偏りなく選んで調べているところです。海外の書き方も比べています。結果は、次の版の案に反映します。</p>
+        <p>これらは、全都道府県から偏りなく選んだ 94 の医療機関のホームページで書き方を調べました。間違えると患者さんが困るもの（初診・再診の違い、予約の人だけの時間、健診や予防接種の枠、予約を受け付ける時間、混雑で早く締めることがある、など）は、v0.4 で欄を設けました。海外の書き方との比較は続けています。</p>
       </div>
     </div>
     <p class="note">ホームページの住所が登録されている割合は、都道府県によって大きく違います（診療所で 31〜77%）。ホームページのない医療機関も、まだ多くあります。そうした医療機関への道すじは、<a href="#h-faq">よくある質問</a>に書いています。</p>
-    <p class="note">出典：厚生労働省「<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html" rel="noopener">医療情報ネット（ナビイ）オープンデータ</a>」（2026年6月1日時点）をもとに、作者が集計・加工して作成（公共データ利用規約 第1.0版）。次の版の欄は、まだ案の段階です。</p>
+    <p class="note">出典：厚生労働省「<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html" rel="noopener">医療情報ネット（ナビイ）オープンデータ</a>」（2026年6月1日時点）をもとに、作者が集計・加工して作成（公共データ利用規約 第1.0版）。</p>
   </section>
 
   <section class="block" id="match" aria-labelledby="h-match">
@@ -709,7 +709,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
   <footer class="foot">
     <dl>
       <dt>運営</dt><dd>Open Intake プロジェクト（代表 Taichi Kurihara・<a href="https://orcid.org/0009-0003-0369-9689">ORCID 0009-0003-0369-9689</a>）</dd>
-      <dt>状態</dt><dd>v0.3 草案（旧称: オープン問診票）。救急の目安と問診票の例は、医師の確認前です</dd>
+      <dt>状態</dt><dd>v0.4 草案（旧称: オープン問診票）。救急の目安と問診票の例は、医師の確認前です</dd>
       <dt>引用</dt><dd>DOI <a href="https://doi.org/10.5281/zenodo.24121889">10.5281/zenodo.24121889</a></dd>
       <dt>ソース</dt><dd><a href="https://github.com/open-intake/open-intake">github.com/open-intake/open-intake</a></dd>
       <dt>ライセンス</dt><dd>仕様書は CC BY 4.0、JSON Schema と例は CC0、ツールは Apache-2.0</dd>

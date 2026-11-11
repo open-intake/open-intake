@@ -134,6 +134,10 @@ button { font: inherit; cursor: pointer; border-radius: 4px; }
 .item-opts { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 14px; }
 .item-opts select { width: auto; }
 .item-opts label.check { display: inline-flex; gap: 5px; align-items: center; }
+details.more { border-top: 1px dashed var(--rule); margin-top: 10px; padding-top: 8px; }
+details.more > summary { display: list-item; cursor: pointer; font-size: 14px; color: var(--muted); }
+details.more[open] { display: grid; gap: 10px; }
+details.more label.check { display: inline-flex; gap: 6px; align-items: flex-start; font-size: 14px; }
 .item-opts input[type="checkbox"] { accent-color: var(--accent); }
 .item .linkid { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
 
@@ -213,7 +217,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
           </ol>
           <p class="small">⚠ Do not enter personal information such as patients' names or conditions into the AI.</p>
           <div class="actions"><button class="btn" type="button" id="copyPrompt">Copy instructions</button><button class="btn ghost" type="button" id="savePrompt" data-file="open-intake-ai-instructions.txt">Save instructions</button><span class="toast" id="promptToast" role="status"></span></div>
-          <pre class="prompt" id="aiPrompt">You are helping clinic staff create `clinic-intake.json` (Open Intake JSON v0.3). Assume the staff member is not technical and use plain language.
+          <pre class="prompt" id="aiPrompt">You are helping clinic staff create `clinic-intake.json` (Open Intake JSON v0.4). Assume the staff member is not technical and use plain language.
 
 ### Rules
 
@@ -230,9 +234,21 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 1. Which country and region the clinic is in. Use this for `profile` (`"au"` Australia, `"gb"` United Kingdom, `"us"` United States, `"ca"` Canada, `"ca-bc"` British Columbia, `"jp"` Japan) and `address.addressCountry`
 2. Clinic name, phone number, address (postcode, state/region, city/town, street), website URL, how to get there (station, parking)
 3. Departments
-4. Opening hours, by day and by morning/afternoon. Notes on closures
+4. Opening hours, by day and by morning/afternoon. Notes on closures. Then ask about each of the following, one at a time (accept "none" and move on)
+   - Whether reception hours differ from opening hours (for example, reception opens at 8:45 and closes 30 minutes before the end of the session)
+   - Whether hours differ by department
+   - Whether there are set times or slots for particular services, such as health checks, vaccinations, procedures or tests, or rehabilitation
+   - Whether hours or cut-off times differ for first visits and follow-up visits
+   - For each time slot, whether patients may come without an appointment, only with an appointment, or whether no new patients are taken
+   - Whether the whole clinic is appointment only
+   - Rules by week of the month, such as "Saturdays on the 2nd and 4th week only"
+   - Whether reception may close earlier than the cut-off when it is busy
 5. Symptoms and concerns usually seen, things not provided (e.g. hospital admission), and for each department the **areas of focus** (the clinic's own statement; factual, no advertising)
-6. How to book or visit (booking URL, phone number, walk-ins) with notes
+6. How to book or visit (booking URL, phone number, walk-ins) with notes. Also ask
+   - The hours when bookings are taken by phone or online (often different from opening hours)
+   - How booking works: booking a time slot, taking a place in today's queue, or sending a request that the clinic then confirms
+   - Whether booking differs for first visits and follow-up visits
+   - Whether there is a page that shows the current queue or availability
 7. What to bring, languages, accessibility (optional)
 8. Questionnaires: what kind of visit (e.g. fever and cough). If the clinic has a paper questionnaire, copy its questions. Otherwise suggest common items and let the staff member choose
 9. Notes for AI (optional, practical only, e.g. "patients with a fever should call before coming in")
@@ -243,7 +259,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 ```json
 {
   "spec": "open-intake",
-  "specVersion": "0.3",
+  "specVersion": "0.4",
   "updated": "today's date YYYY-MM-DD",
   "profile": { "id": "au" },
   "clinic": {
@@ -260,15 +276,18 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
     "access": ["3 minutes' walk from ... Station"],
     "departments": ["General practice"],
     "openingHours": [
-      { "days": ["Mo","Tu","We","Th","Fr"], "opens": "08:30", "closes": "12:30" }
+      { "days": ["Mo","Tu","We","Th","Fr"], "opens": "08:30", "closes": "12:30",
+        "reception": { "opens": "08:15", "closes": "12:00", "note": "Reception closes 30 minutes before the end of the session" }, "entry": "walk-in", "mayEndEarly": true },
+      { "days": ["Tu"], "opens": "14:00", "closes": "15:00", "department": "General practice", "service": ["vaccination"], "entry": "appointment" },
+      { "days": ["Sa"], "weeksOfMonth": [2,4], "opens": "09:00", "closes": "12:00", "visitType": "return", "entry": "appointment" }
     ],
     "closedNote": "Closed on Sundays and public holidays",
     "focus": [ { "department": "General practice", "areas": ["Diabetes"] } ],
     "handles": ["Symptoms usually seen"],
     "notHandled": ["Things not provided"],
     "booking": [
-      { "method": "web", "url": "https://...", "note": "Note" },
-      { "method": "phone", "telephone": "(02) 0000 0000" },
+      { "method": "web", "url": "https://...", "mode": "queue", "statusUrl": "https://...", "note": "Note" },
+      { "method": "phone", "telephone": "(02) 0000 0000", "hours": [ { "days": ["Mo","Tu","We","Th","Fr"], "opens": "08:30", "closes": "17:00" } ] },
       { "method": "walk-in", "note": "Note" }
     ],
     "bring": ["What to bring"],
@@ -292,6 +311,8 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 }
 ```
 
+(Include `reception`, `department`, `service`, `visitType`, `entry`, `mayEndEarly`, `weeksOfMonth` and the booking `hours`, `mode` and `statusUrl` only when the staff member tells you. Do not copy them from the example.)
+
 ### Details
 
 - Days: `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, public holidays `PH`. Use separate rows for morning and afternoon
@@ -303,6 +324,23 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 - Question `type`: `boolean`, `choice`, `open-choice`, `string`, `text`, `integer`, `decimal`, `date`, `display`. `choice` and `open-choice` need `"answerOption": [{"valueString": "option"}]`; add `"repeats": true` for multiple answers. Put units in the question text
 - For a question asked only after "yes": `"enableWhen": [ { "question": "q5", "operator": "=", "answerBoolean": true } ]` (`question` must be an earlier `linkId`)
 - Question text up to 200 characters; `aiNotes` up to 500
+
+### Reception and how patients are taken
+
+- **Fill these only when the staff member clearly states them. Do not guess.** Anything not written means "unknown" (not "no appointment needed" or "reception follows opening hours")
+- `reception`: when reception opens (`opens`) and closes (`closes`); one of them is enough. Reception may open before the session starts. Turn wording like "until 30 minutes before closing" into a time (if the session ends at 12:00, `"closes": "11:30"`) and keep the original wording in `note`. The cut-off must not be after the end of the session
+- `department`: the department these hours apply to, written as in `departments`. Leave it out if the row applies to the whole clinic
+- `service`: what the hours are for, an array chosen from `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (procedures, tests), `rehabilitation`, `other`. Leave it out for general outpatient only
+- `visitType`: `first` (first visits only), `return` (follow-up visits only) or `all` (both). Put the clinic's own definition of a first visit (for example "first visit if more than 3 months since the last one") in `note`
+- `entry`: one of `walk-in` (patients without an appointment are seen; booked patients may go first), `appointment` (booked patients only) or `none` (no new patients; only continuing care, picking up prescriptions and the like)
+- **`none` is not closed.** Do not turn a time with no new patients into a closure, and do not delete the row
+- `mayEndEarly`: `true` only when reception may close earlier than the cut-off, for example when busy
+- `weeksOfMonth`: which weeks of the month the row applies to. For example, Saturdays on the 2nd and 4th week only: `[2,4]`. Leave it out for every week
+- When hours or how patients are taken differ by department, service or first/follow-up visit, **use separate rows**. Rows may overlap on the same day and time (the row with more specific conditions takes priority)
+- `clinic.appointmentRequired`: `true` only when the staff member clearly says the whole clinic is appointment only. Do not infer it from "appointments preferred". Leave it out if unsure
+- Booking `hours`: when that channel (phone, online) takes bookings. An array of `days`, `opens`, `closes`
+- Booking `mode`: one of `time-slot` (book a time), `queue` (take a place in today's queue) or `request` (send a request; the clinic's reply confirms it). `visitType` is the same as above
+- Booking `statusUrl`: the URL of a page that shows the current queue or availability. Never write the current queue number or free slots themselves
 
 After the JSON, add these two lines:
 
@@ -332,7 +370,7 @@ Please start with the first question.</pre>
           <p class="small">These instructions only change the temporary information. They never touch regular information such as the name or regular hours. Save the instructions to reuse them any time.</p>
           <p class="small">⚠ Do not enter personal information such as patients' names or conditions into the AI.</p>
           <div class="actions"><button class="btn" type="button" id="copyPromptS">Copy instructions</button><button class="btn ghost" type="button" id="savePromptS" data-file="open-intake-schedule-ai-instructions.txt">Save instructions</button><span class="toast" id="promptToastS" role="status"></span></div>
-          <pre class="prompt" id="aiPromptS">You are helping front-desk or other clinic staff create or update `clinic-schedule.json` (the temporary information file of Open Intake JSON v0.3). Assume the staff member is not technical. Use plain language and keep it short.
+          <pre class="prompt" id="aiPromptS">You are helping front-desk or other clinic staff create or update `clinic-schedule.json` (the temporary information file of Open Intake JSON v0.4). Assume the staff member is not technical. Use plain language and keep it short.
 
 ### Rules
 
@@ -358,8 +396,12 @@ First ask which of these applies:
 
 Ask about one topic at a time. If there is nothing, accept "none" and move on.
 
-1. **Temporary closures and changed hours**: from and to (both days included), whether closed, open on a normally closed day, or changed hours, the hours if open, and a note (for example "New Year holiday")
-2. **Doctors' schedules**: department or doctor (or both), weekly days or a specific date, hours, the period it applies (optional), and a note
+1. **Temporary closures and changed hours**: from and to (both days included), whether closed, open on a normally closed day, or changed hours, the hours if open, and a note (for example "New Year holiday"). Also ask, if any
+   - Whether the change is for one department only (for example, paediatrics only)
+   - Whether it is for one service only, such as vaccinations or health checks (for example, vaccination bookings are paused)
+   - Whether only reception hours change (for example, reception closes at 11:00 that day)
+   - Whether how patients are taken changes (for example, booked patients only that day, or no new patients)
+2. **Doctors' schedules**: department or doctor (or both), weekly days or a specific date, hours, the period it applies (optional), and a note. **A single doctor's absence** (for example, "Dr Suzuki is away on 5 December; another doctor covers") also goes here
 3. **Weekend and night on-call duties**: date, holiday or night, hours (for overnight duty, the end time may be earlier than the start), department, and a note
 4. **Notices and requests**: text (up to 200 characters) and the period to show it (optional). For example "Flu vaccinations are by appointment" or "If you have a fever, please call before coming in"
 5. **Expiry date**: until when this file may be used. A few weeks to two months is recommended (for example, 30 days from today). After it passes, AI stops using the file
@@ -370,14 +412,15 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 ```json
 {
   "spec": "open-intake-schedule",
-  "specVersion": "0.3",
+  "specVersion": "0.4",
   "updated": "2026-11-12",
   "validUntil": "2027-01-10",
   "main": "/clinic-intake.json",
   "policy": "https://open-intake.github.io/open-intake/en/#policy",
   "exceptions": [
     { "from": "2026-12-29", "to": "2027-01-03", "status": "closed", "note": "New Year holiday" },
-    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday, morning only" }
+    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday, morning only" },
+    { "from": "2026-12-26", "to": "2026-12-26", "status": "changed", "department": "Internal medicine", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "reception": { "closes": "11:00" }, "entry": "walk-in", "note": "Last clinic day of the year. Reception closes at 11:00" }
   ],
   "doctorSchedule": [
     { "department": "Internal medicine", "days": ["Tu", "Th"], "opens": "14:00", "closes": "17:00", "note": "Diabetes clinic" }
@@ -399,6 +442,11 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 - `updated` is today's date. `validUntil` is on or after `updated` and no more than six months later
 - `main` is `"/clinic-intake.json"`. Change it only if the staff member gives a different location
 - `exceptions.status` is one of `closed`, `open` (open on a normally closed day) or `changed` (changed hours). `open` and `changed` must have `hours`. `from` must not be after `to`
+- `exceptions.department` is the department the change applies to (leave it out for the whole clinic). `service` is an array chosen from `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (procedures, tests), `rehabilitation`, `other` (for example, vaccinations only: `["vaccination"]`)
+- `exceptions.reception` has when reception opens (`opens`) and closes (`closes`); one of them is enough. `entry` is one of `walk-in` (patients without an appointment are seen), `appointment` (booked patients only) or `none` (no new patients)
+- **Use `reception` and `entry` with `status: "changed"`** (and put that day's hours in `hours`). Do not add them to `closed`. For example, "reception closes at 11:00 that day" → `changed` with `"reception": { "closes": "11:00" }`. "Vaccination bookings are paused" → `changed` with `"service": ["vaccination"]` and `"entry": "none"`
+- **`entry: "none"` (no new patients) is not a closure.** Do not make it `closed`
+- **Do not put a single doctor's absence in `exceptions`.** Write it in `doctorSchedule` with `date` (that day) and `note` (for example "Away; another doctor covers"). Keep it separate from a department or clinic closure
 - `doctorSchedule` needs at least one of `department` or `name`, and either `days` (weekly) or `date` (a specific day). `opens` must be before `closes`. Days are `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, and `PH` for public holidays
 - `onCall.kind` is one of `holiday`, `night` or `other`
 - `notices.text` is up to 200 characters
@@ -408,8 +456,9 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 
 Before giving the JSON, check and fix the following:
 
-- [ ] `spec` is `"open-intake-schedule"`, `specVersion` is `"0.3"`, `updated` is today
+- [ ] `spec` is `"open-intake-schedule"`, `specVersion` is `"0.4"`, `updated` is today
 - [ ] `validUntil` is present, not before `updated`, and not more than six months later
+- [ ] `reception` and `entry` are only on `changed` items. No single doctor's absence is in `exceptions`
 - [ ] Nothing was added that the staff member did not give, and no regular information (name, regular hours, questionnaires) is included
 - [ ] When updating, finished items were removed or confirmed with the staff member
 - [ ] The JSON is valid (no trailing commas, no comments, double quotes)
@@ -481,7 +530,7 @@ Now start by asking whether this is "A. Create it for the first time" or "B. Upd
 <script>
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4"];
 const KNOWN_ROLES = ["schedule"];
 
 const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
@@ -494,6 +543,35 @@ const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(
 const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
 const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
 const CHOICE = new Set(["choice","open-choice"]);
+
+const KNOWN_SERVICES = ["general","checkup","vaccination","procedure","rehabilitation","other"];
+const VISIT_TYPES = ["all","first","return"];
+const ENTRIES = ["walk-in","appointment","none"];
+const BOOKING_MODES = ["time-slot","queue","request"];
+
+function checkReception(h, w, label, code, err, warn, departments) {
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  if (h.reception !== undefined) {
+    const r = h.reception;
+    if (!r || typeof r !== "object" || Array.isArray(r)) err(code, `${label}: reception hours (reception) must be an object { }.`, w + ".reception");
+    else {
+      if (r.opens === undefined && r.closes === undefined) err(code, `${label}: give reception hours a start (opens) or a cut-off (closes).`, w + ".reception");
+      for (const k of ["opens","closes"]) if (r[k] !== undefined && !TIME_RE.test(r[k])) err(code, `${label}: enter reception times in the form 09:00.`, `${w}.reception.${k}`);
+      if (TIME_RE.test(r.opens || "") && TIME_RE.test(r.closes || "") && r.opens >= r.closes) err(code, `${label}: reception opens (${r.opens}) after its cut-off (${r.closes}).`, w + ".reception");
+      if (TIME_RE.test(r.closes || "") && TIME_RE.test(h.closes || "") && r.closes > h.closes) warn("W19", `${label}: the reception cut-off (${r.closes}) is after the end of clinic hours (${h.closes}). Check that this is correct.`, w + ".reception.closes");
+    }
+  }
+  if (h.department !== undefined) {
+    if (!isStr(h.department)) err(code, `${label}: the department must be text.`, w + ".department");
+    else if (Array.isArray(departments) && !departments.includes(h.department)) warn("W20", `${label}: department "${h.department}" is not in the list of departments.`, w + ".department");
+  }
+  if (h.service !== undefined) {
+    if (!Array.isArray(h.service) || !h.service.length || !h.service.every(isStr)) err(code, `${label}: service must be an array of text.`, w + ".service");
+    else h.service.filter(x => !KNOWN_SERVICES.includes(x)).forEach(x => warn("W21", `${label}: service "${x}" is not known to this checker (readers will ignore it).`, w + ".service"));
+  }
+  if (h.visitType !== undefined && !VISIT_TYPES.includes(h.visitType)) err(code, `${label}: visitType must be all, first (first visit) or return (follow-up).`, w + ".visitType");
+  if (h.entry !== undefined && !ENTRIES.includes(h.entry)) err(code, `${label}: entry must be walk-in (no booking needed), appointment (booked patients only) or none (no new patients).`, w + ".entry");
+}
 function validateIntake(o) {
   const E = [], W = [];
   const err = (code, msg, where) => E.push({ code, msg, where });
@@ -555,7 +633,12 @@ function validateIntake(o) {
       else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `Opening hours row ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
       if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `Opening hours row ${i+1}: enter times in the form 09:00.`, w);
       else if (h.opens >= h.closes) err("E5", `Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).`, w);
+      checkReception(h, w, `Opening hours row ${i+1}`, "E5", err, warn, c.departments);
+      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `Opening hours row ${i+1}: mayEndEarly must be true or false.`, w + ".mayEndEarly");
+      if (h.weeksOfMonth !== undefined && (!Array.isArray(h.weeksOfMonth) || !h.weeksOfMonth.length || h.weeksOfMonth.some(n => !Number.isInteger(n) || n < 1 || n > 5) || new Set(h.weeksOfMonth).size !== h.weeksOfMonth.length))
+        err("E5", `Opening hours row ${i+1}: weeksOfMonth must list numbers 1–5 without repeats.`, w + ".weeksOfMonth");
     });
+    if (c.appointmentRequired !== undefined && typeof c.appointmentRequired !== "boolean") err("E17", "appointmentRequired must be true or false. Leave it out if you are not sure.", "clinic.appointmentRequired");
     if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
     else c.booking.forEach((b, i) => {
       const w = `clinic.booking[${i}]`;
@@ -563,6 +646,18 @@ function validateIntake(o) {
       if (b.method === "web" && !isStr(b.url)) err("E6", `Booking method ${i+1}: enter the URL of the booking page.`, w + ".url");
       if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `Booking method ${i+1}: the booking page URL does not start with https.`, w + ".url");
       if (b.method === "phone" && !isStr(b.telephone)) err("E6", `Booking method ${i+1}: enter the booking phone number.`, w + ".telephone");
+      if (b.hours !== undefined) {
+        if (!Array.isArray(b.hours) || !b.hours.length) err("E6", `Booking method ${i+1}: booking hours (hours) must be an array [ ].`, w + ".hours");
+        else b.hours.forEach((x, k) => {
+          const hw = `${w}.hours[${k}]`;
+          if (!isObj(x) || !Array.isArray(x.days) || !x.days.length || x.days.some(d => !DAY_KEYS.includes(d))) err("E6", `Booking method ${i+1}, hours ${k+1}: enter the days (Mo–Su, PH).`, hw + ".days");
+          if (!isObj(x) || !TIME.test(x.opens || "") || !TIME.test(x.closes || "")) err("E6", `Booking method ${i+1}, hours ${k+1}: enter times in the form 09:00.`, hw);
+          else if (x.opens >= x.closes) err("E6", `Booking method ${i+1}, hours ${k+1}: the start (${x.opens}) is after the end (${x.closes}).`, hw);
+        });
+      }
+      if (b.mode !== undefined && !BOOKING_MODES.includes(b.mode)) err("E6", `Booking method ${i+1}: mode must be time-slot (a time slot), queue (a place in today's queue) or request (apply and wait for a reply).`, w + ".mode");
+      if (b.visitType !== undefined && !VISIT_TYPES.includes(b.visitType)) err("E6", `Booking method ${i+1}: visitType must be all, first (first visit) or return (follow-up).`, w + ".visitType");
+      if (b.statusUrl !== undefined) { if (!isStr(b.statusUrl) || /\s/.test(b.statusUrl)) err("E6", `Booking method ${i+1}: the URL of the queue or availability page (statusUrl) is not valid.`, w + ".statusUrl"); else if (!/^https:\/\//.test(b.statusUrl)) warn("W1", `Booking method ${i+1}: the URL of the queue or availability page does not start with https.`, w + ".statusUrl"); }
     });
   }
   if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy must be an object ({ }) with url (where the policy is).", "policy");
@@ -678,6 +773,8 @@ function validateSchedule(o) {
       if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: enter the opening hours (hours).`, w + ".hours");
       else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label}, hours ${k+1}`, false));
     }
+    checkReception(x, w, label, "S4", err, warn, null);
+    if (x.status === "closed" && (x.reception !== undefined || x.entry !== undefined)) warn("W22", `${label}: the status is closed but reception hours or an entry rule are given. To change reception only, use changed.`, w);
   });
   list("doctorSchedule").forEach((x, i) => {
     const w = `doctorSchedule[${i}]`, label = `Doctor's schedule ${i+1}`;
@@ -942,6 +1039,12 @@ const DAY_KEYS = DAYS.map(d => d[0]);
 const DEPTS = LOCALE.depts;
 const LANGS = LOCALE.langs;
 const METHODS = [["web","Online booking"],["phone","Phone"],["walk-in","Walk-in (no booking)"],["other","Other"]];
+
+const ENTRY_OPTS = [["","Not stated"],["walk-in","Walk-ins accepted"],["appointment","Appointments only"],["none","No new patients (not closed)"]];
+const VISIT_OPTS = [["","New and returning"],["first","New patients only"],["return","Returning patients only"]];
+const SERVICE_OPTS = [["general","General outpatient"],["checkup","Health checkups"],["vaccination","Vaccinations"],["procedure","Surgery and tests"],["rehabilitation","Rehabilitation"],["other","Other"]];
+const MODE_OPTS = [["","Not stated"],["time-slot","Book a time slot"],["queue","Take a place in today's queue"],["request","Request, confirmed by reply"]];
+const APPT_OPTS = [["","Not stated (unknown)"],["true","Yes (appointments only)"],["false","No"]];
 const TYPES = [["boolean","Yes / no"],["choice","Choose"],["open-choice","Choose or write"],["string","Short text"],["text","Long text"],["integer","Whole number"],["decimal","Decimal number"],["date","Date"],["display","Note (no answer)"]];
 const TYPE_KEYS = ["group", ...TYPES.map(t => t[0])];
 const CHOICE = new Set(["choice","open-choice"]);
@@ -977,7 +1080,7 @@ const X = { today: () => today(), addDays: (d, n) => addDays(d, n), profileRef, 
 function exampleDoc() { return LOCALE.exampleDoc(X); }
 function blankDoc() {
   return {
-    spec: "open-intake", specVersion: "0.3", updated: today(), profile: profileRef(LOCALE.defaultProfile), files: [],
+    spec: "open-intake", specVersion: "0.4", updated: today(), profile: profileRef(LOCALE.defaultProfile), files: [],
     clinic: { name: "", url: "", identifiers: [], telephone: "", address: { addressCountry: (profileById(LOCALE.defaultProfile)?.area?.addressCountry) || "", postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" }, geo: null, access: [],
       departments: [], openingHours: [{ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "12:00" }], closedNote: "",
       handles: [], notHandled: [], booking: [{ method: "phone", telephone: "" }], bring: [], languages: [LOCALE.lang], accessibility: [] },
@@ -1006,8 +1109,10 @@ function normalize(doc) {
   c.access = Array.isArray(c.access) ? c.access.filter(x => typeof x === "string") : [];
   for (const k of ["departments","handles","notHandled","bring","languages","accessibility"]) c[k] = Array.isArray(c[k]) ? c[k].filter(x => typeof x === "string") : [];
   c.focus = Array.isArray(c.focus) ? c.focus.filter(f => f && typeof f === "object").map(f => ({ ...f, department: typeof f.department === "string" ? f.department : "", areas: Array.isArray(f.areas) ? f.areas.filter(x => typeof x === "string") : [], note: typeof f.note === "string" ? f.note : "" })) : [];
-  c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.map(h => ({ days: Array.isArray(h?.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h?.opens || "", closes: h?.closes || "", ...(h?.note ? { note: h.note } : {}) })) : [];
-  c.booking = Array.isArray(c.booking) ? c.booking.map(b => ({ method: b?.method || "other", url: b?.url || "", telephone: b?.telephone || "", note: b?.note || "" })) : [];
+  
+  c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.filter(h => h && typeof h === "object").map(h => ({ ...h, days: Array.isArray(h.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h.opens || "", closes: h.closes || "" })) : [];
+  c.booking = Array.isArray(c.booking) ? c.booking.filter(b => b && typeof b === "object").map(b => ({ ...b, method: b.method || "other", url: b.url || "", telephone: b.telephone || "", note: b.note || "", hours: Array.isArray(b.hours) ? b.hours.filter(x => x && typeof x === "object").map(x => ({ ...x, days: Array.isArray(x.days) ? x.days.filter(k => DAY_KEYS.includes(k)) : [] })) : [] })) : [];
+  if (typeof c.appointmentRequired !== "boolean") delete c.appointmentRequired;
   const s = d.safety = (d.safety && typeof d.safety === "object") ? d.safety : {};
   s.noDiagnosis = true;
   const dprof = profileById(d.profile && (d.profile.id || d.profile)) || profileById(LOCALE.defaultProfile) || {};
@@ -1039,8 +1144,26 @@ function normalize(doc) {
 
 const clean = s => (typeof s === "string" ? s.trim() : s);
 const cleanList = a => (a || []).map(clean).filter(Boolean);
+
+const keepUnknown = (src, out, known) => { for (const [k, v] of Object.entries(src || {})) if (!known.includes(k) && !k.startsWith("_") && !(k in out)) out[k] = v; return out; };
+
+const HOURS_KEYS = ["days","weeksOfMonth","opens","closes","department","service","visitType","reception","entry","mayEndEarly","note"];
+function receptionOut(r) { if (!r || typeof r !== "object") return null; const o = {}; if (r.opens) o.opens = r.opens; if (r.closes) o.closes = r.closes; if (clean(r.note)) o.note = clean(r.note); return Object.keys(o).length ? o : null; }
+function hoursOut(h) {
+  const o = { days: DAY_KEYS.filter(k => h.days.includes(k)) };
+  if (Array.isArray(h.weeksOfMonth) && h.weeksOfMonth.length) o.weeksOfMonth = [...h.weeksOfMonth].sort((a, b) => a - b);
+  o.opens = h.opens; o.closes = h.closes;
+  if (clean(h.department)) o.department = clean(h.department);
+  if (Array.isArray(h.service) && h.service.length) o.service = h.service.slice();
+  if (h.visitType === "first" || h.visitType === "return") o.visitType = h.visitType;
+  const r = receptionOut(h.reception); if (r) o.reception = r;
+  if (h.entry) o.entry = h.entry;
+  if (h.mayEndEarly === true) o.mayEndEarly = true;
+  if (clean(h.note)) o.note = clean(h.note);
+  return keepUnknown(h, o, HOURS_KEYS);
+}
 function build(d) {
-  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.3", updated: d.updated, policy: POLICY_URL };
+  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.4", updated: d.updated, policy: POLICY_URL };
   if (d.profile) out.profile = d.profile;
   const files = (d.files || []).map(f => { const o = { ...f, role: clean(f.role), url: clean(f.url) }; if (!clean(o.note)) delete o.note; return o; }).filter(f => f.role || f.url);
   if (files.length) out.files = files;
@@ -1054,11 +1177,21 @@ function build(d) {
   if (c.geo) clinic.geo = { latitude: c.geo.latitude, longitude: c.geo.longitude };
   { const v = cleanList(c.access); if (v.length) clinic.access = v; }
   clinic.departments = cleanList(c.departments);
-  clinic.openingHours = c.openingHours.map(h => { const o = { days: DAY_KEYS.filter(k => h.days.includes(k)), opens: h.opens, closes: h.closes }; if (clean(h.note)) o.note = clean(h.note); return o; });
+  clinic.openingHours = c.openingHours.map(hoursOut);
   if (clean(c.closedNote)) clinic.closedNote = clean(c.closedNote);
+  if (typeof c.appointmentRequired === "boolean") clinic.appointmentRequired = c.appointmentRequired;
   { const fo = c.focus.map(f => { const o = {}; if (clean(f.department)) o.department = clean(f.department); o.areas = cleanList(f.areas); if (clean(f.note)) o.note = clean(f.note); return o; }).filter(f => f.areas.length || f.department); if (fo.length) clinic.focus = fo; }
   for (const k of ["handles","notHandled"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
-  clinic.booking = c.booking.map(b => { const o = { method: b.method }; if (b.method === "web" || (b.method === "other" && clean(b.url))) o.url = clean(b.url); if (b.method === "phone" || (b.method === "other" && clean(b.telephone))) o.telephone = clean(b.telephone); if (clean(b.note)) o.note = clean(b.note); return o; });
+  clinic.booking = c.booking.map(b => {
+    const o = { method: b.method }; if (b.method === "web" || (b.method === "other" && clean(b.url))) o.url = clean(b.url); if (b.method === "phone" || (b.method === "other" && clean(b.telephone))) o.telephone = clean(b.telephone);
+    const hrs = arr(b.hours).filter(x => arr(x.days).length || x.opens || x.closes).map(x => ({ ...x, days: DAY_KEYS.filter(k => arr(x.days).includes(k)), opens: x.opens || "", closes: x.closes || "" }));
+    if (hrs.length) o.hours = hrs;
+    if (b.mode) o.mode = b.mode;
+    if (b.visitType === "first" || b.visitType === "return") o.visitType = b.visitType;
+    if (clean(b.statusUrl)) o.statusUrl = clean(b.statusUrl);
+    if (clean(b.note)) o.note = clean(b.note);
+    return keepUnknown(b, o, ["method","url","telephone","hours","mode","visitType","statusUrl","note"]);
+  });
   for (const k of ["bring","languages","accessibility"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
   out.clinic = clinic;
   out.safety = { noDiagnosis: true, emergency: clean(d.safety.emergency), redFlags: cleanList(d.safety.redFlags) };
@@ -1112,6 +1245,25 @@ function field(id, label, key, control, { req, hint } = {}) {
 function text(id, get, set, attrs = {}) { return h("input", { type: "text", id, value: get() ?? "", oninput: e => { set(e.target.value); changed(); }, ...attrs }); }
 function lines(id, get, set, attrs = {}) { return h("textarea", { id, rows: 4, value: (get() || []).join("\n"), oninput: e => { set(e.target.value.split("\n").map(s => s.trim()).filter(Boolean)); changed(); }, ...attrs }); }
 function sheetHead(no, title, key) { return h("header", {}, h("span", { class: "no", text: no }), h("h2", { text: title }), key && h("code", { class: "key", text: key })); }
+function pick(id, opts, get, set, label) { const el = h("select", { id, style: "width:auto", "aria-label": label, onchange: e => { set(e.target.value); changed(); } }, opts.map(([k, n]) => h("option", { value: k, text: n }))); el.value = get() ?? ""; return el; }
+function chipSet(name, opts, get, set) { return h("div", { class: "chips", role: "group", "aria-label": name }, opts.map(([k, n]) => h("label", { class: "chip" },
+  h("input", { type: "checkbox", checked: (get() || []).includes(k), onchange: e => { const cur = get() || [], nx = e.target.checked ? opts.map(o => o[0]).filter(x => x === k || cur.includes(x)) : cur.filter(x => x !== k); set(nx.length ? nx : undefined); changed(); } }), n))); }
+const setOrDrop = (o, k, v) => { if (v === "" || v === undefined || v === null) delete o[k]; else o[k] = v; };
+const hasMore = hr => !!(hr.reception || hr.department || hr.service || hr.visitType || hr.entry || hr.mayEndEarly || hr.weeksOfMonth);
+function hoursMore(hr, i, depts) {
+  const rec = k => () => hr.reception?.[k] || "", setRec = k => v => { hr.reception = { ...(hr.reception || {}) }; setOrDrop(hr.reception, k, v); if (!Object.keys(hr.reception).length) delete hr.reception; };
+  const dOpts = [["", "All departments"], ...[...new Set([...(depts || []), ...(hr.department ? [hr.department] : [])])].filter(Boolean).map(x => [x, x])];
+  return h("details", { class: "more", open: hasMore(hr) }, h("summary", { text: "Check-in hours and how patients are taken (optional)" }),
+    h("div", { class: "times" }, h("span", { class: "small", text: "Check-in" }), timeIn(fid("hr", i, "ro"), rec("opens"), setRec("opens"), "Check-in opens"), h("span", { text: "–" }), timeIn(fid("hr", i, "rc"), rec("closes"), setRec("closes"), "Check-in closes"),
+      h("span", { class: "small muted", text: "e.g. when check-in closes before consultations end" })),
+    h("div", { class: "grid" },
+      field(fid("hr", i, "dep"), "Departments", "department", pick(fid("hr", i, "dep"), dOpts, () => hr.department, v => setOrDrop(hr, "department", v), "Departments")),
+      field(fid("hr", i, "en"), "How patients are taken", "entry", pick(fid("hr", i, "en"), ENTRY_OPTS, () => hr.entry, v => setOrDrop(hr, "entry", v), "How patients are taken")),
+      field(fid("hr", i, "vt"), "New / returning", "visitType", pick(fid("hr", i, "vt"), VISIT_OPTS, () => hr.visitType, v => setOrDrop(hr, "visitType", v), "New / returning"))),
+    field(null, "Service (none selected = general outpatient)", "service", chipSet("Service", SERVICE_OPTS, () => hr.service, v => setOrDrop(hr, "service", v))),
+    field(null, "Only some weeks of the month (none selected = every week)", "weeksOfMonth", chipSet("Week of month", [1,2,3,4,5].map(n => [n, `Week ${n}`]), () => hr.weeksOfMonth, v => setOrDrop(hr, "weeksOfMonth", v))),
+    h("label", { class: "check" }, h("input", { type: "checkbox", id: fid("hr", i, "ee"), checked: hr.mayEndEarly === true, onchange: e => { setOrDrop(hr, "mayEndEarly", e.target.checked ? true : undefined); changed(); } }), " Check-in may close before the cut-off when busy"));
+}
 
 
 function renderClinic() {
@@ -1191,7 +1343,7 @@ function renderFocus() {
 function renderHours() {
   const c = S.clinic, el = $("sec-hours"); el.replaceChildren();
   el.append(sheetHead("2", "Opening hours", "openingHours"),
-    h("p", { class: "lead", text: "Use separate rows for morning and afternoon sessions." }),
+    h("p", { class: "lead", text: "Use separate rows for morning and afternoon. Also use separate rows when hours or how patients are taken differ by department, service, or new/returning patients." }),
     h("div", { class: "rows" }, c.openingHours.map((hr, i) => h("div", { class: "row" },
       h("div", { class: "row-head" },
         h("div", { class: "days", role: "group", "aria-label": `Days for row ${i+1}` }, DAYS.map(([k, n]) => h("label", { class: "day", title: k },
@@ -1203,9 +1355,12 @@ function renderHours() {
         h("input", { type: "time", id: fid("hr", i, "o"), value: hr.opens, "aria-label": "Start", oninput: e => { hr.opens = e.target.value; changed(); } }),
         h("span", { text: "–" }),
         h("input", { type: "time", id: fid("hr", i, "c"), value: hr.closes, "aria-label": "End", oninput: e => { hr.closes = e.target.value; changed(); } }),
-        h("input", { type: "text", id: fid("hr", i, "n"), value: hr.note || "", placeholder: "Note (e.g. last check-in 30 minutes before closing)", style: "flex:1;min-width:160px", oninput: e => { hr.note = e.target.value; changed(); } }))))),
+        h("input", { type: "text", id: fid("hr", i, "n"), value: hr.note || "", placeholder: "Note (e.g. patients with a fever use the side entrance)", style: "flex:1;min-width:160px", oninput: e => { hr.note = e.target.value; changed(); } })),
+      hoursMore(hr, i, c.departments)))),
     h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.openingHours.push({ days: [], opens: "15:00", closes: "18:00" }); renderHours(); changed(); } }, "+ Add row")),
-    field("f-closed", "Closures note", "closedNote", text("f-closed", () => c.closedNote, v => c.closedNote = v, { placeholder: "Closed Sundays and public holidays" })));
+    field("f-closed", "Closures note", "closedNote", text("f-closed", () => c.closedNote, v => c.closedNote = v, { placeholder: "Closed Sundays and public holidays" })),
+    field("f-appt", "Appointments only?", "appointmentRequired", pick("f-appt", APPT_OPTS, () => typeof c.appointmentRequired === "boolean" ? String(c.appointmentRequired) : "", v => setOrDrop(c, "appointmentRequired", v === "" ? undefined : v === "true"), "Appointments only?"),
+      { hint: "Choose only when this is clearly the rule. Differences by time slot go in each row's “How patients are taken”." }));
 }
 
 function renderBooking() {
@@ -1219,8 +1374,20 @@ function renderBooking() {
       h("div", { class: "grid" },
         (b.method === "web" || b.method === "other") && field(fid("bk", i, "u"), "Booking page URL", "url", text(fid("bk", i, "u"), () => b.url, v => b.url = v, { type: "url", placeholder: "https://" }), { req: b.method === "web" }),
         (b.method === "phone" || b.method === "other") && field(fid("bk", i, "t"), "Booking phone number", "telephone", text(fid("bk", i, "t"), () => b.telephone, v => b.telephone = v, { type: "tel", placeholder: "(503) 000-0000" }), { req: b.method === "phone" }),
-        field(fid("bk", i, "n"), "Note", "note", text(fid("bk", i, "n"), () => b.note, v => b.note = v, { placeholder: "e.g. new patients by phone only" })))))),
-    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.booking.push({ method: "web", url: "", telephone: "", note: "" }); renderBooking(); changed(); } }, "+ Add method")));
+        field(fid("bk", i, "n"), "Note", "note", text(fid("bk", i, "n"), () => b.note, v => b.note = v, { placeholder: "e.g. new patients by phone only" }))),
+      h("details", { class: "more", open: !!(b.mode || b.visitType || b.statusUrl || arr(b.hours).length) }, h("summary", { text: "How booking works and booking hours (optional)" }),
+        h("div", { class: "grid" },
+          field(fid("bk", i, "md"), "How booking works", "mode", pick(fid("bk", i, "md"), MODE_OPTS, () => b.mode, v => setOrDrop(b, "mode", v), "How booking works")),
+          field(fid("bk", i, "vt"), "New / returning", "visitType", pick(fid("bk", i, "vt"), VISIT_OPTS, () => b.visitType, v => setOrDrop(b, "visitType", v), "New / returning")),
+          field(fid("bk", i, "su"), "Page showing the current queue or availability", "statusUrl", text(fid("bk", i, "su"), () => b.statusUrl, v => setOrDrop(b, "statusUrl", v), { type: "url", placeholder: "https://" }))),
+        h("div", { class: "small", text: "Booking hours (when different from opening hours)" }),
+        h("div", { class: "rows" }, arr(b.hours).map((x, k) => h("div", { class: "times" },
+          h("div", { class: "days", role: "group", "aria-label": `Days for booking hours ${k+1}` }, DAYS.map(([dk, n]) => h("label", { class: "day", title: dk },
+            h("input", { type: "checkbox", checked: arr(x.days).includes(dk), "aria-label": n, onchange: e => { x.days = e.target.checked ? DAY_KEYS.filter(y => y === dk || arr(x.days).includes(y)) : arr(x.days).filter(y => y !== dk); changed(); } }), h("span", { text: n })))),
+          timeIn(fid("bk", i, "ho", k), () => x.opens, v => x.opens = v, "Start"), h("span", { text: "–" }), timeIn(fid("bk", i, "hc", k), () => x.closes, v => x.closes = v, "End"),
+          delBtn(b.hours, k, renderBooking, "Remove these hours")))),
+        addBtn("+ Add booking hours", () => { b.hours = arr(b.hours); b.hours.push({ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "17:00" }); renderBooking(); }))))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.booking.push({ method: "web", url: "", telephone: "", note: "", hours: [] }); renderBooking(); changed(); } }, "+ Add method")));
 }
 
 function renderSafety() {
@@ -1335,10 +1502,10 @@ let SC, originS = "";
 const EXC_STATUS = [["closed","Closed"],["open","Extra opening"],["changed","Changed hours"]];
 const ONCALL_KIND = [["holiday","Holiday duty"],["night","Night duty"],["other","Other"]];
 function exampleSchedule() { return LOCALE.exampleSchedule(X); }
-function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
+function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.4", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
 function normalizeSchedule(o) {
   const d = (o && typeof o === "object") ? JSON.parse(JSON.stringify(o)) : {};
-  d.spec = "open-intake-schedule"; d.specVersion = "0.3";
+  d.spec = "open-intake-schedule"; d.specVersion = "0.4";
   for (const k of ["updated","validUntil","main"]) if (typeof d[k] !== "string") d[k] = k === "updated" ? today() : k === "validUntil" ? addDays(today(), 30) : "";
   for (const k of ["exceptions","doctorSchedule","onCall","notices"]) d[k] = Array.isArray(d[k]) ? d[k].filter(x => x && typeof x === "object") : [];
   for (const x of d.exceptions) { x.hours = Array.isArray(x.hours) ? x.hours : []; for (const k of ["from","to","note"]) x[k] = x[k] || ""; if (!x.status) x.status = "closed"; }
@@ -1349,9 +1516,13 @@ function normalizeSchedule(o) {
 }
 function buildSchedule(d) {
   const keep = (o, keys) => { const r = {}; for (const k of keys) { const v = clean(o[k]); if (v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)) r[k] = v; } return r; };
-  const out = { spec: "open-intake-schedule", specVersion: "0.3", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
+  const out = { spec: "open-intake-schedule", specVersion: "0.4", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
   if (clean(d.main)) out.main = clean(d.main);
-  if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]); if (x.status !== "closed") r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes })); if (clean(x.note)) r.note = clean(x.note); return r; });
+  if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]);
+    if (x.status !== "closed") { r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes }));
+      if (clean(x.department)) r.department = clean(x.department); if (Array.isArray(x.service) && x.service.length) r.service = x.service.slice();
+      const rc = receptionOut(x.reception); if (rc) r.reception = rc; if (x.entry) r.entry = x.entry; }
+    if (clean(x.note)) r.note = clean(x.note); return keepUnknown(x, r, ["from","to","status","hours","department","service","reception","entry","note"]); });
   if (d.doctorSchedule.length) out.doctorSchedule = d.doctorSchedule.map(x => { const r = keep(x, ["department","name"]); if (x._byDate) r.date = x.date; else r.days = DAY_KEYS.filter(k => x.days.includes(k)); r.opens = x.opens; r.closes = x.closes; if (clean(x.note)) r.note = clean(x.note); return r; });
   if (d.onCall.length) out.onCall = d.onCall.map(x => ({ ...keep(x, ["date","kind","opens","closes","department","note"]) }));
   if (d.notices.length) out.notices = d.notices.map(x => keep(x, ["text","from","to"]));
@@ -1386,6 +1557,12 @@ function renderExceptions() {
         h("span", { class: "small", text: "Opening hours" }), timeIn(fid("s-exc", i, "o", k), () => hr.opens, v => hr.opens = v, "Start"), h("span", { text: "–" }), timeIn(fid("s-exc", i, "c", k), () => hr.closes, v => hr.closes = v, "End"),
         x.hours.length > 1 && delBtn(x.hours, k, renderExceptions, "Remove these hours"))),
         addBtn("+ Add hours (e.g. morning and afternoon)", () => { x.hours.push({ opens: "15:00", closes: "18:00" }); renderExceptions(); })),
+      x.status !== "closed" && h("details", { class: "more", open: !!(x.department || x.entry || x.reception || x.service) }, h("summary", { text: "Check-in, how patients are taken, department (optional)" }),
+        h("div", { class: "grid" },
+          field(fid("s-exc", i, "dep"), "Department (leave empty for the whole clinic)", "department", text(fid("s-exc", i, "dep"), () => x.department, v => setOrDrop(x, "department", v), { placeholder: "Paediatrics" })),
+          field(fid("s-exc", i, "en"), "How patients are taken", "entry", pick(fid("s-exc", i, "en"), ENTRY_OPTS, () => x.entry, v => setOrDrop(x, "entry", v), "How patients are taken")),
+          field(fid("s-exc", i, "rc"), "Check-in closes", "reception.closes", timeIn(fid("s-exc", i, "rc"), () => x.reception?.closes || "", v => { x.reception = { ...(x.reception || {}) }; setOrDrop(x.reception, "closes", v); if (!Object.keys(x.reception).length) delete x.reception; }, "Check-in closes"))),
+        field(null, "Service (none selected = all)", "service", chipSet("Service", SERVICE_OPTS, () => x.service, v => setOrDrop(x, "service", v)))),
       text(fid("s-exc", i, "n"), () => x.note, v => x.note = v, { placeholder: "Reason or note (e.g. closed over the holidays)", "aria-label": "Note" })))) : empty("Add temporary closures, extra openings on public holidays, and so on."),
     addBtn("+ Add closure or change", () => { const t = today(); A.push({ from: t, to: t, status: "closed", hours: [], note: "" }); renderExceptions(); }));
 }
@@ -1462,9 +1639,16 @@ function renderNotice(extra) {
 
 
 const DAY_JA = Object.fromEntries(DAYS);
+const ENTRY_JA = Object.fromEntries(ENTRY_OPTS.filter(o => o[0])), VISIT_JA = Object.fromEntries(VISIT_OPTS.filter(o => o[0])), SERVICE_JA = Object.fromEntries(SERVICE_OPTS), MODE_JA = Object.fromEntries(MODE_OPTS.filter(o => o[0]));
+
+function hoursExtra(x) {
+  const r = x.reception && typeof x.reception === "object" ? x.reception : null;
+  return [x.department && str(x.department), arr(x.service).length && arr(x.service).map(k => SERVICE_JA[k] || str(k)).join(", "), VISIT_JA[x.visitType],
+    r && (r.opens || r.closes) && `Check-in ${r.opens || ""}–${r.closes || ""}`, r && r.note && str(r.note), ENTRY_JA[x.entry], x.mayEndEarly === true && "may close early when busy"].filter(Boolean);
+}
 const METHOD_JA = Object.fromEntries(METHODS), TYPE_JA = Object.fromEntries(TYPES), STATUS_JA = { closed: "Closed", open: "Extra opening", changed: "Changed hours" }, KIND_JA = { holiday: "Holiday duty", night: "Night duty", other: "Other duty" };
-const arr = v => Array.isArray(v) ? v : [];
-const str = v => (typeof v === "string" || typeof v === "number") ? String(v) : "";
+function arr(v) { return Array.isArray(v) ? v : []; }
+function str(v) { return (typeof v === "string" || typeof v === "number") ? String(v) : ""; }
 const days = ds => arr(ds).map(d => DAY_JA[d] || d).join(", ");
 const span = (a, b) => (b && b !== a) ? `${a} – ${b}` : (a || "");
 const hm = (o, c) => (c && o && c <= o) ? `${o}–${c} (next day)` : `${o || "?"}–${c || "?"}`;
@@ -1477,8 +1661,15 @@ function viewIntake(o) {
   return [
     h("h3", { text: str(c.name) || "(Name is empty)" }),
     dl([["Phone", str(c.telephone)], ["Address", [a.addressCountry, a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["Getting there", arr(c.access)], ["Location", c.geo ? `${c.geo.latitude}, ${c.geo.longitude}` : ""], ["Identifiers", arr(c.identifiers).map(x => { const sys = PROFILES.flatMap(p => p.identifierSystems || []).find(y => y.system === x.system); return `${sys ? sys.label : str(x.system)} ${str(x.value)}`; })], ["Website", str(c.url)], ["Departments", arr(c.departments)], ["Regional profile", o.profile ? str(o.profile.id || o.profile) : ""], ["Date last checked", str(o.updated)]]),
-    block("Regular hours", list(arr(c.openingHours).map(x => `${days(x.days)}  ${hm(x.opens, x.closes)}${x.note ? " (" + x.note + ")" : ""}`)), c.closedNote && h("div", { class: "sub", text: c.closedNote })),
-    block("Booking and visiting", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "  " + b.url }), b.telephone && h("span", { text: "  " + b.telephone }), b.note && h("span", { class: "sub", text: " (" + b.note + ")" }))))),
+    block("Regular hours", list(arr(c.openingHours).map(x => h("span", {}, `${arr(x.weeksOfMonth).length ? "Weeks " + arr(x.weeksOfMonth).join(", ") + ": " : ""}${days(x.days)}　${hm(x.opens, x.closes)}`,
+        hoursExtra(x).length > 0 && h("span", { class: "sub", text: "  " + hoursExtra(x).join(" / ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" })))),
+      c.closedNote && h("div", { class: "sub", text: c.closedNote }),
+      typeof c.appointmentRequired === "boolean" && h("div", { class: "sub", text: c.appointmentRequired ? "Appointments only" : "Not appointments only" })),
+    block("Booking and visiting", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "  " + b.url }), b.telephone && h("span", { text: "  " + b.telephone }),
+      (b.mode || b.visitType) && h("span", { class: "sub", text: "  " + [MODE_JA[b.mode], VISIT_JA[b.visitType]].filter(Boolean).join(" / ") }),
+      arr(b.hours).length > 0 && h("div", { class: "sub", text: "Booking hours: " + arr(b.hours).map(x => `${days(x.days)} ${hm(x.opens, x.closes)}`).join(", ") }),
+      b.statusUrl && h("div", { class: "sub", text: "Current queue / availability: " + b.statusUrl }),
+      b.note && h("span", { class: "sub", text: " (" + b.note + ")" }))))),
     block("Areas of focus (the clinic's own statement)", list(arr(c.focus).map(f => h("span", {}, f.department && h("strong", { text: str(f.department) + "  " }), arr(f.areas).join(", "), f.note && h("span", { class: "sub", text: " (" + f.note + ")" }))))),
     block("Symptoms and concerns usually seen", list(arr(c.handles))),
     block("Not provided", list(arr(c.notHandled))),
@@ -1509,7 +1700,7 @@ function viewSchedule(o) {
     h("h3", { text: "Temporary information" }),
     h("div", {}, expired ? h("span", { class: "tag alert", text: `Expired (${o.validUntil}): AI will not use this file` }) : h("span", { class: "tag good", text: `Valid until ${str(o.validUntil)}` })),
     dl([["Updated", str(o.updated)], ["Main file", str(o.main)]]),
-    block("Temporary closures and changed hours", list(arr(o.exceptions).map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "  " + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "  " + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join(", ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.to))))),
+    block("Temporary closures and changed hours", list(arr(o.exceptions).map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "  " + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "  " + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join(", ") }), hoursExtra(x).length > 0 && h("span", { class: "sub", text: "  " + hoursExtra(x).join(" / ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.to))))),
     block("Doctors' schedule", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("  ") }), "  " + (x.date ? x.date : "Weekly " + days(x.days)) + "  " + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date || x.to))))),
     block("On-call duty", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "  " + (KIND_JA[x.kind] || str(x.kind)) + "  " + hm(x.opens, x.closes), x.department && h("span", { text: "  " + x.department }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date))))),
     block("Notices", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), past(x.to))))),

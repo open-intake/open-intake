@@ -73,6 +73,46 @@
           },
           "note": {
             "type": "string"
+          },
+          "department": {
+            "type": "string",
+            "minLength": 1,
+            "description": "当てはまる診療科（v0.4 から）"
+          },
+          "service": {
+            "type": "array",
+            "description": "当てはまる用途（v0.4 から）。general・checkup・vaccination・procedure・rehabilitation・other。知らない値は読む側が無視する",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "reception": {
+            "type": "object",
+            "description": "受付の始まりと締め切り（v0.4 から）。片方だけでもよい",
+            "properties": {
+              "opens": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+              },
+              "closes": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          },
+          "entry": {
+            "enum": [
+              "walk-in",
+              "appointment",
+              "none"
+            ],
+            "description": "受け付け方（v0.4 から）。none は新しい受付をしない時間で、休診ではない"
           }
         },
         "allOf": [

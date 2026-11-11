@@ -1,6 +1,6 @@
 <div class="wrap">
   <header class="hero">
-    <div class="topline"><div class="eyebrow">OPEN INTAKE · v0.3 DRAFT</div><nav class="lang" aria-label="Language"><a href="../" hreflang="ja" lang="ja">日本語</a><span aria-current="true">English</span></nav></div>
+    <div class="topline"><div class="eyebrow">OPEN INTAKE · v0.4 DRAFT</div><nav class="lang" aria-label="Language"><a href="../" hreflang="ja" lang="ja">日本語</a><span aria-current="true">English</span></nav></div>
     <h1>Open Intake<small>An open JSON format for clinics</small></h1>
     <p class="lead">By putting <strong>one small file on their own website</strong>, clinics let the AI assistants patients already use <strong>guide them with correct information</strong>.</p>
     <p class="lead" style="font-size:16px;color:var(--muted)">The goal is to <strong style="background:none;color:var(--ink)">improve the match between clinics and patients</strong>: helping patients reach a clinic that fits their symptoms and is open now, without getting lost.</p>
@@ -306,9 +306,9 @@
       <div class="case next">
         <h3>What we learned: where fields should be added</h3>
         <ul>
-          <li><strong>Reception hours should be writable separately from clinic hours.</strong> Even among clinics, about half close reception early in some time slot. The current format (0.3) can only say this in a note, so the next version proposes fields for when reception opens and closes</li>
-          <li><strong>Hours per department also deserve a field.</strong> About 3 in 10 clinics with several departments have different hours by department. The next version proposes letting opening hours name a department</li>
-          <li>The national data is organised by department, time slot, day, and clinic and reception times. The next version's fields follow the same split, so <strong>a mapping table to the national data is possible</strong></li>
+          <li><strong>Reception hours should be writable separately from clinic hours.</strong> Even among clinics, about half close reception early in some time slot. Up to 0.3 this could only go in a note, so v0.4 adds fields for when reception opens and closes</li>
+          <li><strong>Hours per department also deserve a field.</strong> About 3 in 10 clinics with several departments have different hours by department. v0.4 lets each opening-hours row name a department</li>
+          <li>The national data is organised by department, time slot, day, and clinic and reception times. v0.4's fields follow the same split, so <strong>there is a mapping table to the national data</strong> (spec §4e)</li>
         </ul>
       </div>
       <div class="case">
@@ -318,11 +318,11 @@
           <li>Whether first visits are handled differently from follow-ups (e.g. first visits need a booking)</li>
           <li>How to book (web, phone, queueing system)</li>
         </ul>
-        <p>For these, we are surveying how clinic websites describe them, sampling evenly from every prefecture, and comparing with other countries. The results will feed into the next version's proposal.</p>
+        <p>For these, we checked how 94 clinic websites, sampled evenly from every prefecture, describe them. Where a misreading would leave a patient stranded (first vs return visits, appointment-only slots, checkup and vaccination slots, booking hours, reception that may close early when busy), v0.4 adds fields. The comparison with other countries is still in progress.</p>
       </div>
     </div>
     <p class="note">The share with a registered website varies widely by prefecture (31–77% for clinics), and many clinics still have no website. The path for them is described in the <a href="#h-faq">FAQ</a>.</p>
-    <p class="note">Source: compiled and processed by the author from the Ministry of Health, Labour and Welfare's <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html" rel="noopener" hreflang="ja">Iryo Joho Net (Navii) open data</a> (Japanese, as of 1 June 2026), under the Public Data License 1.0. The next version's fields are still a proposal.</p>
+    <p class="note">Source: compiled and processed by the author from the Ministry of Health, Labour and Welfare's <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html" rel="noopener" hreflang="ja">Iryo Joho Net (Navii) open data</a> (Japanese, as of 1 June 2026), under the Public Data License 1.0.</p>
   </section>
 
   <section class="block" id="match" aria-labelledby="h-match">
@@ -497,7 +497,7 @@
   <footer class="foot">
     <dl>
       <dt>Run by</dt><dd>The Open Intake project (lead: Taichi Kurihara, <a href="https://orcid.org/0009-0003-0369-9689">ORCID 0009-0003-0369-9689</a>)</dd>
-      <dt>Status</dt><dd>v0.3 draft (formerly named "オープン問診票"). Emergency warning signs and example questionnaires have not yet been reviewed by doctors</dd>
+      <dt>Status</dt><dd>v0.4 draft (formerly named "オープン問診票"). Emergency warning signs and example questionnaires have not yet been reviewed by doctors</dd>
       <dt>Cite</dt><dd>DOI <a href="https://doi.org/10.5281/zenodo.24121889">10.5281/zenodo.24121889</a></dd>
       <dt>Source</dt><dd><a href="https://github.com/open-intake/open-intake">github.com/open-intake/open-intake</a></dd>
       <dt>Licence</dt><dd>Specification CC BY 4.0, JSON Schema and examples CC0, tools Apache-2.0</dd>

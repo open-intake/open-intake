@@ -119,6 +119,27 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   d = base(); d.preferences.availability[0].from = "13:00"; d.preferences.availability[0].to = "12:00"; ok(codes(validate(d)).includes("H9"), "時間帯の前後が逆なら H9");
   d = base(); d.preferences.homeArea.streetAddress = "1-2-3"; ok(validate(d).W.some(w => w.code === "H7"), "番地を書けば H7"); }
 
+// v0.4: 受付の時間・診療科・用途・初診と再診・受け付け方・予約の時間
+{ const v4 = () => JSON.parse(fs.readFileSync("examples/v0.4/clinic-intake.json", "utf8"));
+  const wc = x => validate(x).W.map(w => w.code);
+  let d = v4(); ok(d.clinic.openingHours.some(h => h.reception && h.entry) && d.clinic.booking.some(b => b.hours), "v0.4 の例に受付の時間・受け付け方・予約の時間がある");
+  d = v4(); d.clinic.openingHours[0].reception = { opens: "12:00", closes: "11:00" }; ok(codes(validate(d)).includes("E5"), "受付の始まりが締め切りより後なら E5");
+  d = v4(); d.clinic.openingHours[0].reception = {}; ok(codes(validate(d)).includes("E5"), "受付の時間が空なら E5");
+  d = v4(); d.clinic.openingHours[0].reception = { closes: "13:00" }; ok(validate(d).E.length === 0 && wc(d).includes("W19"), "受付の締め切りが診療の終わりより後なら注意（W19）だけ");
+  d = v4(); d.clinic.openingHours[0].entry = "closed"; ok(codes(validate(d)).includes("E5"), "決まっていない受け付け方は E5");
+  d = v4(); d.clinic.openingHours[0].visitType = "new"; ok(codes(validate(d)).includes("E5"), "決まっていない visitType は E5");
+  d = v4(); d.clinic.openingHours[4].weeksOfMonth = [0, 6]; ok(codes(validate(d)).includes("E5"), "第何週が 1〜5 でなければ E5");
+  d = v4(); d.clinic.openingHours[1].mayEndEarly = "yes"; ok(codes(validate(d)).includes("E5"), "mayEndEarly が真偽でなければ E5");
+  d = v4(); d.clinic.openingHours[3].department = "眼科"; ok(validate(d).E.length === 0 && wc(d).includes("W20"), "診療科の一覧にない科は注意（W20）");
+  d = v4(); d.clinic.openingHours[3].service = ["dialysis"]; ok(validate(d).E.length === 0 && wc(d).includes("W21"), "知らない用途は注意（W21）だけ");
+  d = v4(); d.clinic.appointmentRequired = "unknown"; ok(codes(validate(d)).includes("E17"), "appointmentRequired が真偽でなければ E17");
+  d = v4(); d.clinic.booking[1].hours[0].opens = "19:00"; ok(codes(validate(d)).includes("E6"), "予約の受付時間の前後が逆なら E6");
+  d = v4(); d.clinic.booking[0].mode = "lottery"; ok(codes(validate(d)).includes("E6"), "決まっていない予約の取り方は E6");
+  d = v4(); d.specVersion = "0.3"; ok(validate(d).E.length === 0, "v0.4 の欄を持つファイルを 0.3 と書いても壊れない（知らない版の欄として読める）"); }
+{ const s4 = () => JSON.parse(fs.readFileSync("examples/v0.4/clinic-schedule.json", "utf8"));
+  let d = s4(); const x = d.exceptions.find(e => e.entry === "none"); x.entry = "stop"; ok(codes(validate(d)).includes("S4"), "臨時の変更の受け付け方が決まっていない値なら S4");
+  d = s4(); d.exceptions.find(e => e.status === "closed").entry = "none"; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W22"), "休診に受け付け方を書くと注意（W22）"); }
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }

@@ -391,7 +391,7 @@ Ask only for what is missing, one question at a time:
 <script>
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4"];
 const KNOWN_ROLES = ["schedule"];
 
 const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
@@ -404,6 +404,35 @@ const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(
 const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
 const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
 const CHOICE = new Set(["choice","open-choice"]);
+
+const KNOWN_SERVICES = ["general","checkup","vaccination","procedure","rehabilitation","other"];
+const VISIT_TYPES = ["all","first","return"];
+const ENTRIES = ["walk-in","appointment","none"];
+const BOOKING_MODES = ["time-slot","queue","request"];
+
+function checkReception(h, w, label, code, err, warn, departments) {
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  if (h.reception !== undefined) {
+    const r = h.reception;
+    if (!r || typeof r !== "object" || Array.isArray(r)) err(code, `${label}: reception hours (reception) must be an object { }.`, w + ".reception");
+    else {
+      if (r.opens === undefined && r.closes === undefined) err(code, `${label}: give reception hours a start (opens) or a cut-off (closes).`, w + ".reception");
+      for (const k of ["opens","closes"]) if (r[k] !== undefined && !TIME_RE.test(r[k])) err(code, `${label}: enter reception times in the form 09:00.`, `${w}.reception.${k}`);
+      if (TIME_RE.test(r.opens || "") && TIME_RE.test(r.closes || "") && r.opens >= r.closes) err(code, `${label}: reception opens (${r.opens}) after its cut-off (${r.closes}).`, w + ".reception");
+      if (TIME_RE.test(r.closes || "") && TIME_RE.test(h.closes || "") && r.closes > h.closes) warn("W19", `${label}: the reception cut-off (${r.closes}) is after the end of clinic hours (${h.closes}). Check that this is correct.`, w + ".reception.closes");
+    }
+  }
+  if (h.department !== undefined) {
+    if (!isStr(h.department)) err(code, `${label}: the department must be text.`, w + ".department");
+    else if (Array.isArray(departments) && !departments.includes(h.department)) warn("W20", `${label}: department "${h.department}" is not in the list of departments.`, w + ".department");
+  }
+  if (h.service !== undefined) {
+    if (!Array.isArray(h.service) || !h.service.length || !h.service.every(isStr)) err(code, `${label}: service must be an array of text.`, w + ".service");
+    else h.service.filter(x => !KNOWN_SERVICES.includes(x)).forEach(x => warn("W21", `${label}: service "${x}" is not known to this checker (readers will ignore it).`, w + ".service"));
+  }
+  if (h.visitType !== undefined && !VISIT_TYPES.includes(h.visitType)) err(code, `${label}: visitType must be all, first (first visit) or return (follow-up).`, w + ".visitType");
+  if (h.entry !== undefined && !ENTRIES.includes(h.entry)) err(code, `${label}: entry must be walk-in (no booking needed), appointment (booked patients only) or none (no new patients).`, w + ".entry");
+}
 function validateIntake(o) {
   const E = [], W = [];
   const err = (code, msg, where) => E.push({ code, msg, where });
@@ -465,7 +494,12 @@ function validateIntake(o) {
       else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `Opening hours row ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
       if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `Opening hours row ${i+1}: enter times in the form 09:00.`, w);
       else if (h.opens >= h.closes) err("E5", `Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).`, w);
+      checkReception(h, w, `Opening hours row ${i+1}`, "E5", err, warn, c.departments);
+      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `Opening hours row ${i+1}: mayEndEarly must be true or false.`, w + ".mayEndEarly");
+      if (h.weeksOfMonth !== undefined && (!Array.isArray(h.weeksOfMonth) || !h.weeksOfMonth.length || h.weeksOfMonth.some(n => !Number.isInteger(n) || n < 1 || n > 5) || new Set(h.weeksOfMonth).size !== h.weeksOfMonth.length))
+        err("E5", `Opening hours row ${i+1}: weeksOfMonth must list numbers 1–5 without repeats.`, w + ".weeksOfMonth");
     });
+    if (c.appointmentRequired !== undefined && typeof c.appointmentRequired !== "boolean") err("E17", "appointmentRequired must be true or false. Leave it out if you are not sure.", "clinic.appointmentRequired");
     if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
     else c.booking.forEach((b, i) => {
       const w = `clinic.booking[${i}]`;
@@ -473,6 +507,18 @@ function validateIntake(o) {
       if (b.method === "web" && !isStr(b.url)) err("E6", `Booking method ${i+1}: enter the URL of the booking page.`, w + ".url");
       if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `Booking method ${i+1}: the booking page URL does not start with https.`, w + ".url");
       if (b.method === "phone" && !isStr(b.telephone)) err("E6", `Booking method ${i+1}: enter the booking phone number.`, w + ".telephone");
+      if (b.hours !== undefined) {
+        if (!Array.isArray(b.hours) || !b.hours.length) err("E6", `Booking method ${i+1}: booking hours (hours) must be an array [ ].`, w + ".hours");
+        else b.hours.forEach((x, k) => {
+          const hw = `${w}.hours[${k}]`;
+          if (!isObj(x) || !Array.isArray(x.days) || !x.days.length || x.days.some(d => !DAY_KEYS.includes(d))) err("E6", `Booking method ${i+1}, hours ${k+1}: enter the days (Mo–Su, PH).`, hw + ".days");
+          if (!isObj(x) || !TIME.test(x.opens || "") || !TIME.test(x.closes || "")) err("E6", `Booking method ${i+1}, hours ${k+1}: enter times in the form 09:00.`, hw);
+          else if (x.opens >= x.closes) err("E6", `Booking method ${i+1}, hours ${k+1}: the start (${x.opens}) is after the end (${x.closes}).`, hw);
+        });
+      }
+      if (b.mode !== undefined && !BOOKING_MODES.includes(b.mode)) err("E6", `Booking method ${i+1}: mode must be time-slot (a time slot), queue (a place in today's queue) or request (apply and wait for a reply).`, w + ".mode");
+      if (b.visitType !== undefined && !VISIT_TYPES.includes(b.visitType)) err("E6", `Booking method ${i+1}: visitType must be all, first (first visit) or return (follow-up).`, w + ".visitType");
+      if (b.statusUrl !== undefined) { if (!isStr(b.statusUrl) || /\s/.test(b.statusUrl)) err("E6", `Booking method ${i+1}: the URL of the queue or availability page (statusUrl) is not valid.`, w + ".statusUrl"); else if (!/^https:\/\//.test(b.statusUrl)) warn("W1", `Booking method ${i+1}: the URL of the queue or availability page does not start with https.`, w + ".statusUrl"); }
     });
   }
   if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy must be an object ({ }) with url (where the policy is).", "policy");
@@ -588,6 +634,8 @@ function validateSchedule(o) {
       if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: enter the opening hours (hours).`, w + ".hours");
       else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label}, hours ${k+1}`, false));
     }
+    checkReception(x, w, label, "S4", err, warn, null);
+    if (x.status === "closed" && (x.reception !== undefined || x.entry !== undefined)) warn("W22", `${label}: the status is closed but reception hours or an entry rule are given. To change reception only, use changed.`, w);
   });
   list("doctorSchedule").forEach((x, i) => {
     const w = `doctorSchedule[${i}]`, label = `Doctor's schedule ${i+1}`;

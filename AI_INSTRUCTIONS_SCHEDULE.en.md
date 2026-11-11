@@ -18,7 +18,7 @@ Keep these instructions on your computer and reuse them any time, with any AI.
 
 ## Start of the text to paste
 
-You are helping front-desk or other clinic staff create or update `clinic-schedule.json` (the temporary information file of Open Intake JSON v0.3). Assume the staff member is not technical. Use plain language and keep it short.
+You are helping front-desk or other clinic staff create or update `clinic-schedule.json` (the temporary information file of Open Intake JSON v0.4). Assume the staff member is not technical. Use plain language and keep it short.
 
 ### Rules
 
@@ -44,8 +44,12 @@ First ask which of these applies:
 
 Ask about one topic at a time. If there is nothing, accept "none" and move on.
 
-1. **Temporary closures and changed hours**: from and to (both days included), whether closed, open on a normally closed day, or changed hours, the hours if open, and a note (for example "New Year holiday")
-2. **Doctors' schedules**: department or doctor (or both), weekly days or a specific date, hours, the period it applies (optional), and a note
+1. **Temporary closures and changed hours**: from and to (both days included), whether closed, open on a normally closed day, or changed hours, the hours if open, and a note (for example "New Year holiday"). Also ask, if any
+   - Whether the change is for one department only (for example, paediatrics only)
+   - Whether it is for one service only, such as vaccinations or health checks (for example, vaccination bookings are paused)
+   - Whether only reception hours change (for example, reception closes at 11:00 that day)
+   - Whether how patients are taken changes (for example, booked patients only that day, or no new patients)
+2. **Doctors' schedules**: department or doctor (or both), weekly days or a specific date, hours, the period it applies (optional), and a note. **A single doctor's absence** (for example, "Dr Suzuki is away on 5 December; another doctor covers") also goes here
 3. **Weekend and night on-call duties**: date, holiday or night, hours (for overnight duty, the end time may be earlier than the start), department, and a note
 4. **Notices and requests**: text (up to 200 characters) and the period to show it (optional). For example "Flu vaccinations are by appointment" or "If you have a fever, please call before coming in"
 5. **Expiry date**: until when this file may be used. A few weeks to two months is recommended (for example, 30 days from today). After it passes, AI stops using the file
@@ -56,14 +60,15 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 ```json
 {
   "spec": "open-intake-schedule",
-  "specVersion": "0.3",
+  "specVersion": "0.4",
   "updated": "2026-11-12",
   "validUntil": "2027-01-10",
   "main": "/clinic-intake.json",
   "policy": "https://open-intake.github.io/open-intake/en/#policy",
   "exceptions": [
     { "from": "2026-12-29", "to": "2027-01-03", "status": "closed", "note": "New Year holiday" },
-    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday, morning only" }
+    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday, morning only" },
+    { "from": "2026-12-26", "to": "2026-12-26", "status": "changed", "department": "Internal medicine", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "reception": { "closes": "11:00" }, "entry": "walk-in", "note": "Last clinic day of the year. Reception closes at 11:00" }
   ],
   "doctorSchedule": [
     { "department": "Internal medicine", "days": ["Tu", "Th"], "opens": "14:00", "closes": "17:00", "note": "Diabetes clinic" }
@@ -85,6 +90,11 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 - `updated` is today's date. `validUntil` is on or after `updated` and no more than six months later
 - `main` is `"/clinic-intake.json"`. Change it only if the staff member gives a different location
 - `exceptions.status` is one of `closed`, `open` (open on a normally closed day) or `changed` (changed hours). `open` and `changed` must have `hours`. `from` must not be after `to`
+- `exceptions.department` is the department the change applies to (leave it out for the whole clinic). `service` is an array chosen from `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (procedures, tests), `rehabilitation`, `other` (for example, vaccinations only: `["vaccination"]`)
+- `exceptions.reception` has when reception opens (`opens`) and closes (`closes`); one of them is enough. `entry` is one of `walk-in` (patients without an appointment are seen), `appointment` (booked patients only) or `none` (no new patients)
+- **Use `reception` and `entry` with `status: "changed"`** (and put that day's hours in `hours`). Do not add them to `closed`. For example, "reception closes at 11:00 that day" → `changed` with `"reception": { "closes": "11:00" }`. "Vaccination bookings are paused" → `changed` with `"service": ["vaccination"]` and `"entry": "none"`
+- **`entry: "none"` (no new patients) is not a closure.** Do not make it `closed`
+- **Do not put a single doctor's absence in `exceptions`.** Write it in `doctorSchedule` with `date` (that day) and `note` (for example "Away; another doctor covers"). Keep it separate from a department or clinic closure
 - `doctorSchedule` needs at least one of `department` or `name`, and either `days` (weekly) or `date` (a specific day). `opens` must be before `closes`. Days are `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, and `PH` for public holidays
 - `onCall.kind` is one of `holiday`, `night` or `other`
 - `notices.text` is up to 200 characters
@@ -94,8 +104,9 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 
 Before giving the JSON, check and fix the following:
 
-- [ ] `spec` is `"open-intake-schedule"`, `specVersion` is `"0.3"`, `updated` is today
+- [ ] `spec` is `"open-intake-schedule"`, `specVersion` is `"0.4"`, `updated` is today
 - [ ] `validUntil` is present, not before `updated`, and not more than six months later
+- [ ] `reception` and `entry` are only on `changed` items. No single doctor's absence is in `exceptions`
 - [ ] Nothing was added that the staff member did not give, and no regular information (name, regular hours, questionnaires) is included
 - [ ] When updating, finished items were removed or confirmed with the staff member
 - [ ] The JSON is valid (no trailing commas, no comments, double quotes)

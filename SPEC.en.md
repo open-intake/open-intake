@@ -1,9 +1,9 @@
-# Open Intake JSON Specification v0.3 (draft)
+# Open Intake JSON Specification v0.4 (draft)
 
 Formerly named "オープン問診票". The Japanese public name is "オープン受診案内"; the file format is "Open Intake JSON".
 
 - Status: **draft**. Names and fields may change
-- Date: 2026-11-11 (v0.2: files can be split, §3b, §6b; v0.3: identifiers, regional profiles, regional directories, §3c, §4c, §4d, §6c)
+- Date: 2026-11-12 (v0.2: files can be split, §3b, §6b; v0.3: identifiers, regional profiles, regional directories, §3c, §4c, §4d, §6c; v0.4: check-in times, how patients are accepted, booking hours, §4, §4e, §6b)
 - Licence: this specification is CC BY 4.0; JSON Schemas and examples are CC0. Quoted emergency warning signs in regional profiles belong to their publishers (see [LICENSES.md](LICENSES.md))
 - The Japanese version ([SPEC.md](SPEC.md)) is the reference text. If the two differ, please report it
 
@@ -85,7 +85,7 @@ This is the same idea as search engine optimisation (SEO). Keyword stuffing once
 ```json
 {
   "spec": "open-intake",
-  "specVersion": "0.3",
+  "specVersion": "0.4",
   "updated": "2026-11-11",
   "policy": { "url": "…", "summary": "…" },
   "profile": { "id": "au", "url": "https://open-intake.github.io/open-intake/profiles/au.json" },
@@ -100,7 +100,7 @@ This is the same idea as search engine optimisation (SEO). Keyword stuffing once
 | Key | Required | Content |
 |---|---|---|
 | `spec` | yes | Fixed value `"open-intake"` |
-| `specVersion` | yes | Specification version, currently `"0.3"` |
+| `specVersion` | yes | Specification version, currently `"0.4"` (files of `"0.1"` to `"0.3"` remain readable) |
 | `updated` | yes | Date the content was last checked (`YYYY-MM-DD`). **AI may lower its trust if older than a year** |
 | `profile` | | Regional profile in use (§4d, from v0.3) |
 | `files` | | List of official files (§3b, from v0.2) |
@@ -176,6 +176,7 @@ Key names follow schema.org (`MedicalClinic`, `PostalAddress`) where possible.
 | `departments` | yes | array of strings (1+) | Departments. `["General practice", "Paediatrics"]` |
 | `openingHours` | yes | array (1+) | See below |
 | `closedNote` | | string | `"Closed on Sundays and public holidays"` |
+| `appointmentRequired` | | boolean | Whether the clinic as a whole is appointment-only (from v0.4). **Include it only when the clinic states this clearly.** Leaving it out means "unknown". An `entry` on an `openingHours` entry takes priority. Do not infer `true` from "appointments preferred" |
 | `focus` | | array | Areas of focus (from v0.2; see below). **The clinic's own statement** |
 | `handles` | | array of strings | Symptoms and concerns usually seen. `["Fever", "Cough", "Blood pressure checks"]` |
 | `notHandled` | | array of strings | Not provided. `["Hospital admission", "Babies under 6 months"]`. **Only services, procedures or age groups not provided. Do not describe patients' conditions or medicines ("patients taking …")**, so that it does not become a notice of refusal (§1b) |
@@ -217,10 +218,43 @@ Rules:
 |---|---|---|
 | `days` | yes | Array of days: `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, public holidays `PH` |
 | `opens` | yes | `"09:00"` (24-hour, two digits) |
-| `closes` | yes | `"12:30"` (after `opens`) |
-| `note` | | `"Last check-in 30 minutes before closing"` |
+| `closes` | yes | `"12:30"` (after `opens`). When consultations end |
+| `note` | | `"Fever clinic uses a separate entrance"` |
+| `reception` | | Check-in start and cut-off (from v0.4). `{"opens": "08:45", "closes": "12:00", "note": "…"}`. Either `opens` or `closes` alone is fine (having neither is an error). Check-in may start before consultations start |
+| `department` | | Department these hours apply to (from v0.4). Use a name from `departments` (otherwise W20). If absent, the whole clinic |
+| `service` | | Array of the services these hours apply to (from v0.4). Defined values: `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (surgery, tests, etc.), `rehabilitation`, `other`. If absent, general outpatient. Readers ignore unknown values (W21) |
+| `visitType` | | Whether these hours are for new or returning patients only (from v0.4): `"all"`, `"first"` (first visit), `"return"` (return visit). If absent, `all`. How a first visit is defined (for example "more than three months since the last visit") differs by clinic, so write it in `note` |
+| `entry` | | How patients are accepted in these hours (from v0.4). `"walk-in"` = accepted without an appointment (people with appointments may go first); `"appointment"` = appointments only; `"none"` = no new check-ins (only continuing care, handing over prescriptions, etc.). **`none` does not mean closed** |
+| `mayEndEarly` | | Boolean (from v0.4). Check-in may end before the cut-off, for example when it is busy |
+| `weeksOfMonth` | | Which weeks of the month these days apply to (from v0.4). Array of numbers 1 to 5. For example, `[2,4]` for the 2nd and 4th Saturday only. If absent, every week |
 
 Use two entries when there are morning and afternoon sessions.
+
+Example (excerpt from `examples/v0.4/clinic-intake.json`): weekday mornings accept walk-ins, with check-in from 8:45 to 12:00; paediatric health checks and vaccinations are by appointment only; afternoons on the 2nd and 4th Saturday are appointment slots for returning internal medicine patients
+
+```json
+"openingHours": [
+  { "days": ["Mo","Tu","We","Th","Fr"], "opens": "09:00", "closes": "12:30",
+    "reception": { "opens": "08:45", "closes": "12:00" }, "entry": "walk-in" },
+  { "days": ["Sa"], "opens": "09:00", "closes": "12:30",
+    "reception": { "opens": "08:45", "closes": "12:00" }, "entry": "walk-in", "mayEndEarly": true,
+    "note": "Saturdays are busy, so check-in may close early" },
+  { "days": ["Tu","Fr"], "opens": "14:00", "closes": "15:00",
+    "department": "Paediatrics", "service": ["checkup","vaccination"], "entry": "appointment",
+    "note": "Child health checks and vaccinations" },
+  { "days": ["Sa"], "weeksOfMonth": [2,4], "opens": "14:00", "closes": "16:00",
+    "department": "Internal medicine", "visitType": "return", "entry": "appointment",
+    "note": "Appointment slots for returning patients. New patients please come on a weekday" }
+]
+```
+
+Rules for check-in times and how patients are accepted (from v0.4):
+
+- **Which entry applies**: when several entries match the same day and time, the narrower one wins (the one that specifies more of `department`, `service` and `visitType`)
+- Wording such as "last check-in 30 minutes before closing" is **converted to a time** in `reception.closes`. Keep the original wording in `reception.note`
+- `entry: "none"` means "no new check-ins", **not closed**. Closed days and times are shown by having no entry for them, or in `closedNote` or temporary information (§6b)
+- **Anything not written is "unknown".** A missing `entry` does not mean "no appointment needed", and a missing `reception` does not mean "check-in is the same as consultation hours"
+- A `reception.closes` later than `closes` is usually a mistake (W19)
 
 ### A `booking` entry
 
@@ -230,6 +264,22 @@ Use two entries when there are morning and afternoon sessions.
 | `url` | required for `web` | Booking page URL |
 | `telephone` | required for `phone` | Booking phone number |
 | `note` | | e.g. `"New patients by phone only"` |
+| `hours` | | When this channel (phone, web) takes bookings (from v0.4). `[{"days": ["Mo","Tu"], "opens": "09:00", "closes": "18:00"}]`. Often different from consultation hours |
+| `mode` | | How bookings work (from v0.4): `"time-slot"` (book a time), `"queue"` (take a place in today's queue), `"request"` (send a request; confirmed when the clinic replies) |
+| `visitType` | | Whether this is for first or return visits (from v0.4): `"all"`, `"first"`, `"return"`. If absent, `all` |
+| `statusUrl` | | URL of a page showing the current queue or availability (from v0.4). https recommended. The file itself does not hold the current queue or availability (its freshness cannot be guaranteed) |
+
+Example (excerpt from `examples/v0.4/clinic-intake.json`):
+
+```json
+"booking": [
+  { "method": "web", "url": "https://example.com/reserve", "mode": "queue",
+    "statusUrl": "https://example.com/now", "note": "Take a place in today's queue; the current number is shown on this page" },
+  { "method": "phone", "telephone": "03-0000-0000",
+    "hours": [ { "days": ["Mo","Tu","We","Fr"], "opens": "09:00", "closes": "18:00" },
+               { "days": ["Th","Sa"], "opens": "09:00", "closes": "12:00" } ] }
+]
+```
 
 ---
 
@@ -260,6 +310,26 @@ Emergency numbers, emergency warning signs, identifier schemes and base question
 **Base questionnaires and regional variation**: clinics can start from a profile's base questionnaire and add or change questions. Recording the base in `derivedFrom` lets readers see which region's base a questionnaire came from. Base questionnaires from other countries can be used in the same way.
 
 **Governance**: this specification defines **the format and the container for profiles only**. The content of each profile (warning signs, base questionnaires, numbers) is discussed and maintained by healthcare professionals, local governments and volunteers in that region. Sub-national profiles (e.g. `jp-tokyo`, `ca-bc`) are allowed. In this repository, `profiles/jp.json` is a **first draft for discussion**, and there are **starting points** for the United States, United Kingdom, Australia, Canada and British Columbia, with emergency numbers. Warning signs are transcribed only where the official source permits reproduction (currently CDC for the US); others keep a link in `references` until permission is granted. See [profiles/README.md](profiles/README.md).
+
+## 4e. Mapping to national data (Japan, from v0.4)
+
+The opening-hours items in the open data of the Ministry of Health, Labour and Welfare's medical information service (「医療情報ネット（ナビイ）オープンデータ」, https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html ) map as follows.
+
+| National item (data definition, reporting form) | This specification |
+|---|---|
+| Department name | `openingHours[].department` |
+| Time bands 1–3 × day (Mon–Sun, public holiday): consultation start and end | One `openingHours[]` entry (`days`, `opens`, `closes`) |
+| Same, outpatient check-in start and end | `openingHours[].reception` |
+| Closed on fixed weekdays or in the nth week | `openingHours[].days`, `weeksOfMonth` |
+| Closed on public holidays | `PH` in `days` |
+| Other closed days (text) | `closedNote` |
+| Whether appointments are offered for first and return visits, and whether patients without appointments are seen (reporting form; not in the distributed CSV) | `booking[].visitType`, `openingHours[].entry` |
+
+Notes:
+
+- In the national data, the closure flags are **0 = closed, 1 = open** (0 means closed)
+- **"Offers appointments" does not mean "appointment required".** It only means bookings are taken, so do not turn it into `entry: "appointment"` or `appointmentRequired: true`
+- The national data reflects what was reported at the time. Even when a draft is made from it, the clinic must check it before publishing
 
 ## 5. `safety` (safety rules)
 
@@ -313,6 +383,12 @@ The defaults are **transcribed verbatim from official public sources in each reg
 7. Present areas of focus (`focus`) as the clinic's own statement. A match with the symptoms may be a reason for listing a clinic, but do not say one clinic is better than another
 8. When suggesting clinics, give options and reasons (open now, relevant area of focus, etc.) and **leave the choice to the patient**. If nothing fits, do not stop at "there is nowhere"; point to a health advice line or the patient's regular doctor
 9. If a questionnaire has `status: "draft"`, say it has not yet been reviewed by a doctor
+10. **When a check-in cut-off (`reception.closes`) is given, give the cut-off, not the end of consultations, as the time to arrive by** (from v0.4; the same applies to 11 to 15)
+11. Do not call `entry: "none"` "closed". Say it is a time when no new check-ins are taken
+12. Do not conclude "no appointment needed" or "check-in is the same as consultation hours" from a missing field. Where needed, advise checking with the clinic
+13. Do not decide for the patient whether it is a first or return visit. Ask the patient, or show the clinic's definition (`note`)
+14. When `mayEndEarly` is `true`, suggest arriving early or checking first (by phone or `statusUrl`)
+15. Do not guess the current queue or availability. Point to `statusUrl` or the phone number
 
 ---
 
@@ -396,16 +472,19 @@ Temporary closures and changed hours, doctors' schedules, holiday and night duty
 ```json
 {
   "spec": "open-intake-schedule",
-  "specVersion": "0.3",
+  "specVersion": "0.4",
   "updated": "2026-11-11",
   "validUntil": "2027-01-31",
   "main": "/clinic-intake.json",
   "exceptions": [
     { "from": "2026-12-25", "to": "2027-01-01", "status": "closed", "note": "Closed over the holidays" },
-    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday: morning only" }
+    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday: morning only" },
+    { "from": "2026-12-01", "to": "2026-12-15", "status": "changed", "department": "Paediatrics", "service": ["vaccination"], "hours": [ { "opens": "14:00", "closes": "15:00" } ], "entry": "none", "note": "Waiting for vaccine stock: no new vaccination bookings (health checks as usual)" },
+    { "from": "2026-12-24", "to": "2026-12-24", "status": "changed", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "reception": { "closes": "11:00" }, "entry": "walk-in", "note": "Last day before the holidays. Check-in until 11:00" }
   ],
   "doctorSchedule": [
-    { "department": "Paediatrics", "name": "Dr Smith", "days": ["Tu","Th"], "opens": "14:00", "closes": "18:00" }
+    { "department": "Paediatrics", "name": "Dr Smith", "days": ["Tu","Th"], "opens": "14:00", "closes": "18:00" },
+    { "department": "General practice", "name": "Dr Jones", "date": "2026-12-05", "opens": "09:00", "closes": "12:30", "note": "Locum doctor" }
   ],
   "onCall": [
     { "date": "2026-11-23", "kind": "holiday", "opens": "09:00", "closes": "17:00", "department": "General practice" }
@@ -419,14 +498,19 @@ Temporary closures and changed hours, doctors' schedules, holiday and night duty
 | Key | Required | Description |
 |---|---|---|
 | `spec` | yes | Fixed value `"open-intake-schedule"` |
-| `specVersion` | yes | `"0.3"` |
+| `specVersion` | yes | `"0.4"` (`"0.2"` and `"0.3"` files remain readable) |
 | `updated` | yes | Date updated |
 | `validUntil` | yes | **Expiry of the whole file.** Readers stop using it after this date. Keep it short (a few weeks to two months) |
 | `main` | | Location of the main file (§3b rule 5) |
-| `exceptions` | | Temporary closures and changes: `from`, `to` (dates, inclusive), `status` (`closed`, `open` extra opening, `changed` changed hours), `hours` (required for `open` and `changed`: array of `opens`/`closes`), `note` |
+| `exceptions` | | Temporary closures and changes: `from`, `to` (dates, inclusive), `status` (`closed`, `open` extra opening, `changed` changed hours), `hours` (required for `open` and `changed`: array of `opens`/`closes`), `note`. From v0.4, optionally `department` (department affected; if absent, the whole clinic), `service` (services affected, same values as `openingHours` in §4; for example, pausing vaccinations only), `reception` and `entry` (shorter check-in, "appointments only on this day", etc.; same shape as §4; used with `status: "changed"`) |
 | `doctorSchedule` | | Doctors' schedule: at least one of `department` or `name`; either `days` (weekly) or `date`; `opens`, `closes`; optionally `from`, `to` (validity period) and `note`. **Doctors' names are optional; include only what is already public** |
 | `onCall` | | Holiday and night duty: `date`, `kind` (`holiday`, `night`, `other`), `opens`, `closes` (**if `closes` is not after `opens`, it means until the next day**), `department`, `note` |
 | `notices` | | Notices: `text` (up to 200 characters), optionally `from`, `to` |
+
+Rules for temporary changes (from v0.4):
+
+- **A single doctor's absence does not go in `exceptions`.** Put it in `doctorSchedule` with the `date`, that day's hours (`opens`, `closes`) and a `note` (for example "Absent; a locum doctor will see patients"). Keep it separate from a closure of the whole department
+- To change only check-in (shorter check-in, no new check-ins, etc.), use `status: "changed"`. Giving `reception` or `entry` with `status: "closed"` risks confusing the two (W22). `entry: "none"` does not mean closed (§4)
 
 Publishing this file even with nothing scheduled tells readers there are no temporary arrangements (W10).
 
@@ -457,8 +541,8 @@ Rules:
 - E2 `updated` is `YYYY-MM-DD`
 - E3 `clinic.name`, `clinic.telephone`, `address.addressRegion`, `address.addressLocality` are not empty
 - E4 At least one department
-- E5 At least one `openingHours` entry; valid days; times `HH:MM`; `opens` < `closes`
-- E6 At least one `booking` entry; `web` has `url`, `phone` has `telephone`
+- E5 At least one `openingHours` entry; valid days; times `HH:MM`; `opens` < `closes`. Form of the v0.4 fields (`reception` has at least one of `opens`/`closes`, with valid times in order; `department` is a string; `service` is an array of strings; `visitType` and `entry` use defined values; `mayEndEarly` is a boolean; `weeksOfMonth` is an array of distinct numbers 1 to 5)
+- E6 At least one `booking` entry; `web` has `url`, `phone` has `telephone`. `hours` has valid days and times (`opens` < `closes`); `mode` and `visitType` use defined values; `statusUrl` is a URL without spaces
 - E7 `safety.noDiagnosis` is `true`; `emergency` is not empty; at least one `redFlags` entry
 - E8 Each questionnaire has `resourceType`, `id`, `status`, `title`, `item`
 - E9 `linkId`s are unique within a questionnaire
@@ -469,6 +553,7 @@ Rules:
 - E14 `policy` is an object with `url` (or a URL string)
 - E15 Form of `identifiers`, `geo`, `addressCountry` (including formats defined by regional profiles)
 - E16 `profile` has `id`
+- E17 `clinic.appointmentRequired` is a boolean (`true` or `false`). Leave it out when unknown
 
 **Regional directory errors**: D1 version, D2 date updated, D3 `publisher`, `area`, D4 `entries` (name, https url, no duplicates), D5 `onCall`
 
@@ -476,10 +561,10 @@ Rules:
 
 **Temporary information errors**
 
-- S1 `spec` is `"open-intake-schedule"`; `specVersion` looks like `"0.3"`
+- S1 `spec` is `"open-intake-schedule"`; `specVersion` looks like `"0.4"`
 - S2 `updated` is `YYYY-MM-DD`
 - S3 `validUntil` is `YYYY-MM-DD` and not before `updated`
-- S4 `exceptions`: order of dates, `status` values, `hours` for `open`/`changed`, time format and order
+- S4 `exceptions`: order of dates, `status` values, `hours` for `open`/`changed`, time format and order. The v0.4 fields (`department`, `service`, `reception`, `entry`) are checked as in E5
 - S5 `doctorSchedule`: department or doctor, days or date, times
 - S6 `onCall`: date, `kind` values, time format (may run into the next day)
 - S7 `notices`: `text` not empty; date format and order
@@ -504,6 +589,10 @@ Rules:
 - W16 A regional profile is a draft and its warning signs are still empty (until transcribed from an official source)
 - W17 More than 10 areas of focus (`areas` in `focus`) in total
 - W18 `notHandled` appears to describe patients' conditions or medicines (list only services, procedures or age groups not provided)
+- W19 The check-in cut-off (`reception.closes`) is later than the end of consultations (`closes`)
+- W20 An `openingHours` department (`department`) is not in `departments`
+- W21 `service` has a value unknown to the checker (readers ignore it)
+- W22 In temporary information, `reception` or `entry` is given with `status: "closed"` (use `changed` to change only check-in)
 
 ---
 
@@ -523,6 +612,8 @@ Version numbers:
 - Adding optional keys or clarifying text → `0.2` → `0.3`
 - Adding required keys or tightening rules → a major version (`1.0` → `2.0`). Rules 2–5 still apply
 
+v0.4 adds optional keys only (check-in times, how patients are accepted, booking hours, etc.; §4, §6b). It is therefore a minor version, and files of 0.1 to 0.3 remain valid.
+
 ## 9. Towards an international standard
 
 This format aims to be usable in any country or region.
@@ -533,11 +624,12 @@ This format aims to be usable in any country or region.
 - International registration of `/.well-known/open-intake.json` (IANA) is future work
 - Governance happens openly in the GitHub organisation (open-intake), with room for a community responsible for each regional profile
 
-## 10. Future work (v0.4 and later)
+## 10. Future work (v0.5 and later)
 
-- **Regional differences**: healthcare systems and emergency arrangements differ, but **the basic design (main file plus role files, list of official files, expiry, no diagnosis) stays common**. Differences are handled by regional defaults and regional role files
+- **Comparison with how clinics abroad describe this (splitting the common core from regional profiles)**: the fields added in v0.4 (check-in times, how patients are accepted, first and return visits, services, booking hours) are currently part of the common core. A comparison with clinics in other countries will confirm what stays in the core and what moves to regional profiles. Likely regional parts are the defined `service` values (health check and vaccination categories depend on national systems), how first and return visits are defined, and how public holidays are handled
+- **A tool that drafts files from national data**: make a draft of a clinic's file from national data (§4e). The clinic publishes it itself and must check it first
 - A role for per-department questionnaire files
-- Regional duty rosters published by medical associations or local governments
+- **Waiting times**: information patients weigh when choosing a clinic. Since v0.4, the current queue or availability can be reached through a link (`statusUrl`). How to publish typical waiting times is still to be decided
 - **Beyond healthcare**: opening hours, temporary information with expiry and a list of official files are not specific to healthcare. Businesses could publish files that AI reads directly instead of relying on map listings (for example, a rural petrol station whose opening days are shown wrongly on a map and cannot get them corrected). The plan is to build a track record in healthcare first, then split the common core from the healthcare-specific parts (questionnaires, warning signs), and to consider chambers of commerce or local governments hosting files for businesses without websites
 - Passing answers to clinics (QR code content and size, whether to encrypt)
 - A vocabulary for department names
