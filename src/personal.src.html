@@ -259,7 +259,7 @@ const PREG = [["", "—"],["not-applicable","あてはまらない"],["not-pregn
 const SMOKE = [["", "—"],["never","吸わない"],["former","以前吸っていた"],["current","吸っている"],["unknown","わからない"]];
 const ALC = [["", "—"],["none","飲まない"],["occasional","ときどき"],["regular","よく飲む"],["unknown","わからない"]];
 const MODES = [["walk","徒歩"],["bicycle","自転車"],["train","電車"],["bus","バス"],["car","車"],["taxi","タクシー"]];
-const PRIOS = [["regularDoctor","かかりつけ"],["near","近さ"],["shortWait","待ち時間の短さ"],["openNow","いま開いている"],["specialty","専門性・得意分野"],["reputation","評判"],["language","言語"],["accessibility","配慮・設備"]];
+const PRIOS = [["regularDoctor","かかりつけ"],["near","近さ"],["shortWait","待ち時間の短さ"],["openNow","いま開いている"],["specialty","専門性・得意分野"],["language","言語"],["accessibility","配慮・設備"]];
 const DAYS = [["Mo","月"],["Tu","火"],["We","水"],["Th","木"],["Fr","金"],["Sa","土"],["Su","日"],["PH","祝"]];
 const label = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
 // 今回の症状を整理する項目（PERSONAL.md §5a）。ファイルには保存しない
@@ -333,7 +333,6 @@ function renderPref() {
       h("button", { type: "button", class: "icon-btn", "aria-label": `${label(PRIOS, k)} を外す`, onclick: () => { pr.splice(i, 1); renderPref(); changed(); } }, "×")))),
     !PRIOS.some(([k]) => !pr.includes(k)) ? "" : h("div", { class: "actions" }, h("select", { id: "pr-add", style: "width:auto", "aria-label": "重視することを足す", onchange: e => { if (e.target.value) { pr.push(e.target.value); renderPref(); changed(); } } },
       h("option", { value: "", text: "＋ 重視することを足す" }), PRIOS.filter(([k]) => !pr.includes(k)).map(([k, n]) => h("option", { value: k, text: n })))),
-    !pr.includes("reputation") ? "" : h("p", { class: "small", style: "margin:0", text: "評判は、この形式では提供しません。AI がネットの口コミなどを参考にするときは、出どころと「確かめられた情報ではない」ことを添えます。" }),
     h("div", { class: "grid" },
       field("pr-lang", "受診のときに使いたい言語（コード）", input("pr-lang", () => (P.languages || []).join(", "), v => { const a = v.split(/[,\s\u3001]+/).filter(Boolean); if (a.length) P.languages = a; else delete P.languages; }, "例: ja")),
       field("pr-needs", "必要な配慮（1行に1つ）", h("textarea", { id: "pr-needs", rows: 2, value: (P.needs || []).join("\n"), placeholder: "例: 車椅子で入れる", oninput: e => { const a = e.target.value.split("\n").map(x => x.trim()).filter(Boolean); if (a.length) P.needs = a; else delete P.needs; changed(); } }))),

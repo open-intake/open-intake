@@ -67,7 +67,12 @@ function validateIntake(o) {
         if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `得意分野 ${i+1}: 内容（areas）を1つ以上入れてください。`, w + ".areas");
         else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `得意分野 ${i+1}: 診療科「${f.department}」が、診療科の一覧にありません。`, w + ".department");
       });
+      const nAreas = Array.isArray(c.focus) ? c.focus.reduce((n, f) => n + (isObj(f) && Array.isArray(f.areas) ? f.areas.length : 0), 0) : 0;
+      if (nAreas > 10) warn("W17", `得意分野が ${nAreas} 個あります。多く並べると手がかりにならないので、主なものを数個にしてください。`, "clinic.focus");
     }
+    if (Array.isArray(c.notHandled)) c.notHandled.forEach((x, i) => {
+      if (isStr(x) && /(\u98f2\u3093\u3067|\u670d\u7528|\u6301\u75c5|\u65e2\u5f80|\u6cbb\u7642\u4e2d|\u901a\u9662\u4e2d|taking|medication|condition)/i.test(x)) warn("W18", `対応していないこと ${i+1}: 「${x}」は患者の持病や薬についての書き方に見えます。提供していない診療・処置・年齢層だけを書いてください（受け入れを断る掲示にならないように）。`, `clinic.notHandled[${i}]`);
+    });
     if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "診療時間を1つ以上入れてください。", "clinic.openingHours");
     else c.openingHours.forEach((h, i) => {
       const w = `clinic.openingHours[${i}]`;
@@ -332,7 +337,7 @@ function validatePersonal(o) {
         });
       }
       if (pr.priorities !== undefined) {
-        const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
+        const P = ["regularDoctor","near","shortWait","openNow","specialty","language","accessibility"];
         if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities は ${P.join("・")} から、重ならないように選んでください。`, "preferences.priorities");
       }
       if (pr.pastClinics !== undefined) warn("H10", "pastClinics（過去の医療機関）は、この形式では扱いません。よかったところは regularClinics（かかりつけ）に登録してください。", "preferences.pastClinics");

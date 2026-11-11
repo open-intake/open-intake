@@ -355,7 +355,9 @@ function normalize(doc) {
   s.noDiagnosis = true;
   const dprof = profileById(d.profile && (d.profile.id || d.profile)) || profileById(LOCALE.defaultProfile) || {};
   if (typeof s.emergency !== "string") s.emergency = dprof.emergency ? dprof.emergency.message : "";
-  s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : (dprof.redFlags || []).slice();
+  const flagsFromProfile = !Array.isArray(s.redFlags);
+  s.redFlags = flagsFromProfile ? (dprof.redFlags || []).slice() : s.redFlags.filter(x => typeof x === "string");
+  if (flagsFromProfile) { if (dprof.redFlagsByAge && !s.redFlagsByAge) s.redFlagsByAge = JSON.parse(JSON.stringify(dprof.redFlagsByAge)); if (dprof.redFlagsSource && !s.redFlagsSource) s.redFlagsSource = { ...dprof.redFlagsSource }; }
   if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
   if (!(s.redFlagsByAge && typeof s.redFlagsByAge === "object")) delete s.redFlagsByAge;
   else for (const g of Object.values(s.redFlagsByAge)) if (g && typeof g === "object" && !Array.isArray(g.items)) g.items = [];
@@ -570,7 +572,7 @@ function renderSafety() {
     h("p", { class: "lead" }, "患者さんの AI は、問診の前にここを確かめます。初期値は、選んだ地域プロファイルのもの（その地域の公的な資料から書き写したもの。出典は下）です。医師の確認はまだです。", h("strong", { text: "公開の前に必ず医師に見てもらってください。" })),
     h("div", { class: "field" }, h("div", { class: "label" }, "診断をしない", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "この欄は変えられません。このファイルを読む AI は、病名の推定や診断をしません。" })),
     field("f-emerg", "緊急時の案内", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
-    field("f-red", "予約より先に救急へ（目安の症状・おとな／年代がわからないとき）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。減らすときは医師に確認してください。" }),
+    field("f-red", "予約より先に救急へ（目安の症状・共通。年代の目安はこれに加えて使う）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。足すことはできますが、減らさないでください（読む AI は地域プロファイルの一覧と合わせて使います）。変えるときは医師に確認してください。" }),
     s.redFlagsByAge && h("div", { class: "grid" }, Object.entries(s.redFlagsByAge).map(([k, g]) => field("f-red-" + k, `${g.label || k}の目安`, `redFlagsByAge.${k}`, lines("f-red-" + k, () => g.items, v => g.items = v, { rows: 8 }), { hint: g.note || "" }))),
     s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "目安の出典", h("span", { class: "k", text: "redFlagsSource" })),
       h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}「${s.redFlagsSource.title || ""}」${s.redFlagsSource.edition ? "（" + s.redFlagsSource.edition + "）" : ""}${s.redFlagsSource.pages ? " " + s.redFlagsSource.pages : ""}`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "原文（PDF）" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),
@@ -827,7 +829,7 @@ function viewIntake(o) {
     block("安全のための決まり",
       h("div", {}, s.noDiagnosis === true ? h("span", { class: "tag good", text: "診断をしない" }) : h("span", { class: "tag alert", text: "noDiagnosis が true ではありません" })),
       s.emergency && h("p", { style: "margin:0", text: s.emergency }),
-      h("div", { class: "sub", text: "予約より先に救急へ（目安・おとな／年代がわからないとき）:" }), list(arr(s.redFlags)),
+      h("div", { class: "sub", text: "予約より先に救急へ（目安・共通。年代の目安はこれに加えて使う）:" }), list(arr(s.redFlags)),
       ...Object.values(s.redFlagsByAge && typeof s.redFlagsByAge === "object" ? s.redFlagsByAge : {}).filter(g => g && typeof g === "object").map(g => h("div", {}, h("div", { class: "sub", text: `${str(g.label)}の目安:` }), list(arr(g.items)), g.note && h("div", { class: "sub", text: str(g.note) }))),
       s.redFlagsSource && h("div", { class: "sub", text: `出典: ${str(s.redFlagsSource.publisher)}「${str(s.redFlagsSource.title)}」${s.redFlagsSource.edition ? "（" + str(s.redFlagsSource.edition) + "）" : ""} ${str(s.redFlagsSource.pages)}${s.redFlagsSource.note ? "　" + s.redFlagsSource.note : ""}` })),
     o.aiNotes && block("AI へのお願い", h("p", { style: "margin:0", text: str(o.aiNotes) })),

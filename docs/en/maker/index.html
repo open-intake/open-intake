@@ -441,7 +441,12 @@ function validateIntake(o) {
         if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `Area of focus ${i+1}: enter at least one item (areas).`, w + ".areas");
         else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `Area of focus ${i+1}: department "${f.department}" is not in the list of departments.`, w + ".department");
       });
+      const nAreas = Array.isArray(c.focus) ? c.focus.reduce((n, f) => n + (isObj(f) && Array.isArray(f.areas) ? f.areas.length : 0), 0) : 0;
+      if (nAreas > 10) warn("W17", `There are ${nAreas} areas of focus. Listing many makes them useless as hints; keep to a few main ones.`, "clinic.focus");
     }
+    if (Array.isArray(c.notHandled)) c.notHandled.forEach((x, i) => {
+      if (isStr(x) && /(\u98f2\u3093\u3067|\u670d\u7528|\u6301\u75c5|\u65e2\u5f80|\u6cbb\u7642\u4e2d|\u901a\u9662\u4e2d|taking|medication|condition)/i.test(x)) warn("W18", `Not provided ${i+1}: "${x}" looks like it describes patients' conditions or medicines. List only services, procedures or age groups not provided (so that it does not read as a refusal).`, `clinic.notHandled[${i}]`);
+    });
     if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
     else c.openingHours.forEach((h, i) => {
       const w = `clinic.openingHours[${i}]`;
@@ -706,7 +711,7 @@ function validatePersonal(o) {
         });
       }
       if (pr.priorities !== undefined) {
-        const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
+        const P = ["regularDoctor","near","shortWait","openNow","specialty","language","accessibility"];
         if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities must be chosen from ${P.join(", ")}, without duplicates.`, "preferences.priorities");
       }
       if (pr.pastClinics !== undefined) warn("H10", "pastClinics (past clinics) is not part of this format. Register clinics you were happy with in regularClinics instead.", "preferences.pastClinics");
@@ -906,7 +911,9 @@ function normalize(doc) {
   s.noDiagnosis = true;
   const dprof = profileById(d.profile && (d.profile.id || d.profile)) || profileById(LOCALE.defaultProfile) || {};
   if (typeof s.emergency !== "string") s.emergency = dprof.emergency ? dprof.emergency.message : "";
-  s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : (dprof.redFlags || []).slice();
+  const flagsFromProfile = !Array.isArray(s.redFlags);
+  s.redFlags = flagsFromProfile ? (dprof.redFlags || []).slice() : s.redFlags.filter(x => typeof x === "string");
+  if (flagsFromProfile) { if (dprof.redFlagsByAge && !s.redFlagsByAge) s.redFlagsByAge = JSON.parse(JSON.stringify(dprof.redFlagsByAge)); if (dprof.redFlagsSource && !s.redFlagsSource) s.redFlagsSource = { ...dprof.redFlagsSource }; }
   if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
   if (!(s.redFlagsByAge && typeof s.redFlagsByAge === "object")) delete s.redFlagsByAge;
   else for (const g of Object.values(s.redFlagsByAge)) if (g && typeof g === "object" && !Array.isArray(g.items)) g.items = [];
@@ -1121,7 +1128,7 @@ function renderSafety() {
     h("p", { class: "lead" }, "Patients' AI checks this before any questionnaire. The defaults come from the selected regional profile (transcribed from that region's official sources; see the source below). They have not yet been reviewed by doctors.", h("strong", { text: " Always have a doctor review them before publishing." })),
     h("div", { class: "field" }, h("div", { class: "label" }, "No diagnosis", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "This cannot be changed. AI reading this file does not guess diseases or diagnose." })),
     field("f-emerg", "Emergency message", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
-    field("f-red", "Call emergency services before booking (warning signs: adults / age unknown)", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "One per line. Check with a doctor before removing any." }),
+    field("f-red", "Call emergency services before booking (warning signs: common; age-group signs are used in addition)", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "One per line. You may add items, but do not remove any (reading AI combines them with the regional profile list). Check any change with a doctor." }),
     s.redFlagsByAge && h("div", { class: "grid" }, Object.entries(s.redFlagsByAge).map(([k, g]) => field("f-red-" + k, `Warning signs: ${g.label || k}`, `redFlagsByAge.${k}`, lines("f-red-" + k, () => g.items, v => g.items = v, { rows: 8 }), { hint: g.note || "" }))),
     s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "Source of warning signs", h("span", { class: "k", text: "redFlagsSource" })),
       h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}, "${s.redFlagsSource.title || ""}"${s.redFlagsSource.edition ? " (" + s.redFlagsSource.edition + ")" : ""}${s.redFlagsSource.pages ? " " + s.redFlagsSource.pages : ""}`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "Original source" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),
@@ -1378,7 +1385,7 @@ function viewIntake(o) {
     block("Safety rules",
       h("div", {}, s.noDiagnosis === true ? h("span", { class: "tag good", text: "No diagnosis" }) : h("span", { class: "tag alert", text: "noDiagnosis is not true" })),
       s.emergency && h("p", { style: "margin:0", text: s.emergency }),
-      h("div", { class: "sub", text: "Call emergency services before booking (warning signs: adults / age unknown):" }), list(arr(s.redFlags)),
+      h("div", { class: "sub", text: "Call emergency services before booking (warning signs: common; age-group signs are used in addition):" }), list(arr(s.redFlags)),
       ...Object.values(s.redFlagsByAge && typeof s.redFlagsByAge === "object" ? s.redFlagsByAge : {}).filter(g => g && typeof g === "object").map(g => h("div", {}, h("div", { class: "sub", text: `Warning signs: ${str(g.label)}:` }), list(arr(g.items)), g.note && h("div", { class: "sub", text: str(g.note) }))),
       s.redFlagsSource && h("div", { class: "sub", text: `Source: ${str(s.redFlagsSource.publisher)}, "${str(s.redFlagsSource.title)}"${s.redFlagsSource.edition ? " (" + str(s.redFlagsSource.edition) + ")" : ""} ${str(s.redFlagsSource.pages)}${s.redFlagsSource.note ? "  " + s.redFlagsSource.note : ""}` })),
     o.aiNotes && block("Notes for AI", h("p", { style: "margin:0", text: str(o.aiNotes) })),

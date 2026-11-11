@@ -20,7 +20,7 @@
 1. **GitHub の Issue**（GitHub のアカウントがある方）
    [Issue を作る](https://github.com/open-intake/open-intake/issues/new/choose) から、内容に合うひな形を選んでください
 2. **フォーム**（GitHub を使っていない方）
-   準備中です。用意ができたらここに載せます
+   [医療に携わる方からのご意見（Google フォーム）](https://docs.google.com/forms/d/e/1FAIpQLSetqBo2x7iXx2i4x5BtX3FWzrv1TK9qPO15DaznR1dPdNGfkg/viewform)。ログインは要りません
 
 ### 書いてほしいこと
 

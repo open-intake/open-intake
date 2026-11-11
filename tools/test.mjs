@@ -77,7 +77,12 @@ for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r 
 { const d = JSON.parse(fs.readFileSync("examples/v0.2/clinic-intake.json", "utf8"));
   ok(Array.isArray(d.clinic.focus) && d.clinic.focus.length > 0, "v0.2 の例に得意分野がある");
   d.clinic.focus[0].areas = []; ok(codes(validate(d)).includes("E13"), "得意分野の内容が空なら E13");
-  d.clinic.focus = [{ department: "眼科", areas: ["白内障"] }]; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W14"), "診療科の一覧にない科は注意（W14）"); }
+  d.clinic.focus = [{ department: "眼科", areas: ["白内障"] }]; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W14"), "診療科の一覧にない科は注意（W14）");
+  const wc = x => validate(x).W.map(w => w.code);
+  d.clinic.focus = [{ areas: Array.from({ length: 11 }, (_, i) => "分野" + i) }]; ok(wc(d).includes("W17"), "得意分野が10個を超えると注意（W17）");
+  d.clinic.focus = [{ areas: ["糖尿病"] }]; ok(!wc(d).includes("W17"), "得意分野が少なければ W17 は出ない");
+  d.clinic.notHandled = ["入院", "抗凝固薬を飲んでいる方"]; ok(wc(d).includes("W18"), "対応していないことに患者の薬の書き方があると注意（W18）");
+  d.clinic.notHandled = ["入院", "6歳未満の小児"]; ok(!wc(d).includes("W18"), "診療・年齢層だけなら W18 は出ない"); }
 
 // 使い方の決まり（policy）
 { const d = JSON.parse(fs.readFileSync("examples/v0.2/clinic-intake.json", "utf8"));
@@ -110,6 +115,7 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   d = base(); d.preferences.regularClinics[0].rating = 3; ok(validate(d).W.some(w => w.code === "H10"), "かかりつけに評価があれば H10");
   d = base(); d.preferences.pastClinics = [{ name: "x", rating: 2 }]; ok(validate(d).W.some(w => w.code === "H10"), "過去の医療機関の欄があれば H10");
   d = base(); d.preferences.priorities.push("price"); ok(codes(validate(d)).includes("H9"), "決まっていない重視することは H9");
+  d = base(); d.preferences.priorities.push("reputation"); ok(codes(validate(d)).includes("H9"), "評判（reputation）は重視することに使えない（H9）");
   d = base(); d.preferences.availability[0].from = "13:00"; d.preferences.availability[0].to = "12:00"; ok(codes(validate(d)).includes("H9"), "時間帯の前後が逆なら H9");
   d = base(); d.preferences.homeArea.streetAddress = "1-2-3"; ok(validate(d).W.some(w => w.code === "H7"), "番地を書けば H7"); }
 

@@ -5,7 +5,7 @@
 1. Open a new chat with the AI you usually use (ChatGPT, Claude, Gemini, etc.)
 2. Copy everything between "Start of the text to paste" and "End of the text to paste" below, paste it and send
 3. Answer the AI's questions. "I don't know" is fine
-4. The AI will give you JSON. Paste it into "Paste and check" in the maker (https://open-intake.github.io/open-intake/en/maker/) and choose **Load into form**. The maker fills in the emergency warning signs for your regional profile
+4. The AI will give you JSON. Paste it into "Paste and check" in the maker (https://open-intake.github.io/open-intake/en/maker/) and choose **Load into form**. The maker fills in the emergency warning signs for your regional profile. They need a doctor's review; you may add to them, but do not remove any
 5. Fix any errors, then save the file as `clinic-intake.json` and ask your website administrator to put it at the top level of your website
 
 ⚠ **Do not enter patients' names, conditions or other personal information into the AI.** The file only holds the clinic's public information and questionnaire items.
