@@ -111,7 +111,7 @@ section.block > .intro { color: var(--muted); max-width: 40em; }
 
 /* これからの姿 */
 .timeline { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
-.timeline > li { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 4px 18px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.timeline > li { display: grid; grid-template-columns: 8em minmax(0, 1fr); gap: 4px 18px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
 .timeline > li:last-child { border-bottom: 0; }
 .timeline .when { font-family: var(--font-display); font-weight: 700; color: var(--accent); }
 .timeline .when small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
@@ -177,7 +177,6 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <li><span class="act">予約サイトか電話で予約する</span><span class="src">予約サービスに加盟している医療機関の空き</span><span class="gap">加盟していない医療機関は出てこない。電話は診療時間内しかつながらない</span></li>
       <li class="ai"><span class="act">最近は、AI に「どこに行けばいい？」と聞く</span><span class="src">AI は、上の検索結果・地図・サイトを読んで答える</span><span class="gap"><strong>AI に聞いても、元の情報が古ければ答えも古い。</strong>だから、元の情報を医療機関自身が出すことが大事になる</span></li>
     </ol>
-    <p class="intro">これから先は、AI が受診先を選び、予約し、症状を医療機関に伝えるところまで手伝うようになるはずです。AI が頼る情報の正しさは、今よりもっと大事になります。</p>
     <div class="compare">
       <div class="case now">
         <h3>いま起きていること</h3>
@@ -201,6 +200,20 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <p class="quote">地方のガソリンスタンドで、地図サービスに表示された営業日が間違っていた。店の人は「伝えても直らない」と言う。医療機関でも同じことが起こりえます。違うのは、間違った情報で困るのが、具合の悪い患者さんだということです。</p>
   </section>
 
+  <section class="block" aria-labelledby="h-future">
+    <h2 id="h-future">これから、受診はこう変わる（予測）</h2>
+    <p class="intro">この取り組みとは関係なく、医療の入口は大きく変わろうとしています。AI が、具合の悪い人のそばにいる<strong>案内役（コンシェルジュ）</strong>になる、という変化です。私たちはこう予測しています。</p>
+    <ol class="timeline">
+      <li><div class="when">いま</div><div><h3>AI に相談するが、受診先は自分で探す</h3><ul><li>検索の代わりに、AI に症状を相談する人が増えている</li><li>AI の答えは一般的な説明にとどまり、どこに行くか・いつ行くかは、患者さんが自分で調べて決める</li></ul></div></li>
+      <li><div class="when">数年のうちに</div><div><h3>AI が、自宅での相談から予約までを案内する</h3><ul><li><strong>簡易な見立て</strong>：AI が症状を聞き取り、救急車を呼ぶべきか、すぐ受診すべきか、様子を見てよいかの目安を示す</li><li><strong>助言と情報</strong>：家でできる手当て、気をつける変化、受診するなら何科か、を伝える</li><li><strong>簡易な問診</strong>：いつから・熱は・持病は・飲んでいる薬は、を会話で整理する</li><li><strong>医療機関探しと予約</strong>：いま開いていて、症状に合う近くの医療機関を探し、予約まで進める</li></ul></div></li>
+      <li><div class="when">その先</div><div><h3>受診の前後まで、一続きになる</h3><ul><li>本人の同意のもとで、整理した問診の内容を、受診前に医療機関へ渡す</li><li>持病や飲んでいる薬を踏まえて案内し、受診のあとの経過も見守る</li><li>診断と治療を決めるのは、これからも医師。AI は、そこへ正しくたどり着くための案内役になる</li></ul></div></li>
+    </ol>
+    <div class="precedent">
+      <strong>そのとき、AI に足りなくなるもの</strong>
+      <span>案内役の AI がどれだけ賢くなっても、「この医療機関は今日開いているか」「何を診てくれるか」「どう予約するか」「受診前に何を聞いておけばよいか」は、医療機関自身にしかわかりません。この情報が正しく、AI が読める形で出ていなければ、AI の案内はそこで間違えます。オープン問診票は、この<strong>医療機関の側の受け口</strong>を、誰でも無料で用意できるようにするものです。</span>
+    </div>
+  </section>
+
   <section class="block" aria-labelledby="h-how">
     <h2 id="h-how">仕組み</h2>
     <p class="intro">AI は患者さんの側にあるものとし、医療機関は「AI が読める形の公開情報」だけを用意します。</p>
@@ -222,6 +235,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       </div>
     </div>
   </section>
+
 
   <section class="block" aria-labelledby="h-post">
     <h2 id="h-post">一度掲示すれば、どのサービスも読みに来る</h2>
@@ -284,15 +298,6 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     </div>
   </section>
 
-  <section class="block" aria-labelledby="h-future">
-    <h2 id="h-future">これからの姿（予測）</h2>
-    <p class="intro">私たちが考える、これから数年の見通しです。約束ではなく予測ですが、この方向に向けて形式とツールを育てていきます。</p>
-    <ol class="timeline">
-      <li><div class="when">いま<small>〜1年</small></div><div><h3>先に置いた医療機関から使われ始める</h3><ul><li>医療機関は作成ツールでファイルを作り、ホームページに置く</li><li>患者さんが AI にホームページの住所を伝えると、AI が正しい診療時間・臨時の休診・予約方法を読み取る</li><li>医療者の意見を集め、救急の目安と問診票を確かなものにする</li></ul></div></li>
-      <li><div class="when">次の段階<small>2〜3年</small></div><div><h3>サービスの側が、自分から読みに来る</h3><ul><li>AI や検索サイトが、決まった場所のファイルを自動で探して読む。住所を伝えなくても、近くの医療機関の正しい情報で案内できる</li><li>予約システムや電子カルテが、ファイルを自動で作る。受付の画面で休診を入れれば、ファイルも自動で更新される</li><li>医師会や自治体が、地域の当番医の表をまとめて掲示する</li></ul></div></li>
-      <li><div class="when">その先<small>3〜5年</small></div><div><h3>相談から受診まで、一続きになる</h3><ul><li>自宅の AI に相談すると、まず救急の目安を確かめ、合う医療機関を選び、予約し、問診の答えを受診前に用意する</li><li>問診の答えは、患者さんの同意のもとで、患者さんの側から医療機関に渡す。医療機関のサーバーに情報をためない考え方はそのまま</li><li>営業時間と臨時の情報を自分で掲示する考え方が、医療以外の店や公共の施設にも広がる</li></ul></div></li>
-    </ol>
-  </section>
 
   <section class="block" aria-labelledby="h-ask">
     <div class="ask">
