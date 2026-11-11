@@ -407,6 +407,169 @@
     "notes": {
       "type": "string",
       "maxLength": 500
+    },
+    "preferences": {
+      "type": "object",
+      "description": "段階1: 受診先の好み（PERSONAL.md §2b）",
+      "properties": {
+        "homeArea": {
+          "type": "object",
+          "properties": {
+            "addressCountry": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            "addressRegion": {
+              "type": "string"
+            },
+            "addressLocality": {
+              "type": "string"
+            },
+            "nearestStation": {
+              "type": "string"
+            }
+          }
+        },
+        "travel": {
+          "type": "object",
+          "properties": {
+            "modes": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "walk",
+                  "bicycle",
+                  "train",
+                  "bus",
+                  "car",
+                  "taxi"
+                ]
+              }
+            },
+            "maxMinutes": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "availability": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "days": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "Mo",
+                    "Tu",
+                    "We",
+                    "Th",
+                    "Fr",
+                    "Sa",
+                    "Su",
+                    "PH"
+                  ]
+                }
+              },
+              "from": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+              },
+              "to": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "priorities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "regularDoctor",
+              "near",
+              "shortWait",
+              "openNow",
+              "specialty",
+              "reputation",
+              "language",
+              "accessibility"
+            ]
+          }
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "needs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "regularClinics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "url": {
+                "type": "string"
+              },
+              "department": {
+                "type": "string"
+              },
+              "since": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "pastClinics": {
+          "type": "array",
+          "description": "受診の記録のみ。医療機関への評価は扱わない（PERSONAL.md §2b）",
+          "items": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "url": {
+                "type": "string"
+              },
+              "department": {
+                "type": "string"
+              },
+              "lastVisit": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -17,7 +17,12 @@ const { chromium } = require('playwright'); const path = require('path'), fs = r
   const ex = fs.readFileSync('examples/personal/v0.1/my-health.json', 'utf8');
   await p.click('#tab-load'); await p.fill('#pasteBox', ex); await p.click('#loadPaste');
   r.roundtrip = await p.evaluate(j => JSON.stringify(OpenIntakePersonal.build()) === JSON.stringify(j), JSON.parse(ex));
-  await p.click('#tab-sheet'); await p.click('#showBtn'); await p.waitForTimeout(150);
+  await p.click('#tab-json'); await p.selectOption('#scope', 'stage1');
+  r.stage1Keys = await p.evaluate(() => Object.keys(JSON.parse(document.getElementById('json').textContent)));
+  r.saveLabel = await p.textContent('#saveJson'); await p.selectOption('#scope', 'all');
+  await p.fill('#pr-max', '45'); r.maxMinutes = await p.evaluate(() => JSON.parse(document.getElementById('json').textContent).preferences.travel.maxMinutes);
+  await p.click('#tab-sheet'); r.sheetHasRegular = (await p.textContent('#sheet')).includes('かかりつけ'); r.sheetHasPast = (await p.textContent('#sheet')).includes('わかば');
+  await p.click('#showBtn'); await p.waitForTimeout(150);
   await p.screenshot({ path: '/tmp/oi-me-show.png' }); await p.click('#exitShow');
   await p.emulateMedia({ media: 'print' }); await p.screenshot({ path: '/tmp/oi-me-print.png', fullPage: true }); await p.emulateMedia({ media: 'screen' });
   await p.setViewportSize({ width: 390, height: 800 }); await p.waitForTimeout(150);

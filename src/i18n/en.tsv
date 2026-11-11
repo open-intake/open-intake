@@ -272,6 +272,21 @@ a.postalCode && "〒" + a.postalCode	a.postalCode
 "　"	"  "
 .join("・")	.join(", ")
 # --- 自分の健康メモの検査のメッセージ ---
+preferences（受診先の好み）は { } にしてください。	preferences (clinic preferences) must be an object ({ }).
+`homeArea に「${k}」があります。番地など細かい住所は書かないでください。`	`homeArea contains "${k}". Do not include a street address.`
+travel は { } にしてください。	travel must be an object ({ }).
+travel.modes は walk・bicycle・train・bus・car・taxi から選んでください。	travel.modes must be chosen from walk, bicycle, train, bus, car, taxi.
+travel.maxMinutes は 1 以上の整数（分）にしてください。	travel.maxMinutes must be a whole number of minutes, 1 or more.
+availability は配列（[ ]）にしてください。	availability must be an array ([ ]).
+`受診しやすい時間 ${i+1}: 形が正しくありません。`	`Available time ${i+1}: not in the right form.`
+`受診しやすい時間 ${i+1}: 曜日は Mo〜Su と PH だけが使えます。`	`Available time ${i+1}: only Mo–Su and PH can be used as days.`
+`受診しやすい時間 ${i+1}: 時刻を 09:00 の形で入れてください。`	`Available time ${i+1}: enter times in the form 09:00.`
+`受診しやすい時間 ${i+1}: 始まりが終わりより後になっています。`	`Available time ${i+1}: the start is after the end.`
+`priorities は ${P.join(", ")} から、重ならないように選んでください。`	`priorities must be chosen from ${P.join(", ")}, without duplicates.`
+`${k} は配列（[ ]）にしてください。`	`${k} must be an array ([ ]).`
+(k === "regularClinics" ? "かかりつけ " : "過去の医療機関 ")	(k === "regularClinics" ? "Regular clinic " : "Past clinic ")
+`${label}: 医療機関の名前（name）が空です。`	`${label}: the clinic name (name) is empty.`
+`${label}: 「${f}」があります。医療機関への評価や感想は、この形式では扱いません。消してください。`	`${label}: "${f}" is present. Evaluations of or comments about clinics are not part of this format; please remove it.`
 updated（最後に確かめた日）は YYYY-MM-DD の形にしてください。	updated (date last checked) must be in the form YYYY-MM-DD.
 最後に確かめた日（updated）が1年以上前です。薬や持病が変わっていないか確かめてください。	The date last checked (updated) is more than a year ago. Check whether your medicines or conditions have changed.
 selfReported は true にしてください（本人の申告であるという宣言）。	selfReported must be true (a declaration that this is self-reported).

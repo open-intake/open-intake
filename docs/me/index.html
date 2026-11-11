@@ -85,6 +85,17 @@ button { font: inherit; cursor: pointer; border-radius: 4px; }
 .btn.small { padding: 3px 10px; font-size: 13px; }
 .icon-btn { border: 1px solid var(--rule); background: var(--field); color: var(--req); min-width: 30px; height: 28px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.stagehead { font-size: 20px; margin-top: 6px; display: grid; gap: 2px; }
+.stagehead small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; font-size: 13.5px; background: var(--field); cursor: pointer; }
+.chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.chip input { accent-color: var(--accent); margin: 0; }
+.prio { display: grid; gap: 6px; counter-reset: pr; }
+.prio li { list-style: none; display: flex; gap: 8px; align-items: center; border: 1px solid var(--rule); border-radius: 4px; padding: 4px 8px; background: var(--field); }
+.prio li::before { counter-increment: pr; content: counter(pr); font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+.prio li span { flex: 1; }
+.prio { margin: 0; padding: 0; }
 details.ai { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
 details.ai > summary { cursor: pointer; padding: 12px 16px; font-family: var(--font-display); font-weight: 700; }
 details.ai .body { padding: 0 16px 16px; display: grid; gap: 10px; }
@@ -177,6 +188,16 @@ body.showing #exitShow { display: inline-flex !important; position: fixed; top: 
 
 ### 聞く順番
 
+**段階1（受診先の好み）**を先に聞き、段階2（健康の情報）は「書きますか」と確かめてから進む。段階1だけで終えてもよい。
+
+段階1:
+1. 探すときの中心の地域（国・都道府県・市区町村・最寄り駅。番地は聞かない）、移動の手段とかけてよい時間
+2. ふだん受診しやすい曜日と時間帯
+3. 重視すること（かかりつけ・近さ・待ち時間・いま開いている・専門性・評判・言語・配慮）を大事な順に
+4. かかりつけの医療機関、過去にかかった医療機関（名前・診療科・最後にかかった時期だけ）。**医療機関の評価や感想は聞かない・書かない**
+5. 受診のときに使いたい言語、必要な配慮
+
+段階2:
 1. 生まれた年、性別（答えたくなければ省く）、話せる言語、住んでいる国と都道府県（州）
 2. 薬や食べ物のアレルギー（ないなら「ない」）
 3. いま使っている薬（お薬手帳の写真があれば、それを使う）。必要なときだけ使う薬も
@@ -196,6 +217,16 @@ body.showing #exitShow { display: inline-flex !important; position: fixed; top: 
   "updated": "今日の日付 YYYY-MM-DD",
   "selfReported": true,
   "person": { "birthYear": 1960, "sex": "female", "languages": ["ja"], "addressCountry": "JP", "addressRegion": "東京都" },
+  "preferences": {
+    "homeArea": { "addressCountry": "JP", "addressRegion": "東京都", "addressLocality": "市区町村", "nearestStation": "最寄り駅" },
+    "travel": { "modes": ["walk", "train"], "maxMinutes": 30 },
+    "availability": [ { "days": ["Sa"], "from": "09:00", "to": "12:00" } ],
+    "priorities": ["regularDoctor", "near", "shortWait"],
+    "languages": ["ja"],
+    "needs": ["必要な配慮"],
+    "regularClinics": [ { "name": "かかりつけの医療機関", "department": "内科" } ],
+    "pastClinics": [ { "name": "過去の医療機関", "department": "整形外科", "lastVisit": "YYYY-MM" } ]
+  },
   "allergies": [ { "substance": "何に対して", "category": "medication", "reaction": "どうなったか", "severity": "moderate" } ],
   "medications": [ { "name": "薬の名前（表記のまま）", "dose": "1回の量", "frequency": "飲み方", "status": "active", "source": { "type": "medication-notebook", "date": "YYYY-MM-DD", "transcribedBy": "ai", "checkedByMe": true } } ],
   "conditions": [ { "name": "病名（医師から聞いた名前）", "status": "active", "since": "YYYY" } ],
@@ -215,6 +246,7 @@ body.showing #exitShow { display: inline-flex !important; position: fixed; top: 
 - `pregnancy.status`: `pregnant`・`not-pregnant`・`possible`・`not-applicable`・`unknown`
 - `smoking`: `never`・`former`・`current`・`unknown`。`alcohol`: `none`・`occasional`・`regular`・`unknown`
 - 日付は `YYYY`・`YYYY-MM`・`YYYY-MM-DD`
+- `travel.modes`: `walk`・`bicycle`・`train`・`bus`・`car`・`taxi`。`priorities`: `regularDoctor`・`near`・`shortWait`・`openNow`・`specialty`・`reputation`・`language`・`accessibility`（大事な順）。曜日は `Mo`〜`Su`・`PH`
 
 JSON のあとに次を添える:
 &gt; 作成ツール（https://open-intake.github.io/open-intake/me/）の「貼り付けて確認」に貼り付けて確かめ、「保存」で my-health.json として手元に保存してください。
@@ -234,10 +266,13 @@ JSON のあとに次を添える:
    - 健康メモのうち、今回に関係がありそうなこと（持病・飲んでいる薬・アレルギー）
 4. 整理した内容を、**医療機関の窓口や医師に見せられる短いまとめ**にする（箇条書き、病名は書かない、本人の申告であることを書く）
 5. 受診したほうがよいか、いつ・どの診療科か、の**目安**を伝える。最後は本人が決め、迷うときは相談窓口や医療機関に電話するよう添える
-6. 受診先を探すときは、医療機関が公開している情報（clinic-intake.json があれば、それ）を使う。**私の持病や薬を理由に候補を減らさない。** 予約の段階で医療機関に伝えるのは、受診の理由と最低限だけにする
+6. 受診先を探すときは、健康メモの段階1（`preferences`）の重視する順・地域・移動・受診しやすい時間・かかりつけを使って候補を並べ、それぞれ理由を示す。過去にかかった医療機関は「前にかかったことがある」と伝える手がかりにだけ使い、医療機関には伝えない。医療機関の評価は聞かない・記録しない。評判を参考にするときは、出どころと「確かめられた情報ではない」ことを添える。医療機関が公開している情報（clinic-intake.json があれば、それ）を使う。**私の持病や薬を理由に候補を減らさない。** 予約の段階で医療機関に伝えるのは、受診の理由と最低限だけにする
 7. 健康メモのうち、AI が書き起こして本人が確かめていない項目（`transcribedBy: "ai"` で `checkedByMe` が true でないもの）は、そう断ったうえで使う</pre>
         </div>
       </details>
+      <h2 class="stagehead">段階1　受診先の好み<small>健康の情報は含みません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small></h2>
+      <section class="card" id="sec-pref"></section>
+      <h2 class="stagehead">段階2　健康の情報<small>書きたい人だけ。体調が悪いときの相談や、受診用シートに使います。</small></h2>
       <section class="card" id="sec-person"></section>
       <section class="card" id="sec-allergies"></section>
       <section class="card" id="sec-medications"></section>
@@ -269,8 +304,13 @@ JSON のあとに次を添える:
         <div class="sheetview" id="sheet"></div>
       </div>
       <div class="panel" id="panel-json" role="tabpanel" hidden>
+        <div class="field">
+          <label for="scope">書き出す範囲</label>
+          <select id="scope"><option value="all">すべて（段階1・段階2）</option><option value="stage1">段階1だけ（健康の情報を含まない）</option><option value="stage2">段階2だけ（受診先の好みを含まない）</option></select>
+        </div>
+        <p class="small" style="margin:0">⚠ AI に渡すのは、その相談に必要な範囲だけにしましょう。受診先を探すだけなら「段階1だけ」で足ります。</p>
         <div class="actions">
-          <button class="btn" type="button" id="saveJson">my-health.json を保存</button>
+          <button class="btn" type="button" id="saveJson">保存</button>
           <button class="btn ghost" type="button" id="copyJson">コピー</button>
           <span class="toast" id="jsonToast" role="status"></span>
         </div>
@@ -604,6 +644,44 @@ function validatePersonal(o) {
     if (!isObj(o.person)) err("H4", "person は { } にしてください。", "person");
     else for (const k of Object.keys(o.person)) if (!["birthYear","sex","languages","addressCountry","addressRegion"].includes(k)) warn("H7", `person に「${k}」があります。氏名・住所・番号などは書かないでください。`, "person." + k);
   }
+  if (o.preferences !== undefined) {
+    const pr = o.preferences;
+    if (!isObj(pr)) err("H9", "preferences（受診先の好み）は { } にしてください。", "preferences");
+    else {
+      if (isObj(pr.homeArea)) for (const k of Object.keys(pr.homeArea)) if (!["addressCountry","addressRegion","addressLocality","nearestStation"].includes(k)) warn("H7", `homeArea に「${k}」があります。番地など細かい住所は書かないでください。`, "preferences.homeArea." + k);
+      if (pr.travel !== undefined) {
+        if (!isObj(pr.travel)) err("H9", "travel は { } にしてください。", "preferences.travel");
+        else {
+          if (pr.travel.modes !== undefined && !(Array.isArray(pr.travel.modes) && pr.travel.modes.every(m => ["walk","bicycle","train","bus","car","taxi"].includes(m)))) err("H9", "travel.modes は walk・bicycle・train・bus・car・taxi から選んでください。", "preferences.travel.modes");
+          if (pr.travel.maxMinutes !== undefined && !(Number.isInteger(pr.travel.maxMinutes) && pr.travel.maxMinutes > 0)) err("H9", "travel.maxMinutes は 1 以上の整数（分）にしてください。", "preferences.travel.maxMinutes");
+        }
+      }
+      if (pr.availability !== undefined) {
+        if (!Array.isArray(pr.availability)) err("H9", "availability は配列（[ ]）にしてください。", "preferences.availability");
+        else pr.availability.forEach((a, i) => {
+          const w = `preferences.availability[${i}]`;
+          if (!isObj(a)) { err("H9", `受診しやすい時間 ${i+1}: 形が正しくありません。`, w); return; }
+          if (a.days !== undefined && !(Array.isArray(a.days) && a.days.every(d => DAY_KEYS.includes(d)))) err("H9", `受診しやすい時間 ${i+1}: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
+          if ((a.from !== undefined && !TIME_RE.test(a.from)) || (a.to !== undefined && !TIME_RE.test(a.to))) err("H9", `受診しやすい時間 ${i+1}: 時刻を 09:00 の形で入れてください。`, w);
+          else if (a.from && a.to && a.from >= a.to) err("H9", `受診しやすい時間 ${i+1}: 始まりが終わりより後になっています。`, w);
+        });
+      }
+      if (pr.priorities !== undefined) {
+        const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
+        if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities は ${P.join("・")} から、重ならないように選んでください。`, "preferences.priorities");
+      }
+      for (const k of ["regularClinics", "pastClinics"]) {
+        if (pr[k] === undefined) continue;
+        if (!Array.isArray(pr[k])) { err("H9", `${k} は配列（[ ]）にしてください。`, "preferences." + k); continue; }
+        pr[k].forEach((c, i) => {
+          const w = `preferences.${k}[${i}]`, label = (k === "regularClinics" ? "かかりつけ " : "過去の医療機関 ") + (i + 1);
+          if (!isObj(c) || !isStr(c.name)) { err("H9", `${label}: 医療機関の名前（name）が空です。`, w); return; }
+          for (const f of Object.keys(c)) if (!["name","url","department","since","lastVisit","note"].includes(f) || (k === "pastClinics" && f === "note")) warn("H10", `${label}: 「${f}」があります。医療機関への評価や感想は、この形式では扱いません。消してください。`, `${w}.${f}`);
+          for (const f of ["since","lastVisit"]) if (c[f] !== undefined && !PDATE.test(String(c[f]))) err("H5", `${label}: ${f} は YYYY・YYYY-MM・YYYY-MM-DD のどれかにしてください。`, `${w}.${f}`);
+        });
+      }
+    }
+  }
   const checkSrc = (x, w, label) => {
     if (x.source === undefined) return;
     if (!isObj(x.source)) { err("H4", `${label}: source は { } にしてください。`, w + ".source"); return; }
@@ -659,6 +737,9 @@ const SEX = [["", "答えない"],["female","女性"],["male","男性"],["other"
 const PREG = [["", "—"],["not-applicable","あてはまらない"],["not-pregnant","妊娠していない"],["possible","可能性がある"],["pregnant","妊娠している"],["unknown","わからない"]];
 const SMOKE = [["", "—"],["never","吸わない"],["former","以前吸っていた"],["current","吸っている"],["unknown","わからない"]];
 const ALC = [["", "—"],["none","飲まない"],["occasional","ときどき"],["regular","よく飲む"],["unknown","わからない"]];
+const MODES = [["walk","徒歩"],["bicycle","自転車"],["train","電車"],["bus","バス"],["car","車"],["taxi","タクシー"]];
+const PRIOS = [["regularDoctor","かかりつけ"],["near","近さ"],["shortWait","待ち時間の短さ"],["openNow","いま開いている"],["specialty","専門性・得意分野"],["reputation","評判"],["language","言語"],["accessibility","配慮・設備"]];
+const DAYS = [["Mo","月"],["Tu","火"],["We","水"],["Th","木"],["Fr","金"],["Sa","土"],["Su","日"],["PH","祝"]];
 const label = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
 // 今回の症状を整理する項目（PERSONAL.md §5a）。ファイルには保存しない
 const VISIT = [["onset", "いつから", "例: 昨日の夜から・急に"], ["where", "どこが", "例: 頭の右側・こめかみ"], ["quality", "どんなふうに", "例: ずきずき・締めつけられる"], ["severity", "どのくらい（0〜10）", "例: 7"],
@@ -669,6 +750,11 @@ function blank() { return { spec: "open-intake-personal", specVersion: "0.1", up
 function example() {
   return { spec: "open-intake-personal", specVersion: "0.1", updated: today(), selfReported: true, policy: POLICY,
     person: { birthYear: 1960, sex: "female", languages: ["ja"], addressCountry: "JP", addressRegion: "東京都" },
+    preferences: { homeArea: { addressCountry: "JP", addressRegion: "東京都", addressLocality: "千代田区", nearestStation: "みどり台駅（架空）" }, travel: { modes: ["walk","train"], maxMinutes: 30 },
+      availability: [{ days: ["Sa"], from: "09:00", to: "12:00", note: "平日は仕事" }, { days: ["Mo","Tu","We","Th","Fr"], from: "18:00", to: "20:00" }],
+      priorities: ["regularDoctor","near","shortWait","specialty","openNow"], languages: ["ja"], needs: ["待合室で座って待ちたい"],
+      regularClinics: [{ name: "みどり台内科クリニック（架空）", department: "内科", url: "https://example.com/clinic-intake.json", since: "2020" }],
+      pastClinics: [{ name: "わかば整形外科（架空）", department: "整形外科", lastVisit: "2025-03" }] },
     allergies: [{ substance: "ペニシリン系の抗菌薬", category: "medication", reaction: "じんましん", severity: "moderate", since: "2015", source: { type: "self", transcribedBy: "self", checkedByMe: true } }],
     medications: [{ name: "アムロジピン錠5mg", dose: "1回1錠", frequency: "1日1回 朝食後", status: "active", since: "2020-04", reason: "血圧", source: { type: "medication-notebook", date: "2026-10-01", transcribedBy: "ai", checkedByMe: true } },
                   { name: "ロキソプロフェン錠60mg", dose: "1回1錠", frequency: "痛いとき", status: "as-needed", source: { type: "medication-label", date: "2026-08-20", transcribedBy: "ai", checkedByMe: false } }],
@@ -698,6 +784,45 @@ const input = (id, get, set, ph, type = "text") => h("input", { type, id, value:
 const select = (id, opts, get, set) => h("select", { id, value: get() ?? "", onchange: e => { set(e.target.value); changed(); } }, opts.map(([v, n]) => h("option", { value: v, text: n })));
 const clean = o => { for (const k of Object.keys(o)) if (o[k] === "" || o[k] == null) delete o[k]; return o; };
 
+function rowsEditor(arr, fields, rerender, addLabel, removeLabel) {
+  return [h("div", { class: "rows" }, arr.map((it, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" }, h("span", { class: "num", text: String(i + 1) }), h("span", { class: "spacer" }), h("button", { type: "button", class: "icon-btn", "aria-label": `${removeLabel} ${i + 1} を消す`, onclick: () => { arr.splice(i, 1); rerender(); changed(); } }, "×")),
+      h("div", { class: "grid" }, fields.map(f => f(it, i)))))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { arr.push({}); rerender(); changed(); } }, addLabel))];
+}
+function txt(obj, key, id, lab, ph, type) { return field(id, lab, input(id, () => obj[key], v => { if (String(v).trim()) obj[key] = type === "number" ? parseInt(v, 10) : String(v).trim(); else delete obj[key]; }, ph, type || "text")); }
+function renderPref() {
+  const el = $("sec-pref"), P = D.preferences = D.preferences || {}; el.replaceChildren();
+  const ha = P.homeArea = P.homeArea || {}, tr = P.travel = P.travel || {};
+  const av = P.availability = P.availability || [], pr = P.priorities = P.priorities || [];
+  const rc = P.regularClinics = P.regularClinics || [], pc = P.pastClinics = P.pastClinics || [];
+  el.append(
+    h("header", {}, h("h2", { text: "受診先の好み" }), h("span", { class: "k", text: "preferences" })),
+    h("h3", { style: "font-size:15px", text: "探すときの地域と移動" }),
+    h("div", { class: "grid" }, txt(ha, "addressCountry", "pr-cc", "国（2文字）", "JP"), txt(ha, "addressRegion", "pr-rg", "都道府県・州", "例: 東京都"), txt(ha, "addressLocality", "pr-lc", "市区町村", "例: 千代田区"), txt(ha, "nearestStation", "pr-st", "最寄り駅（任意）", "番地は書かない")),
+    h("div", { class: "chips", role: "group", "aria-label": "移動の手段" }, MODES.map(([k, n]) => h("label", { class: "chip" }, h("input", { type: "checkbox", id: "pr-m-" + k, checked: (tr.modes || []).includes(k), onchange: e => { const m = new Set(tr.modes || []); e.target.checked ? m.add(k) : m.delete(k); tr.modes = MODES.map(x => x[0]).filter(x => m.has(x)); if (!tr.modes.length) delete tr.modes; changed(); } }), n))),
+    h("div", { class: "grid" }, txt(tr, "maxMinutes", "pr-max", "移動にかけてよい時間（分）", "例: 30", "number")),
+    h("h3", { style: "font-size:15px", text: "ふだん受診しやすい時間" }),
+    ...rowsEditor(av, [
+      (it, i) => h("div", { class: "chips", style: "grid-column:1/-1" }, DAYS.map(([k, n]) => h("label", { class: "chip" }, h("input", { type: "checkbox", id: `pr-av-${i}-${k}`, checked: (it.days || []).includes(k), onchange: e => { const d = new Set(it.days || []); e.target.checked ? d.add(k) : d.delete(k); it.days = DAYS.map(x => x[0]).filter(x => d.has(x)); if (!it.days.length) delete it.days; changed(); } }), n))),
+      (it, i) => txt(it, "from", `pr-av-${i}-f`, "から", "", "time"), (it, i) => txt(it, "to", `pr-av-${i}-t`, "まで", "", "time"), (it, i) => txt(it, "note", `pr-av-${i}-n`, "補足", "例: 平日は仕事")
+    ], renderPref, "＋ 時間帯を足す", "時間帯"),
+    h("h3", { style: "font-size:15px", text: "重視すること（大事な順）" }),
+    h("ol", { class: "prio" }, pr.map((k, i) => h("li", {}, h("span", { text: label(PRIOS, k) }),
+      h("button", { type: "button", class: "icon-btn", style: "color:var(--ink)", "aria-label": "上へ", disabled: i === 0 || null, onclick: () => { [pr[i - 1], pr[i]] = [pr[i], pr[i - 1]]; renderPref(); changed(); } }, "↑"),
+      h("button", { type: "button", class: "icon-btn", "aria-label": `${label(PRIOS, k)} を外す`, onclick: () => { pr.splice(i, 1); renderPref(); changed(); } }, "×")))),
+    !PRIOS.some(([k]) => !pr.includes(k)) ? "" : h("div", { class: "actions" }, h("select", { id: "pr-add", style: "width:auto", "aria-label": "重視することを足す", onchange: e => { if (e.target.value) { pr.push(e.target.value); renderPref(); changed(); } } },
+      h("option", { value: "", text: "＋ 重視することを足す" }), PRIOS.filter(([k]) => !pr.includes(k)).map(([k, n]) => h("option", { value: k, text: n })))),
+    !pr.includes("reputation") ? "" : h("p", { class: "small", style: "margin:0", text: "評判は、この形式では提供しません。AI がネットの口コミなどを参考にするときは、出どころと「確かめられた情報ではない」ことを添えます。" }),
+    h("div", { class: "grid" },
+      field("pr-lang", "受診のときに使いたい言語（コード）", input("pr-lang", () => (P.languages || []).join(", "), v => { const a = v.split(/[,\s\u3001]+/).filter(Boolean); if (a.length) P.languages = a; else delete P.languages; }, "例: ja")),
+      field("pr-needs", "必要な配慮（1行に1つ）", h("textarea", { id: "pr-needs", rows: 2, value: (P.needs || []).join("\n"), placeholder: "例: 車椅子で入れる", oninput: e => { const a = e.target.value.split("\n").map(x => x.trim()).filter(Boolean); if (a.length) P.needs = a; else delete P.needs; changed(); } }))),
+    h("h3", { style: "font-size:15px", text: "かかりつけの医療機関" }),
+    ...rowsEditor(rc, [(it, i) => txt(it, "name", `pr-rc-${i}-n`, "名前", ""), (it, i) => txt(it, "department", `pr-rc-${i}-d`, "診療科", "例: 内科"), (it, i) => txt(it, "url", `pr-rc-${i}-u`, "clinic-intake.json の場所（あれば）", "https://"), (it, i) => txt(it, "since", `pr-rc-${i}-s`, "いつから", "例: 2020")], renderPref, "＋ かかりつけを足す", "かかりつけ"),
+    h("h3", { style: "font-size:15px", text: "過去にかかった医療機関（記録だけ）" }),
+    h("p", { class: "small", style: "margin:0", text: "医療機関の評価や感想は書きません。この記録は受診用シートにも出ず、医療機関には渡しません。" }),
+    ...rowsEditor(pc, [(it, i) => txt(it, "name", `pr-pc-${i}-n`, "名前", ""), (it, i) => txt(it, "department", `pr-pc-${i}-d`, "診療科", ""), (it, i) => txt(it, "lastVisit", `pr-pc-${i}-l`, "最後にかかった時期", "例: 2025-03")], renderPref, "＋ 記録を足す", "記録"));
+}
 function renderPerson() {
   const el = $("sec-person"), p = D.person = D.person || {}; el.replaceChildren();
   el.append(h("header", {}, h("h2", { text: "わたしについて" }), h("span", { class: "k", text: "person" })),
@@ -751,12 +876,25 @@ function renderVisit() {
   const el = $("visitFields"); if (el.childElementCount) return;
   el.append(...VISIT.map(([k, lab, ph]) => field("v-" + k, lab, h("input", { type: "text", id: "v-" + k, placeholder: ph, oninput: e => { V[k] = e.target.value.trim(); renderSheet(); } }))));
 }
-function renderAll() { renderVisit(); renderPerson(); for (const k of Object.keys(LISTS)) renderList(k); renderOther(); renderNotice(); changed(true); }
+function renderAll() { renderVisit(); renderPref(); renderPerson(); for (const k of Object.keys(LISTS)) renderList(k); renderOther(); renderNotice(); changed(true); }
 
 // ---------- 出力 ----------
 function build() {
   const o = { spec: "open-intake-personal", specVersion: "0.1", updated: D.updated || today(), selfReported: true, policy: POLICY };
   const p = clean({ ...D.person }); if (Object.keys(p).length) o.person = p;
+  if (D.preferences) {
+    const P = D.preferences, q = {};
+    const ha = clean({ ...(P.homeArea || {}) }); if (Object.keys(ha).length) q.homeArea = ha;
+    const tr = clean({ ...(P.travel || {}) }); if (tr.maxMinutes !== undefined && !(tr.maxMinutes > 0)) delete tr.maxMinutes; if (Object.keys(tr).length) q.travel = tr;
+    const av = (P.availability || []).map(a => clean({ ...a })).filter(a => Object.keys(a).length); if (av.length) q.availability = av;
+    if (P.priorities && P.priorities.length) q.priorities = [...P.priorities];
+    if (P.languages && P.languages.length) q.languages = [...P.languages];
+    if (P.needs && P.needs.length) q.needs = [...P.needs];
+    for (const [k, keys] of [["regularClinics", ["name","department","url","since"]], ["pastClinics", ["name","department","url","lastVisit"]]]) {
+      const a = (P[k] || []).map(c => { const x = {}; for (const f of keys) if (c[f]) x[f] = c[f]; return x; }).filter(c => c.name); if (a.length) q[k] = a;
+    }
+    if (Object.keys(q).length) o.preferences = q;
+  }
   for (const k of Object.keys(LISTS)) {
     if (D[k] === undefined) continue;
     const order = LISTS[k].fields.map(f => f[0]);
@@ -773,11 +911,14 @@ function build() {
   return o;
 }
 let out = null, saveT = 0;
+const STAGE1 = ["preferences"], STAGE2 = ["person","allergies","medications","conditions","procedures","immunizations","pregnancy","lifestyle","notes"];
+function scoped(o) { const sc = $("scope").value; if (sc === "all") return o; const drop = sc === "stage1" ? STAGE2 : STAGE1; const x = {}; for (const [k, v] of Object.entries(o)) if (!drop.includes(k)) x[k] = v; return x; }
+const fileName = () => ({ all: "my-health.json", stage1: "my-health-preferences.json", stage2: "my-health-medical.json" })[$("scope").value];
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 function changed(now) {
   if (!D) return;
   out = build();
-  $("json").innerHTML = esc(JSON.stringify(out, null, 2)).replace(/("(?:\\.|[^"\\])*")(\s*:)?/g, (m, s, c) => c ? `<span class="k">${s}</span>${c}` : `<span class="s">${s}</span>`);
+  $("json").innerHTML = esc(JSON.stringify(scoped(out), null, 2)).replace(/("(?:\\.|[^"\\])*")(\s*:)?/g, (m, s, c) => c ? `<span class="k">${s}</span>${c}` : `<span class="s">${s}</span>`);
   const r = OpenIntakeValidate.validate(out);
   const st = $("status"); st.replaceChildren(h("span", { class: "dot" }));
   if (r.E.length) { st.className = "status err"; st.append(`直すところが ${r.E.length} 件${r.W.length ? `、確かめるところが ${r.W.length} 件` : ""}あります。`); }
@@ -804,6 +945,7 @@ function renderSheet() {
     h("div", { class: "meta" }, h("span", { text: `作成: ${o.updated}` }), age != null && h("span", { text: `年齢: 約${age}歳（${p.birthYear}年生まれ）` }), p.sex && h("span", { text: `性別: ${label(SEX, p.sex)}` }), p.languages && h("span", { text: `言語: ${p.languages.join(", ")}` })),
     h("div", { class: "self", text: "これは本人が自分の責任で書いたメモ（自己申告）です。医療機関の記録ではありません。診療の参考としてお使いください。" }),
     visit.length > 0 && h("section", {}, h("h4", { text: "今回の症状（本人の申告）" }), h("table", {}, h("tbody", {}, visit.map(([k, lab]) => h("tr", {}, h("th", { text: lab, style: "width:34%" }), h("td", { text: V[k] })))))),
+    o.preferences && o.preferences.regularClinics && h("section", {}, h("h4", { text: "かかりつけの医療機関" }), h("ul", {}, o.preferences.regularClinics.map(c => h("li", { text: [c.name, c.department].filter(Boolean).join("（") + (c.department ? "）" : "") })))),
     h("section", {}, h("h4", { text: "アレルギー" }), listOrState("allergies", a => h("ul", {}, a.map(x => h("li", {}, h("span", { class: "alert", text: x.substance }), x.reaction ? `：${x.reaction}` : "", x.severity ? `（${label(LISTS.allergies.fields[3][3], x.severity)}）` : "", un(x)))))),
     h("section", {}, h("h4", { text: "使っている薬" }), listOrState("medications", a => h("table", {}, h("thead", {}, h("tr", {}, ["薬の名前", "量・飲み方", "状態", "出どころ"].map(t => h("th", { text: t })))),
       h("tbody", {}, a.map(x => h("tr", {}, h("td", {}, x.name, un(x)), h("td", { text: [x.dose, x.frequency].filter(Boolean).join(" ") }), h("td", { text: x.status ? label(LISTS.medications.fields[3][3], x.status) : "" }), h("td", { text: x.source ? [label(SRC_TYPES, x.source.type || ""), x.source.date].filter(Boolean).join(" ") : "" }))))))),
@@ -833,12 +975,13 @@ function copy(text, toast, el) {
   const fb = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("選択しました。Ctrl+C（⌘+C）でコピーしてください。"); };
   try { navigator.clipboard.writeText(text).then(() => done("コピーしました。"), fb); } catch (_) { fb(); }
 }
-$("copyJson").addEventListener("click", () => copy(JSON.stringify(out, null, 2) + "\n", $("jsonToast"), $("json")));
+$("copyJson").addEventListener("click", () => copy(JSON.stringify(scoped(out), null, 2) + "\n", $("jsonToast"), $("json")));
+$("scope").addEventListener("change", () => { $("saveJson").textContent = fileName() + " を保存"; changed(); });
 $("copyMake").addEventListener("click", () => { $("promptUse").hidden = true; $("promptMake").hidden = false; copy($("promptMake").textContent.trim() + "\n", $("promptToast"), $("promptMake")); });
 $("copyUse").addEventListener("click", () => { $("promptMake").hidden = true; $("promptUse").hidden = false; copy($("promptUse").textContent.trim() + "\n", $("promptToast"), $("promptUse")); });
 $("saveJson").addEventListener("click", () => {
-  const b = new Blob([JSON.stringify(out, null, 2) + "\n"], { type: "application/json" });
-  const a = h("a", { href: URL.createObjectURL(b), download: "my-health.json" }); document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  const b = new Blob([JSON.stringify(scoped(out), null, 2) + "\n"], { type: "application/json" });
+  const a = h("a", { href: URL.createObjectURL(b), download: fileName() }); document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 });
 function load(text) {
   const list = $("pasteIssues"), toast = $("pasteToast"); list.replaceChildren(); toast.textContent = "";

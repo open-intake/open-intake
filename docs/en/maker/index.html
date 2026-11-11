@@ -683,6 +683,44 @@ function validatePersonal(o) {
     if (!isObj(o.person)) err("H4", "person must be an object ({ }).", "person");
     else for (const k of Object.keys(o.person)) if (!["birthYear","sex","languages","addressCountry","addressRegion"].includes(k)) warn("H7", `person contains "${k}". Do not include names, addresses or ID numbers.`, "person." + k);
   }
+  if (o.preferences !== undefined) {
+    const pr = o.preferences;
+    if (!isObj(pr)) err("H9", "preferences (clinic preferences) must be an object ({ }).", "preferences");
+    else {
+      if (isObj(pr.homeArea)) for (const k of Object.keys(pr.homeArea)) if (!["addressCountry","addressRegion","addressLocality","nearestStation"].includes(k)) warn("H7", `homeArea contains "${k}". Do not include a street address.`, "preferences.homeArea." + k);
+      if (pr.travel !== undefined) {
+        if (!isObj(pr.travel)) err("H9", "travel must be an object ({ }).", "preferences.travel");
+        else {
+          if (pr.travel.modes !== undefined && !(Array.isArray(pr.travel.modes) && pr.travel.modes.every(m => ["walk","bicycle","train","bus","car","taxi"].includes(m)))) err("H9", "travel.modes must be chosen from walk, bicycle, train, bus, car, taxi.", "preferences.travel.modes");
+          if (pr.travel.maxMinutes !== undefined && !(Number.isInteger(pr.travel.maxMinutes) && pr.travel.maxMinutes > 0)) err("H9", "travel.maxMinutes must be a whole number of minutes, 1 or more.", "preferences.travel.maxMinutes");
+        }
+      }
+      if (pr.availability !== undefined) {
+        if (!Array.isArray(pr.availability)) err("H9", "availability must be an array ([ ]).", "preferences.availability");
+        else pr.availability.forEach((a, i) => {
+          const w = `preferences.availability[${i}]`;
+          if (!isObj(a)) { err("H9", `Available time ${i+1}: not in the right form.`, w); return; }
+          if (a.days !== undefined && !(Array.isArray(a.days) && a.days.every(d => DAY_KEYS.includes(d)))) err("H9", `Available time ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
+          if ((a.from !== undefined && !TIME_RE.test(a.from)) || (a.to !== undefined && !TIME_RE.test(a.to))) err("H9", `Available time ${i+1}: enter times in the form 09:00.`, w);
+          else if (a.from && a.to && a.from >= a.to) err("H9", `Available time ${i+1}: the start is after the end.`, w);
+        });
+      }
+      if (pr.priorities !== undefined) {
+        const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
+        if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities must be chosen from ${P.join(", ")}, without duplicates.`, "preferences.priorities");
+      }
+      for (const k of ["regularClinics", "pastClinics"]) {
+        if (pr[k] === undefined) continue;
+        if (!Array.isArray(pr[k])) { err("H9", `${k} must be an array ([ ]).`, "preferences." + k); continue; }
+        pr[k].forEach((c, i) => {
+          const w = `preferences.${k}[${i}]`, label = (k === "regularClinics" ? "Regular clinic " : "Past clinic ") + (i + 1);
+          if (!isObj(c) || !isStr(c.name)) { err("H9", `${label}: the clinic name (name) is empty.`, w); return; }
+          for (const f of Object.keys(c)) if (!["name","url","department","since","lastVisit","note"].includes(f) || (k === "pastClinics" && f === "note")) warn("H10", `${label}: "${f}" is present. Evaluations of or comments about clinics are not part of this format; please remove it.`, `${w}.${f}`);
+          for (const f of ["since","lastVisit"]) if (c[f] !== undefined && !PDATE.test(String(c[f]))) err("H5", `${label}: ${f} must be YYYY, YYYY-MM or YYYY-MM-DD.`, `${w}.${f}`);
+        });
+      }
+    }
+  }
   const checkSrc = (x, w, label) => {
     if (x.source === undefined) return;
     if (!isObj(x.source)) { err("H4", `${label}: source must be an object ({ }).`, w + ".source"); return; }

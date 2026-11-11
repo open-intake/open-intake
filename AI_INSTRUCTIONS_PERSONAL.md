@@ -25,6 +25,16 @@
 
 ### 聞く順番
 
+**段階1（受診先の好み）**を先に聞き、段階2（健康の情報）は「書きますか」と確かめてから進む。段階1だけで終えてもよい。
+
+段階1:
+1. 探すときの中心の地域（国・都道府県・市区町村・最寄り駅。番地は聞かない）、移動の手段とかけてよい時間
+2. ふだん受診しやすい曜日と時間帯
+3. 重視すること（かかりつけ・近さ・待ち時間・いま開いている・専門性・評判・言語・配慮）を大事な順に
+4. かかりつけの医療機関、過去にかかった医療機関（名前・診療科・最後にかかった時期だけ）。**医療機関の評価や感想は聞かない・書かない**
+5. 受診のときに使いたい言語、必要な配慮
+
+段階2:
 1. 生まれた年、性別（答えたくなければ省く）、話せる言語、住んでいる国と都道府県（州）
 2. 薬や食べ物のアレルギー（ないなら「ない」）
 3. いま使っている薬（お薬手帳の写真があれば、それを使う）。必要なときだけ使う薬も
@@ -44,6 +54,16 @@
   "updated": "今日の日付 YYYY-MM-DD",
   "selfReported": true,
   "person": { "birthYear": 1960, "sex": "female", "languages": ["ja"], "addressCountry": "JP", "addressRegion": "東京都" },
+  "preferences": {
+    "homeArea": { "addressCountry": "JP", "addressRegion": "東京都", "addressLocality": "市区町村", "nearestStation": "最寄り駅" },
+    "travel": { "modes": ["walk", "train"], "maxMinutes": 30 },
+    "availability": [ { "days": ["Sa"], "from": "09:00", "to": "12:00" } ],
+    "priorities": ["regularDoctor", "near", "shortWait"],
+    "languages": ["ja"],
+    "needs": ["必要な配慮"],
+    "regularClinics": [ { "name": "かかりつけの医療機関", "department": "内科" } ],
+    "pastClinics": [ { "name": "過去の医療機関", "department": "整形外科", "lastVisit": "YYYY-MM" } ]
+  },
   "allergies": [ { "substance": "何に対して", "category": "medication", "reaction": "どうなったか", "severity": "moderate" } ],
   "medications": [ { "name": "薬の名前（表記のまま）", "dose": "1回の量", "frequency": "飲み方", "status": "active", "source": { "type": "medication-notebook", "date": "YYYY-MM-DD", "transcribedBy": "ai", "checkedByMe": true } } ],
   "conditions": [ { "name": "病名（医師から聞いた名前）", "status": "active", "since": "YYYY" } ],
@@ -63,6 +83,7 @@
 - `pregnancy.status`: `pregnant`・`not-pregnant`・`possible`・`not-applicable`・`unknown`
 - `smoking`: `never`・`former`・`current`・`unknown`。`alcohol`: `none`・`occasional`・`regular`・`unknown`
 - 日付は `YYYY`・`YYYY-MM`・`YYYY-MM-DD`
+- `travel.modes`: `walk`・`bicycle`・`train`・`bus`・`car`・`taxi`。`priorities`: `regularDoctor`・`near`・`shortWait`・`openNow`・`specialty`・`reputation`・`language`・`accessibility`（大事な順）。曜日は `Mo`〜`Su`・`PH`
 
 JSON のあとに次を添える:
 > 作成ツール（https://open-intake.github.io/open-intake/me/）の「貼り付けて確認」に貼り付けて確かめ、「保存」で my-health.json として手元に保存してください。
@@ -93,7 +114,25 @@ my-health.json を添付するか中身を貼り付け、続けて今の症状�
    - 健康メモのうち、今回に関係がありそうなこと（持病・飲んでいる薬・アレルギー）
 4. 整理した内容を、**医療機関の窓口や医師に見せられる短いまとめ**にする（箇条書き、病名は書かない、本人の申告であることを書く）
 5. 受診したほうがよいか、いつ・どの診療科か、の**目安**を伝える。最後は本人が決め、迷うときは相談窓口や医療機関に電話するよう添える
-6. 受診先を探すときは、医療機関が公開している情報（clinic-intake.json があれば、それ）を使う。**私の持病や薬を理由に候補を減らさない。** 予約の段階で医療機関に伝えるのは、受診の理由と最低限だけにする
+6. 受診先を探すときは、健康メモの段階1（`preferences`）の重視する順・地域・移動・受診しやすい時間・かかりつけを使って候補を並べ、それぞれ理由を示す。過去にかかった医療機関は「前にかかったことがある」と伝える手がかりにだけ使い、医療機関には伝えない。医療機関の評価は聞かない・記録しない。評判を参考にするときは、出どころと「確かめられた情報ではない」ことを添える。医療機関が公開している情報（clinic-intake.json があれば、それ）を使う。**私の持病や薬を理由に候補を減らさない。** 予約の段階で医療機関に伝えるのは、受診の理由と最低限だけにする
 7. 健康メモのうち、AI が書き起こして本人が確かめていない項目（`transcribedBy: "ai"` で `checkedByMe` が true でないもの）は、そう断ったうえで使う
 
 ## ここまで（体調が悪いとき）
+
+---
+
+## C. 受診のあと（好みを更新する）
+
+受診のあと、my-health.json を添付して送ってください。段階1を育てる習慣にすると、次からの提案があなたに合ったものになります。
+
+## ここから（受診のあと）
+
+これから私の健康メモ（my-health.json）を渡します。今回の受診のあとに、段階1（`preferences`・受診先の好み）を更新する手伝いをしてください。
+
+1. 次を1つずつ聞く: どこに受診したか（名前・診療科。受診の記録として残すか）／かかりつけに加えるか／重視することの順番は変わったか／受診しやすい時間や移動は変わったか
+2. **医療機関の評価や感想は聞かない・記録しない。** 私が感想を言っても、ファイルに評価として残さない
+3. 診断や治療の内容は聞かない・記録しない（段階2を変えたいと私が言ったときだけ扱う）
+4. 変えるところを表にして見せ、私が「はい」と言ったものだけ反映する。勝手に書き換えない
+5. 最後に、更新した my-health.json 全体を JSON だけで1つのコードブロックに出す。`updated` を今日の日付にする
+
+## ここまで（受診のあと）

@@ -16,6 +16,70 @@
     "addressCountry": "JP",
     "addressRegion": "東京都"
   },
+  "preferences": {
+    "homeArea": {
+      "addressCountry": "JP",
+      "addressRegion": "東京都",
+      "addressLocality": "千代田区",
+      "nearestStation": "みどり台駅（架空）"
+    },
+    "travel": {
+      "modes": [
+        "walk",
+        "train"
+      ],
+      "maxMinutes": 30
+    },
+    "availability": [
+      {
+        "days": [
+          "Sa"
+        ],
+        "from": "09:00",
+        "to": "12:00",
+        "note": "平日は仕事"
+      },
+      {
+        "days": [
+          "Mo",
+          "Tu",
+          "We",
+          "Th",
+          "Fr"
+        ],
+        "from": "18:00",
+        "to": "20:00"
+      }
+    ],
+    "priorities": [
+      "regularDoctor",
+      "near",
+      "shortWait",
+      "specialty",
+      "openNow"
+    ],
+    "languages": [
+      "ja"
+    ],
+    "needs": [
+      "待合室で座って待ちたい"
+    ],
+    "regularClinics": [
+      {
+        "name": "みどり台内科クリニック（架空）",
+        "department": "内科",
+        "url": "https://example.com/clinic-intake.json",
+        "since": "2020"
+      }
+    ],
+    "pastClinics": [
+      {
+        "name": "わかば整形外科（架空）",
+        "department": "整形外科",
+        "lastVisit": "2025-03"
+      }
+    ]
+  },
   "allergies": [
     {
       "substance": "ペニシリン系の抗菌薬",
