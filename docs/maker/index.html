@@ -836,14 +836,15 @@ function validatePersonal(o) {
         const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
         if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities は ${P.join("・")} から、重ならないように選んでください。`, "preferences.priorities");
       }
-      for (const k of ["regularClinics", "pastClinics"]) {
+      if (pr.pastClinics !== undefined) warn("H10", "pastClinics（過去の医療機関）は、この形式では扱いません。よかったところは regularClinics（かかりつけ）に登録してください。", "preferences.pastClinics");
+      for (const k of ["regularClinics"]) {
         if (pr[k] === undefined) continue;
         if (!Array.isArray(pr[k])) { err("H9", `${k} は配列（[ ]）にしてください。`, "preferences." + k); continue; }
         pr[k].forEach((c, i) => {
-          const w = `preferences.${k}[${i}]`, label = (k === "regularClinics" ? "かかりつけ " : "過去の医療機関 ") + (i + 1);
+          const w = `preferences.${k}[${i}]`, label = "かかりつけ " + (i + 1);
           if (!isObj(c) || !isStr(c.name)) { err("H9", `${label}: 医療機関の名前（name）が空です。`, w); return; }
-          for (const f of Object.keys(c)) if (!["name","url","department","since","lastVisit","note"].includes(f) || (k === "pastClinics" && f === "note")) warn("H10", `${label}: 「${f}」があります。医療機関への評価や感想は、この形式では扱いません。消してください。`, `${w}.${f}`);
-          for (const f of ["since","lastVisit"]) if (c[f] !== undefined && !PDATE.test(String(c[f]))) err("H5", `${label}: ${f} は YYYY・YYYY-MM・YYYY-MM-DD のどれかにしてください。`, `${w}.${f}`);
+          for (const f of Object.keys(c)) if (!["name","url","department","since","note"].includes(f)) warn("H10", `${label}: 「${f}」があります。医療機関への評価や感想は、この形式では扱いません。消してください。`, `${w}.${f}`);
+          for (const f of ["since"]) if (c[f] !== undefined && !PDATE.test(String(c[f]))) err("H5", `${label}: ${f} は YYYY・YYYY-MM・YYYY-MM-DD のどれかにしてください。`, `${w}.${f}`);
         });
       }
     }

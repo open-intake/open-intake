@@ -71,13 +71,6 @@
         "url": "https://example.com/clinic-intake.json",
         "since": "2020"
       }
-    ],
-    "pastClinics": [
-      {
-        "name": "わかば整形外科（架空）",
-        "department": "整形外科",
-        "lastVisit": "2025-03"
-      }
     ]
   },
   "allergies": [

@@ -284,7 +284,8 @@ availability は配列（[ ]）にしてください。	availability must be an 
 `受診しやすい時間 ${i+1}: 始まりが終わりより後になっています。`	`Available time ${i+1}: the start is after the end.`
 `priorities は ${P.join(", ")} から、重ならないように選んでください。`	`priorities must be chosen from ${P.join(", ")}, without duplicates.`
 `${k} は配列（[ ]）にしてください。`	`${k} must be an array ([ ]).`
-(k === "regularClinics" ? "かかりつけ " : "過去の医療機関 ")	(k === "regularClinics" ? "Regular clinic " : "Past clinic ")
+"かかりつけ " + (i + 1)	"Regular clinic " + (i + 1)
+pastClinics（過去の医療機関）は、この形式では扱いません。よかったところは regularClinics（かかりつけ）に登録してください。	pastClinics (past clinics) is not part of this format. Register clinics you were happy with in regularClinics instead.
 `${label}: 医療機関の名前（name）が空です。`	`${label}: the clinic name (name) is empty.`
 `${label}: 「${f}」があります。医療機関への評価や感想は、この形式では扱いません。消してください。`	`${label}: "${f}" is present. Evaluations of or comments about clinics are not part of this format; please remove it.`
 updated（最後に確かめた日）は YYYY-MM-DD の形にしてください。	updated (date last checked) must be in the form YYYY-MM-DD.

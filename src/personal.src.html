@@ -274,8 +274,7 @@ function example() {
     preferences: { homeArea: { addressCountry: "JP", addressRegion: "東京都", addressLocality: "千代田区", nearestStation: "みどり台駅（架空）" }, travel: { modes: ["walk","train"], maxMinutes: 30 },
       availability: [{ days: ["Sa"], from: "09:00", to: "12:00", note: "平日は仕事" }, { days: ["Mo","Tu","We","Th","Fr"], from: "18:00", to: "20:00" }],
       priorities: ["regularDoctor","near","shortWait","specialty","openNow"], languages: ["ja"], needs: ["待合室で座って待ちたい"],
-      regularClinics: [{ name: "みどり台内科クリニック（架空）", department: "内科", url: "https://example.com/clinic-intake.json", since: "2020" }],
-      pastClinics: [{ name: "わかば整形外科（架空）", department: "整形外科", lastVisit: "2025-03" }] },
+      regularClinics: [{ name: "みどり台内科クリニック（架空）", department: "内科", url: "https://example.com/clinic-intake.json", since: "2020" }] },
     allergies: [{ substance: "ペニシリン系の抗菌薬", category: "medication", reaction: "じんましん", severity: "moderate", since: "2015", source: { type: "self", transcribedBy: "self", checkedByMe: true } }],
     medications: [{ name: "アムロジピン錠5mg", dose: "1回1錠", frequency: "1日1回 朝食後", status: "active", since: "2020-04", reason: "血圧", source: { type: "medication-notebook", date: "2026-10-01", transcribedBy: "ai", checkedByMe: true } },
                   { name: "ロキソプロフェン錠60mg", dose: "1回1錠", frequency: "痛いとき", status: "as-needed", source: { type: "medication-label", date: "2026-08-20", transcribedBy: "ai", checkedByMe: false } }],
@@ -316,7 +315,7 @@ function renderPref() {
   const el = $("sec-pref"), P = D.preferences = D.preferences || {}; el.replaceChildren();
   const ha = P.homeArea = P.homeArea || {}, tr = P.travel = P.travel || {};
   const av = P.availability = P.availability || [], pr = P.priorities = P.priorities || [];
-  const rc = P.regularClinics = P.regularClinics || [], pc = P.pastClinics = P.pastClinics || [];
+  const rc = P.regularClinics = P.regularClinics || [];
   el.append(
     h("header", {}, h("h2", { text: "受診先の好み" }), h("span", { class: "k", text: "preferences" })),
     h("h3", { style: "font-size:15px", text: "探すときの地域と移動" }),
@@ -339,10 +338,8 @@ function renderPref() {
       field("pr-lang", "受診のときに使いたい言語（コード）", input("pr-lang", () => (P.languages || []).join(", "), v => { const a = v.split(/[,\s\u3001]+/).filter(Boolean); if (a.length) P.languages = a; else delete P.languages; }, "例: ja")),
       field("pr-needs", "必要な配慮（1行に1つ）", h("textarea", { id: "pr-needs", rows: 2, value: (P.needs || []).join("\n"), placeholder: "例: 車椅子で入れる", oninput: e => { const a = e.target.value.split("\n").map(x => x.trim()).filter(Boolean); if (a.length) P.needs = a; else delete P.needs; changed(); } }))),
     h("h3", { style: "font-size:15px", text: "かかりつけの医療機関" }),
-    ...rowsEditor(rc, [(it, i) => txt(it, "name", `pr-rc-${i}-n`, "名前", ""), (it, i) => txt(it, "department", `pr-rc-${i}-d`, "診療科", "例: 内科"), (it, i) => txt(it, "url", `pr-rc-${i}-u`, "clinic-intake.json の場所（あれば）", "https://"), (it, i) => txt(it, "since", `pr-rc-${i}-s`, "いつから", "例: 2020")], renderPref, "＋ かかりつけを足す", "かかりつけ"),
-    h("h3", { style: "font-size:15px", text: "過去にかかった医療機関（記録だけ）" }),
-    h("p", { class: "small", style: "margin:0", text: "医療機関の評価や感想は書きません。この記録は受診用シートにも出ず、医療機関には渡しません。" }),
-    ...rowsEditor(pc, [(it, i) => txt(it, "name", `pr-pc-${i}-n`, "名前", ""), (it, i) => txt(it, "department", `pr-pc-${i}-d`, "診療科", ""), (it, i) => txt(it, "lastVisit", `pr-pc-${i}-l`, "最後にかかった時期", "例: 2025-03")], renderPref, "＋ 記録を足す", "記録"));
+    h("p", { class: "small", style: "margin:0", text: "かかってよかったところを登録します。医療機関の評価や感想は書きません。" }),
+    ...rowsEditor(rc, [(it, i) => txt(it, "name", `pr-rc-${i}-n`, "名前", ""), (it, i) => txt(it, "department", `pr-rc-${i}-d`, "診療科", "例: 内科"), (it, i) => txt(it, "url", `pr-rc-${i}-u`, "clinic-intake.json の場所（あれば）", "https://"), (it, i) => txt(it, "since", `pr-rc-${i}-s`, "いつから", "例: 2020")], renderPref, "＋ かかりつけを足す", "かかりつけ"));
 }
 function renderPerson() {
   const el = $("sec-person"), p = D.person = D.person || {}; el.replaceChildren();
@@ -411,7 +408,7 @@ function build() {
     if (P.priorities && P.priorities.length) q.priorities = [...P.priorities];
     if (P.languages && P.languages.length) q.languages = [...P.languages];
     if (P.needs && P.needs.length) q.needs = [...P.needs];
-    for (const [k, keys] of [["regularClinics", ["name","department","url","since"]], ["pastClinics", ["name","department","url","lastVisit"]]]) {
+    for (const [k, keys] of [["regularClinics", ["name","department","url","since"]]]) {
       const a = (P[k] || []).map(c => { const x = {}; for (const f of keys) if (c[f]) x[f] = c[f]; return x; }).filter(c => c.name); if (a.length) q[k] = a;
     }
     if (Object.keys(q).length) o.preferences = q;

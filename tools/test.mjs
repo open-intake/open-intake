@@ -107,7 +107,8 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
 { const base = () => JSON.parse(fs.readFileSync("examples/personal/v0.1/my-health.json", "utf8"));
   let d = base(); delete d.allergies; delete d.medications; delete d.conditions; delete d.procedures; delete d.immunizations; delete d.pregnancy; delete d.lifestyle; delete d.notes; delete d.person;
   ok(validate(d).E.length === 0, "段階1（受診先の好み）だけでも正しいファイル");
-  d = base(); d.preferences.pastClinics[0].rating = 3; ok(validate(d).W.some(w => w.code === "H10"), "過去の医療機関に評価があれば H10");
+  d = base(); d.preferences.regularClinics[0].rating = 3; ok(validate(d).W.some(w => w.code === "H10"), "かかりつけに評価があれば H10");
+  d = base(); d.preferences.pastClinics = [{ name: "x", rating: 2 }]; ok(validate(d).W.some(w => w.code === "H10"), "過去の医療機関の欄があれば H10");
   d = base(); d.preferences.priorities.push("price"); ok(codes(validate(d)).includes("H9"), "決まっていない重視することは H9");
   d = base(); d.preferences.availability[0].from = "13:00"; d.preferences.availability[0].to = "12:00"; ok(codes(validate(d)).includes("H9"), "時間帯の前後が逆なら H9");
   d = base(); d.preferences.homeArea.streetAddress = "1-2-3"; ok(validate(d).W.some(w => w.code === "H7"), "番地を書けば H7"); }
