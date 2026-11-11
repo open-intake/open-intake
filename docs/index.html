@@ -88,6 +88,17 @@ section.block > .intro { color: var(--muted); }
 .horizon ul { margin: 0; padding-left: 1.2em; display: grid; gap: 3px; }
 .same { background: var(--accent-soft); border-radius: var(--radius); padding: 12px 16px; }
 
+/* 国のデータの集計表 */
+.tablewrap { overflow-x: auto; }
+table.stats { border-collapse: collapse; width: 100%; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); font-size: 14.5px; }
+table.stats th, table.stats td { padding: 8px 12px; border-bottom: 1px solid var(--rule); text-align: right; vertical-align: top; }
+table.stats th:first-child, table.stats td:first-child { text-align: left; }
+table.stats thead th { color: var(--muted); font-weight: 500; font-size: 13px; }
+table.stats tbody tr:last-child td { border-bottom: 0; }
+table.stats td.hi { color: var(--accent); font-weight: 700; }
+table.stats td + td, table.stats th + th { white-space: nowrap; }
+@media (max-width: 560px) { table.stats { font-size: 13px; } table.stats th, table.stats td { padding: 7px 6px; } }
+
 /* 課題: いまと、これから */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .case { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; align-content: start; }
@@ -492,6 +503,45 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
       </div>
     </div>
+  </section>
+
+  <section class="block" id="data" aria-labelledby="h-data">
+    <h2 id="h-data">国のデータで確かめた、受付の実際</h2>
+    <p class="intro">全国の医療機関が、診療時間と受付時間をどう決めているか。厚生労働省の「医療情報ネット（ナビイ）」のオープンデータ（2026年6月1日時点）で、病院・診療所・歯科診療所のすべてを数えました。数えたのは件数と割合だけで、個々の医療機関は取り上げていません。</p>
+    <div class="tablewrap">
+      <table class="stats">
+        <thead><tr><th scope="col"></th><th scope="col">病院</th><th scope="col">診療所</th><th scope="col">歯科診療所</th></tr></thead>
+        <tbody>
+          <tr><td>数</td><td>7,715</td><td>80,155</td><td>54,637</td></tr>
+          <tr><td>受付の締め切りが、診療の終わりより早い</td><td class="hi">71%</td><td class="hi">42%</td><td class="hi">59%</td></tr>
+          <tr><td>受付の始まりが、診療の始まりより早い</td><td>70%</td><td>32%</td><td>12%</td></tr>
+          <tr><td>診療科が複数ある医療機関のうち、診療科で時間が違う</td><td class="hi">85%</td><td class="hi">37%</td><td class="hi">43%</td></tr>
+          <tr><td>ホームページの住所が登録されている</td><td>96%</td><td>64%</td><td>52%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">受付の割合は、受付時間が登録されている「時間帯 × 曜日」を単位に数えました（受付時間の登録があるのは、その 85〜91%）。診療所で受付が早く締まる場合は、診療の終わりの16〜30分前が最も多くなっています。</p>
+    <div class="compare">
+      <div class="case next">
+        <h3>わかったこと：枠を足すべきところ</h3>
+        <ul>
+          <li><strong>受付の時間は、診療時間と別に書けるほうがよい。</strong>診療所でも4割を超える医療機関で、受付が先に締まります。いまの形式（0.3）では文章で書き添えるしかないので、次の版で「受付の始まりと締め切り」の欄を足す案を出しています</li>
+          <li><strong>診療科ごとの時間も、欄があるほうがよい。</strong>診療科が複数ある診療所の4割近くで、科によって時間が違います。次の版で、診療時間に「診療科」を添えられるようにする案です</li>
+          <li>国のデータは「診療科・時間帯・曜日・診療と受付の時刻」で区切られています。次の版の欄もこれに合わせるので、<strong>国のデータとの対応表が作れます</strong></li>
+        </ul>
+      </div>
+      <div class="case">
+        <h3>国のデータにないこと：これから調べる</h3>
+        <ul>
+          <li>予約が要るか（予約なしで受け付ける・予約の方だけ・新しい受付はしない）</li>
+          <li>初診と再診で受け付け方が違うか（初診は予約が要る、など）</li>
+          <li>予約の方法（Web・電話・順番待ちのシステム）</li>
+        </ul>
+        <p>これらは、医療機関のホームページの書き方を、全都道府県から偏りなく選んで調べているところです。海外の書き方も比べています。結果は、次の版の案に反映します。</p>
+      </div>
+    </div>
+    <p class="note">ホームページの住所が登録されている割合は、都道府県によって大きく違います（診療所で 31〜77%）。ホームページのない医療機関も、まだ多くあります。そうした医療機関への道すじは、<a href="#h-faq">よくある質問</a>に書いています。</p>
+    <p class="note">出典：厚生労働省「<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html" rel="noopener">医療情報ネット（ナビイ）オープンデータ</a>」（2026年6月1日時点）をもとに、作者が集計・加工して作成（公共データ利用規約 第1.0版）。次の版の欄は、まだ案の段階です。</p>
   </section>
 
   <section class="block" id="match" aria-labelledby="h-match">

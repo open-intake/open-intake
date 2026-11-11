@@ -286,6 +286,45 @@
     </div>
   </section>
 
+  <section class="block" id="data" aria-labelledby="h-data">
+    <h2 id="h-data">What national data shows about reception hours</h2>
+    <p class="intro">How do clinics actually set their clinic hours and reception hours? We counted every hospital, clinic and dental clinic in the open data of Japan's Ministry of Health, Labour and Welfare (the "Iryo Joho Net" / Navii medical information service, as of 1 June 2026). Only counts and percentages were taken; no individual facility is singled out.</p>
+    <div class="tablewrap">
+      <table class="stats">
+        <thead><tr><th scope="col"></th><th scope="col">Hospitals</th><th scope="col">Clinics</th><th scope="col">Dental clinics</th></tr></thead>
+        <tbody>
+          <tr><td>Number</td><td>7,715</td><td>80,155</td><td>54,637</td></tr>
+          <tr><td>Reception closes before clinic hours end</td><td class="hi">71%</td><td class="hi">42%</td><td class="hi">59%</td></tr>
+          <tr><td>Reception opens before clinic hours start</td><td>70%</td><td>32%</td><td>12%</td></tr>
+          <tr><td>Hours differ by department (among facilities with several departments)</td><td class="hi">85%</td><td class="hi">37%</td><td class="hi">43%</td></tr>
+          <tr><td>A website address is registered</td><td>96%</td><td>64%</td><td>52%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Reception figures are counted per "time slot × day" for which reception hours are registered (85–91% of them have reception hours). Where a clinic's reception closes early, 16–30 minutes before the end of clinic hours is the most common.</p>
+    <div class="compare">
+      <div class="case next">
+        <h3>What we learned: where fields should be added</h3>
+        <ul>
+          <li><strong>Reception hours should be writable separately from clinic hours.</strong> Even among clinics, more than 4 in 10 close reception early. The current format (0.3) can only say this in a note, so the next version proposes fields for when reception opens and closes</li>
+          <li><strong>Hours per department also deserve a field.</strong> Nearly 4 in 10 clinics with several departments have different hours by department. The next version proposes letting opening hours name a department</li>
+          <li>The national data is organised by department, time slot, day, and clinic and reception times. The next version's fields follow the same split, so <strong>a mapping table to the national data is possible</strong></li>
+        </ul>
+      </div>
+      <div class="case">
+        <h3>Not in the national data: being surveyed now</h3>
+        <ul>
+          <li>Whether a booking is needed (walk-ins accepted, booked patients only, no new reception)</li>
+          <li>Whether first visits are handled differently from follow-ups (e.g. first visits need a booking)</li>
+          <li>How to book (web, phone, queueing system)</li>
+        </ul>
+        <p>For these, we are surveying how clinic websites describe them, sampling evenly from every prefecture, and comparing with other countries. The results will feed into the next version's proposal.</p>
+      </div>
+    </div>
+    <p class="note">The share with a registered website varies widely by prefecture (31–77% for clinics), and many clinics still have no website. The path for them is described in the <a href="#h-faq">FAQ</a>.</p>
+    <p class="note">Source: compiled and processed by the author from the Ministry of Health, Labour and Welfare's <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html" rel="noopener" hreflang="ja">Iryo Joho Net (Navii) open data</a> (Japanese, as of 1 June 2026), under the Public Data License 1.0. The next version's fields are still a proposal.</p>
+  </section>
+
   <section class="block" id="match" aria-labelledby="h-match">
     <h2 id="h-match">Matching without reviews</h2>
     <p class="intro">This format has no reviews, no scores and no rating fields. <strong>There is simply nowhere to post a bad review.</strong> AI compares only what each clinic has published itself and objective data that is the same for everyone.</p>
