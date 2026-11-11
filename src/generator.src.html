@@ -331,6 +331,7 @@ function exampleDoc() {
         { days: ["Mo","Tu","We","Fr"], opens: "15:00", closes: "18:30" }
       ],
       closedNote: "木曜午後・土曜午後・日曜・祝日は休診",
+      focus: [{"department": "内科", "areas": ["高血圧", "糖尿病", "甲状腺の病気"], "note": "（架空の例）"}, {"department": "小児科", "areas": ["小児のぜんそく", "予防接種"]}],
       handles: ["発熱","せき","のどの痛み","腹痛・下痢","高血圧・糖尿病の相談","予防接種"],
       notHandled: ["入院","6か月未満の乳児"],
       booking: [
@@ -371,6 +372,7 @@ function normalize(doc) {
   c.address = (c.address && typeof c.address === "object") ? c.address : {};
   for (const k of ["postalCode","addressRegion","addressLocality","streetAddress"]) if (typeof c.address[k] !== "string") c.address[k] = "";
   for (const k of ["departments","handles","notHandled","bring","languages","accessibility"]) c[k] = Array.isArray(c[k]) ? c[k].filter(x => typeof x === "string") : [];
+  c.focus = Array.isArray(c.focus) ? c.focus.filter(f => f && typeof f === "object").map(f => ({ ...f, department: typeof f.department === "string" ? f.department : "", areas: Array.isArray(f.areas) ? f.areas.filter(x => typeof x === "string") : [], note: typeof f.note === "string" ? f.note : "" })) : [];
   c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.map(h => ({ days: Array.isArray(h?.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h?.opens || "", closes: h?.closes || "", ...(h?.note ? { note: h.note } : {}) })) : [];
   c.booking = Array.isArray(c.booking) ? c.booking.map(b => ({ method: b?.method || "other", url: b?.url || "", telephone: b?.telephone || "", note: b?.note || "" })) : [];
   const s = d.safety = (d.safety && typeof d.safety === "object") ? d.safety : {};
@@ -413,6 +415,7 @@ function build(d) {
   clinic.departments = cleanList(c.departments);
   clinic.openingHours = c.openingHours.map(h => { const o = { days: DAY_KEYS.filter(k => h.days.includes(k)), opens: h.opens, closes: h.closes }; if (clean(h.note)) o.note = clean(h.note); return o; });
   if (clean(c.closedNote)) clinic.closedNote = clean(c.closedNote);
+  { const fo = c.focus.map(f => { const o = {}; if (clean(f.department)) o.department = clean(f.department); o.areas = cleanList(f.areas); if (clean(f.note)) o.note = clean(f.note); return o; }).filter(f => f.areas.length || f.department); if (fo.length) clinic.focus = fo; }
   for (const k of ["handles","notHandled"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
   clinic.booking = c.booking.map(b => { const o = { method: b.method }; if (b.method === "web" || (b.method === "other" && clean(b.url))) o.url = clean(b.url); if (b.method === "phone" || (b.method === "other" && clean(b.telephone))) o.telephone = clean(b.telephone); if (clean(b.note)) o.note = clean(b.note); return o; });
   for (const k of ["bring","languages","accessibility"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
@@ -474,7 +477,7 @@ function renderClinic() {
   const setDepts = () => {
     const picked = DEPTS.filter(dp => el.querySelector(`[data-dept="${dp}"]`)?.checked);
     const extra = $("f-dept-other").value.split(/[、,，\s]+/).map(s => s.trim()).filter(Boolean);
-    c.departments = [...picked, ...extra.filter(x => !picked.includes(x))]; changed();
+    c.departments = [...picked, ...extra.filter(x => !picked.includes(x))]; renderFocus(); changed();
   };
   const langOthers = c.languages.filter(x => !LANGS.some(l => l[0] === x));
   const setLangs = () => {
@@ -500,6 +503,7 @@ function renderClinic() {
     h("div", { class: "grid" },
       field("f-handles", "主に診ている症状・相談", "handles", lines("f-handles", () => c.handles, v => c.handles = v, { placeholder: "発熱\nせき\n高血圧の相談" }), { hint: "1行に1つ。患者さんの AI が「この医院が合いそうか」を判断する手がかりになります。" }),
       field("f-nothandled", "対応していないこと", "notHandled", lines("f-nothandled", () => c.notHandled, v => c.notHandled = v, { placeholder: "入院\n6か月未満の乳児" }), { hint: "1行に1つ。" })),
+    h("div", { class: "field", id: "focus-box" }),
     h("div", { class: "grid" },
       field("f-bring", "持ち物", "bring", lines("f-bring", () => c.bring, v => c.bring = v, { placeholder: "マイナ保険証\nお薬手帳" })),
       field("f-access", "バリアフリー・設備", "accessibility", lines("f-access", () => c.accessibility, v => c.accessibility = v, { placeholder: "車椅子で入れる\n駐車場あり" }))),
@@ -510,6 +514,23 @@ function renderClinic() {
   );
 }
 
+function renderFocus() {
+  const el = $("focus-box"); if (!el) return;
+  const c = S.clinic, F = c.focus; el.replaceChildren();
+  el.append(
+    h("div", { class: "label" }, "得意分野・力を入れていること（自己申告）", h("span", { class: "k", text: "focus" })),
+    h("div", { class: "hint", text: "同じ診療科でも、どんな病気や相談に力を入れているかを書けます。患者さんの AI が、合う医療機関を探す手がかりになります。医療機関の自己申告として扱われます。医療広告ガイドラインに沿って書いてください（「地域一番」などの比較や誇張は書けません）。" }),
+    F.length > 0 && h("div", { class: "rows" }, F.map((f, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" },
+        h("select", { id: fid("focus", i, "dep"), value: f.department, style: "width:auto", "aria-label": "診療科", onchange: e => { f.department = e.target.value; changed(); } },
+          h("option", { value: "", text: "（診療科を問わない）" }),
+          [...new Set([...c.departments, f.department].filter(Boolean))].map(d => h("option", { value: d, text: d }))),
+        h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn danger", "aria-label": `得意分野 ${i+1} を消す`, onclick: () => { F.splice(i, 1); renderFocus(); changed(); } }, "×")),
+      lines(fid("focus", i, "areas"), () => f.areas, v => f.areas = v, { rows: 3, placeholder: "糖尿病\n甲状腺の病気", "aria-label": "得意分野（1行に1つ）" }),
+      text(fid("focus", i, "note"), () => f.note, v => f.note = v, { placeholder: "補足（例: 第1・第3土曜に専門の外来）", "aria-label": "補足" })))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { F.push({ department: c.departments[0] || "", areas: [], note: "" }); renderFocus(); changed(); } }, "＋ 得意分野を足す")));
+}
 function renderHours() {
   const c = S.clinic, el = $("sec-hours"); el.replaceChildren();
   el.append(sheetHead("2", "診療時間", "openingHours"),
@@ -650,7 +671,7 @@ function renderNotes() {
     h("div", { class: "grid" }, field("f-updated", "内容を確かめた日", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "1年以上たつと、AI は「情報が古いかもしれない」と伝えます。" })));
 }
 
-function renderAll() { renderClinic(); renderHours(); renderBooking(); renderSafety(); renderQuestionnaires(); renderNotes(); renderNotice(); changed(true); }
+function renderAll() { renderClinic(); renderFocus(); renderHours(); renderBooking(); renderSafety(); renderQuestionnaires(); renderNotes(); renderNotice(); changed(true); }
 
 // ---------- 臨時の情報（clinic-schedule.json） ----------
 let SC, originS = "";
@@ -810,6 +831,7 @@ function viewIntake(o) {
     dl([["電話", str(c.telephone)], ["住所", [a.postalCode && "〒" + a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["サイト", str(c.url)], ["診療科", arr(c.departments)], ["内容を確かめた日", str(o.updated)]]),
     block("ふだんの診療時間", list(arr(c.openingHours).map(x => `${days(x.days)}　${hm(x.opens, x.closes)}${x.note ? "（" + x.note + "）" : ""}`)), c.closedNote && h("div", { class: "sub", text: c.closedNote })),
     block("予約・受診の方法", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "　" + b.url }), b.telephone && h("span", { text: "　" + b.telephone }), b.note && h("span", { class: "sub", text: "（" + b.note + "）" }))))),
+    block("得意分野・力を入れていること（医療機関の自己申告）", list(arr(c.focus).map(f => h("span", {}, f.department && h("strong", { text: str(f.department) + "　" }), arr(f.areas).join("、"), f.note && h("span", { class: "sub", text: "（" + f.note + "）" }))))),
     block("主に診ている症状・相談", list(arr(c.handles))),
     block("対応していないこと", list(arr(c.notHandled))),
     block("持ち物・言語・設備", dl([["持ち物", arr(c.bring)], ["言語", arr(c.languages)], ["設備", arr(c.accessibility)]])),

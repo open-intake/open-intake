@@ -130,7 +130,7 @@ section.block > .intro { color: var(--muted); max-width: 40em; }
 
 /* 原則 */
 .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 22px; margin: 0; padding: 0; list-style: none; }
-.principles li { display: grid; gap: 2px; padding-left: 14px; border-left: 3px solid var(--accent); }
+.principles li { display: grid; gap: 2px; align-content: start; padding-left: 14px; border-left: 3px solid var(--accent); }
 .principles strong { font-family: var(--font-display); }
 .principles span { color: var(--muted); font-size: 14.5px; }
 
@@ -211,6 +211,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <div class="precedent">
       <strong>そのとき、AI に足りなくなるもの</strong>
       <span>案内役の AI がどれだけ賢くなっても、「この医療機関は今日開いているか」「何を診てくれるか」「どう予約するか」「受診前に何を聞いておけばよいか」は、医療機関自身にしかわかりません。この情報が正しく、AI が読める形で出ていなければ、AI の案内はそこで間違えます。オープン問診票は、この<strong>医療機関の側の受け口</strong>を、誰でも無料で用意できるようにするものです。</span>
+      <span>この流れの中で医療機関に要るのは、高機能なシステムを入れることよりも、<strong>正しい情報を、AI が読める形で流通させること</strong>です。システムは AI の側でどんどん良くなります。医療機関にしか出せないのは、正しい情報のほうです。</span>
     </div>
   </section>
 
@@ -269,12 +270,13 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
   </section>
 
   <section class="block" aria-labelledby="h-merit">
-    <h2 id="h-merit">医療機関にとっての5つの利点</h2>
+    <h2 id="h-merit">医療機関にとっての6つの利点</h2>
     <div class="benefits">
       <div class="benefit"><h3>導入が簡単</h3><p>作成ツールの画面に入力するか、AI と会話するだけでファイルができます。ホームページに置けば終わりです。サーバーも、月々の費用も要りません。</p></div>
       <div class="benefit"><h3>管理しやすい</h3><p>ふだんの情報と臨時の情報を、別のファイルに分けられます。受付の方は臨時の情報だけを直せばよく、ファイルごとに編集する人を分けられます。中身は作成ツールで読みやすく表示でき、技術がなくても確かめられます。</p></div>
       <div class="benefit"><h3>安全</h3><p>患者さんの情報を医療機関のサーバーに送らず、ためません。ファイルに入るのは公開してよい情報だけです。AI には診断をさせず、救急の目安に当てはまれば予約より先に119番を勧めるよう、形式そのもので決めています。</p></div>
       <div class="benefit"><h3>将来も使える</h3><p>変わりやすい AI と、変わりにくい情報（診療時間や問診票の項目）を分けました。AI が入れ替わっても、ファイルは直さずに使えます。形式は国際標準（HL7 FHIR・schema.org）に合わせ、古い版のファイルも読めるよう決まりを設けています。</p></div>
+      <div class="benefit"><h3>自分の特徴を伝えられる</h3><p>同じ「内科」でも、糖尿病に力を入れている、甲状腺を診ている、など医療機関ごとに違います。その得意分野を医療機関が自分で書けるので、AI が症状に合う医療機関を探すときの手がかりになります（医療機関の自己申告として扱われ、医療広告ガイドラインの範囲で書きます）。</p></div>
       <div class="benefit risk"><h3>置かないと、間違った情報が使われる</h3><p>医療機関が自分で情報を出さなければ、AI は地図サービスや古いページから推し量るしかありません。「休診日に来てしまった」「当番医を探せなかった」ということが、AI の時代にはもっと起こりやすくなります。</p></div>
     </div>
   </section>
@@ -285,6 +287,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <li><strong>診断をしない</strong><span>病名の推定や緊急度の判定はしません。情報の受け渡しの形を決めるだけです</span></li>
       <li><strong>命を最優先にする</strong><span>救急の目安（消防庁の資料をもとに、おとな・高齢者・こどもごと）を、予約の前に必ず確かめます</span></li>
       <li><strong>情報をためない</strong><span>患者さんの症状や個人情報を、医療機関のサーバーにも、この仕組みにも集めません</span></li>
+      <li><strong>格付けをしない・選ぶのは患者さん</strong><span>医療機関を比べたり、順位をつけたり、お墨付きを与えたりしません。載っているのは医療機関が自分で出した情報で、どこを受診するかは患者さんが決めます</span></li>
       <li><strong>開かれている</strong><span>仕様もツールも無料で公開しています。誰でも使え、誰でも作り直せます</span></li>
     </ul>
   </section>

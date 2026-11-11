@@ -73,6 +73,12 @@ for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r 
   d.safety.redFlagsByAge.child.items = []; ok(codes(validate(d)).includes("E7"), "年代の目安が空なら E7");
   d.safety.redFlagsByAge = { teen: { items: ["x"] } }; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W13"), "知らない年代は注意（W13）だけ"); }
 
+// 得意分野（focus）
+{ const d = JSON.parse(fs.readFileSync("examples/v0.2/clinic-intake.json", "utf8"));
+  ok(Array.isArray(d.clinic.focus) && d.clinic.focus.length > 0, "v0.2 の例に得意分野がある");
+  d.clinic.focus[0].areas = []; ok(codes(validate(d)).includes("E13"), "得意分野の内容が空なら E13");
+  d.clinic.focus = [{ department: "眼科", areas: ["白内障"] }]; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W14"), "診療科の一覧にない科は注意（W14）"); }
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }

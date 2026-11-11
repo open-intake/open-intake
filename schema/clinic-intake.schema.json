@@ -258,6 +258,32 @@
         },
         "accessibility": {
           "$ref": "#/$defs/strList"
+        },
+        "focus": {
+          "description": "得意分野・力を入れていること（v0.2 から）。医療機関の自己申告。医療広告ガイドラインに沿って書く",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "areas"
+            ],
+            "properties": {
+              "department": {
+                "type": "string"
+              },
+              "areas": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },
