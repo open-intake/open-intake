@@ -134,8 +134,9 @@ You are helping clinic staff create `clinic-intake.json` (Open Intake JSON v0.4)
 - `entry`: one of `walk-in` (patients without an appointment are seen; booked patients may go first), `appointment` (booked patients only) or `none` (no new patients; only continuing care, picking up prescriptions and the like)
 - **`none` is not closed.** Do not turn a time with no new patients into a closure, and do not delete the row
 - `mayEndEarly`: `true` only when reception may close earlier than the cut-off, for example when busy
-- `weeksOfMonth`: which weeks of the month the row applies to. For example, Saturdays on the 2nd and 4th week only: `[2,4]`. Leave it out for every week
-- When hours or how patients are taken differ by department, service or first/follow-up visit, **use separate rows**. Rows may overlap on the same day and time (the row with more specific conditions takes priority)
+- `weeksOfMonth`: which weeks of the month the row applies to. For example, Saturdays on the 2nd and 4th week only: `[2,4]`. Leave it out for every week. "2nd Saturday" means **the second Saturday of the month**. List the weeks the clinic is **open** (closed on the 2nd and 4th means `[1,3,5]`)
+- Public holidays: add a row with `PH` in `days` only when the clinic is open on public holidays. If it is closed, add no `PH` row and say so in `closedNote`
+- When hours or how patients are taken differ by department, service or first/follow-up visit, **use separate rows**. Rows may overlap on the same day and time (the row with more specific conditions takes priority). But if **only the cut-off is earlier** (for example "first visits: check-in until 11:00"), do not add a shorter row: use a row with the usual hours plus `visitType` and `reception.closes` (a shorter row would let the usual row apply after 11:00)
 - `clinic.appointmentRequired`: `true` only when the staff member clearly says the whole clinic is appointment only. Do not infer it from "appointments preferred". Leave it out if unsure
 - Booking `hours`: when that channel (phone, online) takes bookings. An array of `days`, `opens`, `closes`
 - Booking `mode`: one of `time-slot` (book a time), `queue` (take a place in today's queue) or `request` (send a request; the clinic's reply confirms it). `visitType` is the same as above

@@ -341,8 +341,9 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 - `entry`: `walk-in`（予約がなくても受け付ける。予約の人が優先でもよい）・`appointment`（予約の人だけ）・`none`（新しい受付はしない。続きの診療や薬の受け渡しなどだけ）のどれか
 - **`none` は休診ではない。** 新しい患者さんを受け付けない時間を、休診にしたり、行ごと消したりしない
 - `mayEndEarly`: 混雑などで、締め切りより早く受付を終えることがあるときだけ `true`
-- `weeksOfMonth`: 第何週の曜日だけか。例: 土曜は第2・第4だけなら `[2,4]`。毎週なら書かない
-- 診療科・用途・初診か再診かで、時間や受け付け方が違うときは、**行を分ける**。同じ曜日・時間に行が重なってもよい（あてはまる条件が細かい行が優先される）
+- `weeksOfMonth`: 第何週の曜日だけか。例: 土曜は第2・第4だけなら `[2,4]`。毎週なら書かない。「第2土曜」は**その月の2回目の土曜**。**開いている週**を書く（第2・第4が休みなら `[1,3,5]`）
+- 祝日: 祝日に診療するときだけ、`days` に `PH` を入れた行を置く。祝日が休みなら `PH` の行は置かず、`closedNote` に「祝日は休診」と書く
+- 診療科・用途・初診か再診かで、時間や受け付け方が違うときは、**行を分ける**。同じ曜日・時間に行が重なってもよい（あてはまる条件が細かい行が優先される）。ただし**締め切りが早いだけ**（例: 「初診の受付は11時まで」）なら、短い行を足さず、ふだんと同じ時間の行に `visitType` と `reception.closes` で書く（短い行にすると、11時以降はふだんの行が当てはまってしまう）
 - `clinic.appointmentRequired`: 医療機関全体が完全予約制だと担当者がはっきり言ったときだけ `true`。「予約優先」から推測しない。わからなければ書かない
 - `booking` の `hours`: その窓口（電話・Web）で予約を受け付ける時間。`days`・`opens`・`closes` の配列
 - `booking` の `mode`: `time-slot`（時刻の枠を取る）・`queue`（当日の順番を取る）・`request`（申し込んで、医療機関の返事で決まる）のどれか。`visitType` は上と同じ
@@ -1025,9 +1026,9 @@ var LOCALE = {
     const t = x.today(), d = x.addDays;
     return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
       exceptions: [
-        { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日ですが、午前のみ診療します" },
+        { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日です。当院の診療は午前のみ。午後は内科だけ、地域の休日当番医として受け付けます" },
         { from: d(t, 30), to: d(t, 31), status: "closed", note: "院内研修のため休診" }],
-      doctorSchedule: [{ department: "小児科", name: "佐藤医師（架空）", days: ["Tu","Th"], opens: "15:00", closes: "18:30", note: "小児科専門の外来" }],
+      doctorSchedule: [{ department: "小児科", name: "佐藤医師（架空）", days: ["Tu","Fr"], opens: "15:00", closes: "18:30", note: "小児科専門の外来" }],
       onCall: [{ date: d(t, 13), kind: "holiday", opens: "09:00", closes: "17:00", department: "内科", note: "地域の休日当番医（午後も受け付けます）" }],
       notices: [{ from: t, to: d(t, 30), text: "インフルエンザの予防接種は予約制です。Web か電話で予約してください。" }] };
   }

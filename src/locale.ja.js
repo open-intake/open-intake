@@ -43,9 +43,9 @@ var LOCALE = {
     const t = x.today(), d = x.addDays;
     return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
       exceptions: [
-        { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日ですが、午前のみ診療します" },
+        { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日です。当院の診療は午前のみ。午後は内科だけ、地域の休日当番医として受け付けます" },
         { from: d(t, 30), to: d(t, 31), status: "closed", note: "院内研修のため休診" }],
-      doctorSchedule: [{ department: "小児科", name: "佐藤医師（架空）", days: ["Tu","Th"], opens: "15:00", closes: "18:30", note: "小児科専門の外来" }],
+      doctorSchedule: [{ department: "小児科", name: "佐藤医師（架空）", days: ["Tu","Fr"], opens: "15:00", closes: "18:30", note: "小児科専門の外来" }],
       onCall: [{ date: d(t, 13), kind: "holiday", opens: "09:00", closes: "17:00", department: "内科", note: "地域の休日当番医（午後も受け付けます）" }],
       notices: [{ from: t, to: d(t, 30), text: "インフルエンザの予防接種は予約制です。Web か電話で予約してください。" }] };
   }

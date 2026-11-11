@@ -216,17 +216,17 @@ Rules:
 
 | Key | Required | Example / description |
 |---|---|---|
-| `days` | yes | Array of days: `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, public holidays `PH` |
+| `days` | yes | Array of days: `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, public holidays `PH` (see the rules below for public holidays) |
 | `opens` | yes | `"09:00"` (24-hour, two digits) |
 | `closes` | yes | `"12:30"` (after `opens`). When consultations end |
 | `note` | | `"Fever clinic uses a separate entrance"` |
 | `reception` | | Check-in start and cut-off (from v0.4). `{"opens": "08:45", "closes": "12:00", "note": "…"}`. Either `opens` or `closes` alone is fine (having neither is an error). Check-in may start before consultations start |
 | `department` | | Department these hours apply to (from v0.4). Use a name from `departments` (otherwise W20). If absent, the whole clinic |
-| `service` | | Array of the services these hours apply to (from v0.4). Defined values: `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (surgery, tests, etc.), `rehabilitation`, `other`. If absent, general outpatient. Readers ignore unknown values (W21) |
-| `visitType` | | Whether these hours are for new or returning patients only (from v0.4): `"all"`, `"first"` (first visit), `"return"` (return visit). If absent, `all`. How a first visit is defined (for example "more than three months since the last visit") differs by clinic, so write it in `note` |
+| `service` | | Array of the services these hours apply to (from v0.4). Defined values: `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (surgery, tests, etc.), `rehabilitation`, `other`. If absent, general outpatient (the entry says nothing about other services). Readers ignore unknown values (W21) |
+| `visitType` | | Whether these hours are for new or returning patients only (from v0.4): `"all"`, `"first"` (first visit), `"return"` (return visit). If absent, treat it as `all`, but do not claim there are no rules for first visits (the distinction is simply not stated). How a first visit is defined (for example "more than three months since the last visit") differs by clinic, so write it in `note` |
 | `entry` | | How patients are accepted in these hours (from v0.4). `"walk-in"` = accepted without an appointment (people with appointments may go first); `"appointment"` = appointments only; `"none"` = no new check-ins (only continuing care, handing over prescriptions, etc.). **`none` does not mean closed** |
 | `mayEndEarly` | | Boolean (from v0.4). Check-in may end before the cut-off, for example when it is busy |
-| `weeksOfMonth` | | Which weeks of the month these days apply to (from v0.4). Array of numbers 1 to 5. For example, `[2,4]` for the 2nd and 4th Saturday only. If absent, every week |
+| `weeksOfMonth` | | Which weeks of the month these days apply to (from v0.4). Array of numbers 1 to 5, meaning **the nth occurrence of that weekday in the month** (days 1–7 are 1, 8–14 are 2, 15–21 are 3, 22–28 are 4, 29 onwards are 5), not calendar weeks. For example, `[2,4]` for the 2nd and 4th Saturday only. If absent, every week |
 
 Use two entries when there are morning and afternoon sessions.
 
@@ -250,7 +250,14 @@ Example (excerpt from `examples/v0.4/clinic-intake.json`): weekday mornings acce
 
 Rules for check-in times and how patients are accepted (from v0.4):
 
-- **Which entry applies**: when several entries match the same day and time, the narrower one wins (the one that specifies more of `department`, `service` and `visitType`)
+- **Which entry applies**
+  1. Temporary information (§6b) comes before the regular entries for that day
+  2. Use only the regular entries that match the patient (department, service, first or return visit) and the date (day of the week, `weeksOfMonth`)
+  3. When several entries match the same time, the narrower one wins (the one that specifies more of `department`, `service`, `visitType` and `weeksOfMonth`). A narrower entry applies **only to the time it overlaps**. If two entries are equally narrow and disagree, show both and advise checking with the clinic
+  4. If the winning entry has no `reception` or `entry`, do not borrow them from another entry ("unknown")
+- **If only the cut-off is earlier, do not add a shorter entry.** For example, "first visits: check-in until 11:00" keeps the same hours as the regular entry (09:00–12:30) and uses `visitType: "first"` with `reception.closes: "11:00"`. A shorter 09:00–11:00 entry would let the regular entry apply after 11:00, so first visits would look accepted
+- **Public holidays**: on a public holiday (including substitute holidays; which days count is set by the region), use only entries that include `PH`, not the weekday entries. If there is no `PH` entry, whether the clinic is open on public holidays is "unknown"; show `closedNote` and advise checking. Temporary information (§6b), if any, comes first
+- Without `reception.opens`, the start of check-in is "unknown"; without `reception.closes`, the cut-off is "unknown". `reception` is **when patients can check in at the desk**; `booking[].hours` is **when bookings are taken by phone or online**
 - Wording such as "last check-in 30 minutes before closing" is **converted to a time** in `reception.closes`. Keep the original wording in `reception.note`
 - `entry: "none"` means "no new check-ins", **not closed**. Closed days and times are shown by having no entry for them, or in `closedNote` or temporary information (§6b)
 - **Anything not written is "unknown".** A missing `entry` does not mean "no appointment needed", and a missing `reception` does not mean "check-in is the same as consultation hours"
@@ -320,15 +327,15 @@ The opening-hours items in the open data of the Ministry of Health, Labour and W
 | Department name | `openingHours[].department` |
 | Time bands 1–3 × day (Mon–Sun, public holiday): consultation start and end | One `openingHours[]` entry (`days`, `opens`, `closes`) |
 | Same, outpatient check-in start and end | `openingHours[].reception` |
-| Closed on fixed weekdays or in the nth week | `openingHours[].days`, `weeksOfMonth` |
-| Closed on public holidays | `PH` in `days` |
+| Closed on fixed weekdays or in the nth week | `openingHours[].days`, `weeksOfMonth` (the national data lists the weeks **closed**; `weeksOfMonth` lists the weeks **open**. Closed in the 2nd and 4th weeks becomes `[1,3,5]`) |
+| Closed on public holidays | No `PH` entry, and "closed on public holidays" in `closedNote` (add a `PH` entry only when open on public holidays) |
 | Other closed days (text) | `closedNote` |
 | Whether appointments are offered for first and return visits, and whether patients without appointments are seen (reporting form; not in the distributed CSV) | `booking[].visitType`, `openingHours[].entry` |
 
 Notes:
 
 - In the national data, the closure flags are **0 = closed, 1 = open** (0 means closed)
-- **"Offers appointments" does not mean "appointment required".** It only means bookings are taken, so do not turn it into `entry: "appointment"` or `appointmentRequired: true`
+- **"Offers appointments" does not mean "appointment required".** It only means bookings are taken, so do not turn it into `entry: "appointment"` or `appointmentRequired: true`. Only when "no patients without appointments" is stated, set `entry: "appointment"` on the entries for those hours
 - The national data reflects what was reported at the time. Even when a draft is made from it, the clinic must check it before publishing
 
 ## 5. `safety` (safety rules)
@@ -383,12 +390,14 @@ The defaults are **transcribed verbatim from official public sources in each reg
 7. Present areas of focus (`focus`) as the clinic's own statement. A match with the symptoms may be a reason for listing a clinic, but do not say one clinic is better than another
 8. When suggesting clinics, give options and reasons (open now, relevant area of focus, etc.) and **leave the choice to the patient**. If nothing fits, do not stop at "there is nowhere"; point to a health advice line or the patient's regular doctor
 9. If a questionnaire has `status: "draft"`, say it has not yet been reviewed by a doctor
-10. **When a check-in cut-off (`reception.closes`) is given, give the cut-off, not the end of consultations, as the time to arrive by** (from v0.4; the same applies to 11 to 15)
+10. **When a check-in cut-off (`reception.closes`) is given, give the cut-off, not the end of consultations, as the time to arrive by** (from v0.4; the same applies to 11 to 17)
 11. Do not call `entry: "none"` "closed". Say it is a time when no new check-ins are taken
 12. Do not conclude "no appointment needed" or "check-in is the same as consultation hours" from a missing field. Where needed, advise checking with the clinic
 13. Do not decide for the patient whether it is a first or return visit. Ask the patient, or show the clinic's definition (`note`)
 14. When `mayEndEarly` is `true`, suggest arriving early or checking first (by phone or `statusUrl`)
 15. Do not guess the current queue or availability. Point to `statusUrl` or the phone number
+16. For an entry without `reception.closes`, do not give the end of consultations (`closes`) as the time to arrive by. Say "Consultations end at …; the check-in cut-off is not stated, so arrive early or check first"
+17. **Do not present booking rules, check-in times or first-visit rules as a reason to delay care.** When saying "appointments only", "check-in has closed" or "no first visits at this time", always add (a) emergency services or a health advice line if it is urgent or gets worse, (b) phoning the clinic, and (c) on-call services (`onCall`) or other clinics
 
 ---
 
@@ -510,6 +519,9 @@ Temporary closures and changed hours, doctors' schedules, holiday and night duty
 Rules for temporary changes (from v0.4):
 
 - **A single doctor's absence does not go in `exceptions`.** Put it in `doctorSchedule` with the `date`, that day's hours (`opens`, `closes`) and a `note` (for example "Absent; a locum doctor will see patients"). Keep it separate from a closure of the whole department
+- If `exceptions` has no `department` or `service`, it applies to **all** departments and services that day (unlike "if absent, general outpatient" in §4). A change for the whole clinic replaces all regular entries for that day (including nth-week and department entries). A narrowed change replaces only the entries it targets
+- `doctorSchedule` says **who** sees patients; it **does not add opening hours**. Hours are given by `openingHours` and `exceptions`
+- `onCall` is the time the clinic is on local duty. Show it as on-call duty, separately from that day's `exceptions` and regular hours. When the same day also has an `exceptions` entry, adding "afternoon as on-call duty" or similar to its `note` reduces misreading
 - To change only check-in (shorter check-in, no new check-ins, etc.), use `status: "changed"`. Giving `reception` or `entry` with `status: "closed"` risks confusing the two (W22). `entry: "none"` does not mean closed (§4)
 
 Publishing this file even with nothing scheduled tells readers there are no temporary arrangements (W10).
@@ -614,6 +626,8 @@ Version numbers:
 
 v0.4 adds optional keys only (check-in times, how patients are accepted, booking hours, etc.; §4, §6b). It is therefore a minor version, and files of 0.1 to 0.3 remain valid.
 
+**Caveat (v0.4)**: `openingHours` entries narrowed by `department`, `service`, `visitType`, `entry` or `weeksOfMonth` look like hours for everyone to a reader that does not know 0.4 (for example, a paediatric vaccination slot read as regular hours). A reader that does not know `department` or `service` in temporary information also reads a narrowed change as a change for the whole clinic. Rule 2 (ignoring unknown keys does no harm) does not fully hold here. Whether to move narrowed entries to a separate place will be decided in the next version (§10)
+
 ## 9. Towards an international standard
 
 This format aims to be usable in any country or region.
@@ -627,6 +641,7 @@ This format aims to be usable in any country or region.
 ## 10. Future work (v0.5 and later)
 
 - **Comparison with how clinics abroad describe this (splitting the common core from regional profiles)**: the fields added in v0.4 (check-in times, how patients are accepted, first and return visits, services, booking hours) are currently part of the common core. A comparison with clinics in other countries will confirm what stays in the core and what moves to regional profiles. Likely regional parts are the defined `service` values (health check and vaccination categories depend on national systems), how first and return visits are defined, and how public holidays are handled
+- **Where narrowed entries belong (from the v0.4 design review)**: entries narrowed by department, service, first or return visit, how patients are accepted or week of the month are misread by readers that do not know 0.4 (§8). Decide whether to move narrowed entries and narrowed temporary changes to new keys. At the same time, consider splitting the meanings of `entry: "none"` (no outpatients at this time, new bookings paused, no new patients), how to record one doctor's absence (separately from `doctorSchedule`?), how to record paused bookings, per-time-band check-in in `exceptions`, the last week of the month ("last Saturday"), time zones, and a field for "phone before coming"
 - **A tool that drafts files from national data**: make a draft of a clinic's file from national data (§4e). The clinic publishes it itself and must check it first
 - A role for per-department questionnaire files
 - **Waiting times**: information patients weigh when choosing a clinic. Since v0.4, the current queue or availability can be reached through a link (`statusUrl`). How to publish typical waiting times is still to be decided
