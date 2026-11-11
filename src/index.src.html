@@ -137,6 +137,18 @@ section.block > .intro { color: var(--muted); }
 .role dd ul { margin: 0; padding-left: 1.2em; }
 .case .freq { font-size: 13.5px; color: var(--muted); }
 .steps { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
+.model { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; display: grid; gap: 14px; }
+.model h3 { font-size: 18px; }
+.roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.roles > div { border-left: 3px solid var(--accent); padding-left: 10px; display: grid; font-size: 14.5px; }
+.roles span { color: var(--muted); font-size: 13.5px; }
+.cal { margin: 0; padding: 0; list-style: none; display: grid; }
+.cal li { display: grid; grid-template-columns: 9em 7.5em minmax(0, 1fr); gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--rule); align-items: baseline; font-size: 15px; }
+.cal .when { font-family: var(--font-display); font-weight: 700; }
+.who-tag { font-size: 12px; border-radius: 999px; padding: 1px 10px; text-align: center; justify-self: start; }
+.who-tag.fixed { background: var(--paper); border: 1px solid var(--rule); color: var(--ink); }
+.who-tag.temp { background: var(--accent-soft); color: var(--accent); }
+@media (max-width: 600px) { .cal li { grid-template-columns: auto minmax(0, 1fr); } .cal li > span:last-child { grid-column: 1 / -1; } }
 @media (max-width: 480px) { .role { grid-template-columns: 1fr; } .role dt { padding-top: 6px; } }
 .precedent { background: var(--sheet); border: 1px dashed var(--rule); border-radius: var(--radius); padding: 14px 18px; display: grid; gap: 6px; font-size: 14.5px; }
 .precedent strong { font-family: var(--font-display); }
@@ -225,7 +237,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         <h3>医療機関にも、患者さんにも良い</h3>
         <ul>
           <li><strong>医療機関</strong>：休診日の来院や、診療時間の問い合わせなどの行き違いが減る。症状に合う患者さんが来やすくなる</li>
-          <li><strong>患者さん</strong>：正しい情報で、迷わずに受診先を選べる。口コミに振り回されない</li>
+          <li><strong>患者さん</strong>：正しい情報で、迷わずに受診先を選べる。口コミに振り回されない。この仕組みを知らなくても、いつもどおり AI に相談するだけでよい</li>
         </ul>
       </div>
     </div>
@@ -239,7 +251,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
         <h4>患者さん</h4>
         <ul>
-          <li>ネットを調べられる AI に医院のホームページを伝えれば、正しい診療時間・臨時の休診・予約の方法で案内してもらえる</li>
+          <li>ネットを調べられる AI に医院のホームページを伝えれば、正しい診療時間・臨時の休診・予約の方法で案内してもらえる。ファイルの名前や形式を知っている必要はない</li>
           <li>予約の前に、救急の目安を AI が確かめる</li>
           <li>掲示された問診票に沿って、AI が受診前の記入を手伝う（印刷するか、画面で見せる）</li>
           <li>自分の健康メモで、持病や薬を整理してから受診できる</li>
@@ -254,6 +266,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
         <h4>患者さん</h4>
         <ul>
+          <li>AI や Web サービスが自分からファイルを読みに来るようになり、ホームページを伝えなくても、医療機関が出した正しい情報が自然に届く。患者さんへの周知は要らない</li>
           <li>AI が、症状に合っていて、いま開いている医療機関を探して比べる</li>
           <li>AI が、各医療機関の今の予約ページで、入力から送信までを代わりに行う（送る前に本人が確かめる）</li>
           <li>「診察はおよそ何時ごろ」と案内され、それに合わせて家を出られる。待ち時間と待合室の混雑が減る</li>
@@ -395,7 +408,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
 
   <section class="block" id="use" aria-labelledby="h-use">
     <h2 id="h-use">医療機関での使い方</h2>
-    <p class="intro">ファイルは2つに分けます。分ける理由は、<strong>変わる速さ</strong>と<strong>直す人</strong>が違うからです。ふだんの情報は一度作ればほとんど触らず、臨時の情報だけを担当の方が随時直します。</p>
+    <p class="intro">ファイルは2つに分けます。分けるのは、<strong>管理しやすくするため</strong>です。情報によって、<strong>変わる速さ</strong>と<strong>直す人</strong>が違います。ふだんの情報は一度作ればほとんど触らず、臨時の情報だけを担当の方が随時直します。</p>
     <div class="compare">
       <div class="case">
         <h3>ふだんの情報 <code>clinic-intake.json</code></h3>
@@ -412,16 +425,33 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         <dl class="role">
           <dt>中身</dt><dd><ul><li>臨時の休診、診療時間の変更</li><li>担当医の予定（例: 専門の先生の外来は火曜と木曜の午後）</li><li>休日・夜間の当番</li><li>その時々のお知らせやお願い（例: 予防接種は予約制です）</li></ul></dd>
           <dt>誰が</dt><dd>受付などの担当の方。ふだんの情報のファイルには触らないので、操作を間違えて壊す心配がない</dd>
-          <dt>直し方</dt><dd><ol class="steps"><li>作成ツールの「臨時の情報」に入力し、ファイルを保存する</li><li>ホームページの決まった場所に、上書きで置く</li><li>自分で置けないときは、変更の概要をメールでホームページの管理者に送り、置き換えてもらってもよい</li></ol></dd>
+          <dt>直し方</dt><dd><ol class="steps"><li>作成ツールの「臨時の情報」に入力する。または、臨時の情報用の指示文を保存しておき、ふだん使っている AI に、今のファイルの中身と一緒に「12月29日から1月3日まで休診を足して」のように頼む</li><li>できたファイルを保存し、ホームページの決まった場所に、上書きで置く</li><li>自分で置けないときは、変更の概要をメールでホームページの管理者に送り、置き換えてもらってもよい</li></ol></dd>
           <dt>期限</dt><dd>ファイルに有効期限をつける。期限が過ぎると AI は使わないので、古いお知らせが残り続けることがない</dd>
         </dl>
       </div>
+    </div>
+    <div class="model">
+      <h3>モデルケース：内科のクリニックの1年</h3>
+      <div class="roles">
+        <div><strong>責任者</strong>（院長）<span>ふだんの情報を書き換えられる人。内容に責任を持つ</span></div>
+        <div><strong>ホームページの管理者</strong>（職員や外部の業者）<span>ファイルを置く人</span></div>
+        <div><strong>担当者</strong>（受付など）<span>臨時の情報だけを、いつでも書き換えられる人</span></div>
+      </div>
+      <ol class="cal">
+        <li><span class="when">はじめに・年に1回</span><span class="who-tag fixed">ふだんの情報</span><span>責任者が、名前・診療時間・予約の方法・問診票を作るか確かめ、管理者が置く。診療時間や診療科が変わったときも同じ</span></li>
+        <li><span class="when">毎月はじめ</span><span class="who-tag temp">臨時の情報</span><span>担当者が、今月の担当医の予定を入れ、有効期限を来月までに延ばす。終わった予定は消す</span></li>
+        <li><span class="when">急な休診の日</span><span class="who-tag temp">臨時の情報</span><span>先生の急病などで休診にするとき、担当者がその日のうちに臨時の休診を足す。AI はすぐに新しい情報で案内できる</span></li>
+        <li><span class="when">かぜの流行期</span><span class="who-tag temp">臨時の情報</span><span>「発熱のある方は、来院の前にお電話ください」のお願いを足し、流行が終わったら消す</span></li>
+        <li><span class="when">12月</span><span class="who-tag temp">臨時の情報</span><span>年末年始の休診と、休日の当番を足す</span></li>
+      </ol>
+      <p><strong>分けておくと、担当者が操作を間違えても、壊れるのは臨時の情報だけです。</strong>名前・住所・ふだんの診療時間・問診票は、担当者が誤って書き換えることがありません。ホームページの仕組みがファイルごとの権限に対応していれば、「臨時の情報は担当者がいつでも書き換えられる。ふだんの情報は責任者しか書き換えられない」と分けられます。対応していなくても、担当者が作ったファイルを管理者が置く、という分担で同じ効果が得られます。臨時の情報の期限が切れても、ふだんの情報はそのまま使われ続けます。</p>
     </div>
     <div class="compare">
       <div class="case">
         <h3>新しく動かすシステムがない</h3>
         <p>置くのは、文字だけのファイルです。ログインの画面も、データベースも、医療機関のサーバーで新しく動かすプログラムもありません。作成ツールも、入力した内容をどこにも送らず、使っている人のブラウザの中だけで動きます。そのため、この仕組みのために<strong>攻撃される入口が増えることはありません</strong>。</p>
-        <p class="note">ただし、ホームページそのものが乗っ取られれば、ファイルも書き換えられます。ホームページの管理は、これまでどおり大切です。</p>
+        <p>万が一書き換えられても、中身は誰でもいつでも確かめられる（作成ツールの「表示」や AI で読める）ので、おかしな書き換えに気づきやすくなっています。</p>
+        <p class="note">ホームページそのものが乗っ取られたときに管理を取り戻せるかは、この仕組みとは別の、ホームページがもともと持っている課題です。ホームページの管理は、これまでどおり大切です。</p>
       </div>
       <div class="case">
         <h3>技術がなくても、中身を確かめられる</h3>

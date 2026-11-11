@@ -145,6 +145,18 @@ section.block > .intro { color: var(--muted); }
 .role dd ul { margin: 0; padding-left: 1.2em; }
 .case .freq { font-size: 13.5px; color: var(--muted); }
 .steps { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
+.model { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; display: grid; gap: 14px; }
+.model h3 { font-size: 18px; }
+.roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.roles > div { border-left: 3px solid var(--accent); padding-left: 10px; display: grid; font-size: 14.5px; }
+.roles span { color: var(--muted); font-size: 13.5px; }
+.cal { margin: 0; padding: 0; list-style: none; display: grid; }
+.cal li { display: grid; grid-template-columns: 9em 7.5em minmax(0, 1fr); gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--rule); align-items: baseline; font-size: 15px; }
+.cal .when { font-family: var(--font-display); font-weight: 700; }
+.who-tag { font-size: 12px; border-radius: 999px; padding: 1px 10px; text-align: center; justify-self: start; }
+.who-tag.fixed { background: var(--paper); border: 1px solid var(--rule); color: var(--ink); }
+.who-tag.temp { background: var(--accent-soft); color: var(--accent); }
+@media (max-width: 600px) { .cal li { grid-template-columns: auto minmax(0, 1fr); } .cal li > span:last-child { grid-column: 1 / -1; } }
 @media (max-width: 480px) { .role { grid-template-columns: 1fr; } .role dt { padding-top: 6px; } }
 .precedent { background: var(--sheet); border: 1px dashed var(--rule); border-radius: var(--radius); padding: 14px 18px; display: grid; gap: 6px; font-size: 14.5px; }
 .precedent strong { font-family: var(--font-display); }
@@ -233,7 +245,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         <h3>Good for clinics and patients alike</h3>
         <ul>
           <li><strong>Clinics</strong>: fewer mix-ups such as visits on closed days or calls about opening hours. Patients whose symptoms fit are more likely to come</li>
-          <li><strong>Patients</strong>: choose a clinic with correct information, without getting lost or being swayed by reviews</li>
+          <li><strong>Patients</strong>: choose a clinic with correct information, without getting lost or being swayed by reviews. They do not need to know about this format; they just ask their AI as usual</li>
         </ul>
       </div>
     </div>
@@ -247,7 +259,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
         <h4>Patients</h4>
         <ul>
-          <li>Give an AI that can browse the web the clinic's website, and it guides you with correct hours, closures and booking methods</li>
+          <li>Give an AI that can browse the web the clinic's website, and it guides you with correct hours, closures and booking methods. No need to know the file's name or format</li>
           <li>The AI checks emergency warning signs before booking</li>
           <li>The AI helps fill in the clinic's published questionnaire before the visit (print it or show it on screen)</li>
           <li>Patients can organise their conditions and medicines in their own health summary before the visit</li>
@@ -262,6 +274,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
         <h4>Patients</h4>
         <ul>
+          <li>AI and web services come to read the file by themselves, so the clinic's correct information reaches patients without them giving the website. No need to tell patients about it</li>
           <li>The AI finds and compares clinics that fit the symptoms and are open now</li>
           <li>The AI fills in and submits each clinic's existing booking page (the patient checks before it is sent)</li>
           <li>Patients are told roughly when they will be seen and leave home to match, cutting waiting times and crowded waiting rooms</li>
@@ -402,7 +415,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
 
   <section class="block" id="use" aria-labelledby="h-use">
     <h2 id="h-use">How a clinic uses it</h2>
-    <p class="intro">There are two files, because the information <strong>changes at different speeds</strong> and is <strong>kept by different people</strong>. The regular file is made once and rarely touched; only the temporary file is updated by staff as needed.</p>
+    <p class="intro">There are two files, <strong>to make management easier</strong>: the information <strong>changes at different speeds</strong> and is <strong>kept by different people</strong>. The regular file is made once and rarely touched; only the temporary file is updated by staff as needed.</p>
     <div class="compare">
       <div class="case">
         <h3>Regular information <code>clinic-intake.json</code></h3>
@@ -419,16 +432,33 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         <dl class="role">
           <dt>Contents</dt><dd><ul><li>Temporary closures and changed hours</li><li>Doctors' schedules (for example, a specialist clinic on Tuesday and Thursday afternoons)</li><li>Weekend and night on-call duties</li><li>Notices and requests of the moment (for example, vaccinations are by appointment)</li></ul></dd>
           <dt>Who</dt><dd>Front-desk or other assigned staff. They never touch the regular file, so a mistake cannot break it</dd>
-          <dt>Updating</dt><dd><ol class="steps"><li>Fill in "Temporary information" in the creation tool and save the file</li><li>Overwrite the file at its fixed place on the website</li><li>If you cannot upload it yourself, you can email a summary of the change to your website manager</li></ol></dd>
+          <dt>Updating</dt><dd><ol class="steps"><li>Fill in "Temporary information" in the creation tool. Or keep the AI instructions for temporary information and ask any AI you use, together with the current file, something like "add a closure from 29 December to 3 January"</li><li>Save the result and overwrite the file at its fixed place on the website</li><li>If you cannot upload it yourself, you can email a summary of the change to your website manager</li></ol></dd>
           <dt>Expiry</dt><dd>The file has an expiry date. After it passes, AI stops using the file, so old notices never linger</dd>
         </dl>
       </div>
+    </div>
+    <div class="model">
+      <h3>Model case: a year at an internal medicine clinic</h3>
+      <div class="roles">
+        <div><strong>Responsible person</strong> (director)<span>Can change the regular information and is responsible for it</span></div>
+        <div><strong>Website manager</strong> (staff or an outside company)<span>Puts the files on the website</span></div>
+        <div><strong>Assigned staff</strong> (front desk, etc.)<span>Can change only the temporary information, at any time</span></div>
+      </div>
+      <ol class="cal">
+        <li><span class="when">At the start, yearly</span><span class="who-tag fixed">Regular</span><span>The responsible person creates or reviews the name, hours, booking methods and questionnaires, and the website manager publishes them. The same when hours or departments change</span></li>
+        <li><span class="when">Start of each month</span><span class="who-tag temp">Temporary</span><span>Staff enter this month's doctors' schedules, extend the expiry date to next month and remove finished items</span></li>
+        <li><span class="when">Sudden closure</span><span class="who-tag temp">Temporary</span><span>If the doctor falls ill, staff add the closure the same day. AI can guide patients with the new information right away</span></li>
+        <li><span class="when">Cold and flu season</span><span class="who-tag temp">Temporary</span><span>Add "If you have a fever, please call before coming in", and remove it when the season ends</span></li>
+        <li><span class="when">December</span><span class="who-tag temp">Temporary</span><span>Add the New Year closure and holiday on-call duties</span></li>
+      </ol>
+      <p><strong>With separate files, a staff member's mistake can only affect the temporary information.</strong> The name, address, regular hours and questionnaires cannot be overwritten by accident. If your website supports per-file permissions, you can set it up so that staff can change the temporary file at any time, while only the responsible person can change the regular file. If it does not, the same effect comes from a simple split of roles: staff create the file and the website manager publishes it. Even if the temporary file expires, the regular information keeps being used.</p>
     </div>
     <div class="compare">
       <div class="case">
         <h3>No new system to run</h3>
         <p>What you publish is a plain text file. There is no login page, no database and no new program running on the clinic's server. The creation tool does not send what you type anywhere; it runs only in your own browser. So this format <strong>adds no new point of attack</strong>.</p>
-        <p class="note">If the website itself is taken over, the file can be altered too. Looking after the website matters as much as ever.</p>
+        <p>If the file is ever altered, anyone can check its content at any time (in the creation tool's "View" tab or with an AI), so suspicious changes are easier to notice.</p>
+        <p class="note">Whether you can regain control of a website that has been taken over is a separate issue that every website already has. Looking after the website matters as much as ever.</p>
       </div>
       <div class="case">
         <h3>Check the content without technical skills</h3>
