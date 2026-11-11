@@ -72,6 +72,22 @@ section.block { padding-block: 36px; border-top: 1px solid var(--rule); display:
 section.block > h2 { font-size: clamp(22px, 3vw, 28px); }
 section.block > .intro { color: var(--muted); }
 
+/* 要点: 大事な3つと、いま・将来 */
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.pillar { background: var(--sheet); border: 1px solid var(--rule); border-top: 4px solid var(--accent); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.pillar h3 { font-size: 18px; }
+.pillar ul { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; font-size: 15px; }
+.pillar .note { margin-top: 2px; }
+.horizon { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.horizon .case h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.horizon .case h3 small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.horizon .now-ok h3 { color: var(--accent); }
+.horizon .later h3 { color: var(--ink); }
+.horizon .later { border-style: dashed; }
+.horizon h4 { font-size: 14px; margin: 6px 0 0; color: var(--muted); font-weight: 500; }
+.horizon ul { margin: 0; padding-left: 1.2em; display: grid; gap: 3px; }
+.same { background: var(--accent-soft); border-radius: var(--radius); padding: 12px 16px; }
+
 /* 課題: いまと、これから */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .case { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; align-content: start; }
@@ -191,6 +207,69 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <a class="btn ghost" href="https://github.com/open-intake/open-intake/blob/main/SPEC.en.md">Read the specification</a>
     </div>
   </header>
+
+  <section class="block" id="summary" aria-labelledby="h-summary">
+    <h2 id="h-summary">At a glance</h2>
+    <div class="pillars">
+      <div class="pillar">
+        <h3>Easy, with no technical skills</h3>
+        <ul>
+          <li>Fill in the form in the creation tool, save the file and put it on your website</li>
+          <li>Or build it in conversation with an AI you already use</li>
+          <li>Check what you wrote in plain language in the creation tool's "View" tab</li>
+        </ul>
+      </div>
+      <div class="pillar">
+        <h3>Very low risk and downside</h3>
+        <ul>
+          <li>Only information that is fine to publish. No patient information is handled</li>
+          <li>No new system to run, and no cost</li>
+          <li>Your booking method and website stay as they are</li>
+          <li>To stop, just delete the file</li>
+        </ul>
+        <p class="note">The remaining concern is content going out of date. Temporary information carries an expiry date, and AI does not use it once it has passed.</p>
+      </div>
+      <div class="pillar">
+        <h3>Good for clinics and patients alike</h3>
+        <ul>
+          <li><strong>Clinics</strong>: fewer mix-ups such as visits on closed days or calls about opening hours. Patients whose symptoms fit are more likely to come</li>
+          <li><strong>Patients</strong>: choose a clinic with correct information, without getting lost or being swayed by reviews</li>
+        </ul>
+      </div>
+    </div>
+    <div class="horizon">
+      <div class="case now-ok">
+        <h3>What changes right away<small>from the day the file is published</small></h3>
+        <h4>Clinics</h4>
+        <ul>
+          <li>Front-desk staff can publish closures, doctors' schedules and requests the same day</li>
+          <li>AI reads the correct information the clinic wrote itself, not maps or review sites</li>
+        </ul>
+        <h4>Patients</h4>
+        <ul>
+          <li>Give an AI that can browse the web the clinic's website, and it guides you with correct hours, closures and booking methods</li>
+          <li>The AI checks emergency warning signs before booking</li>
+          <li>The AI helps fill in the clinic's published questionnaire before the visit (print it or show it on screen)</li>
+          <li>Patients can organise their conditions and medicines in their own health summary before the visit</li>
+        </ul>
+      </div>
+      <div class="case later">
+        <h3>What becomes possible later<small>as AI improves</small></h3>
+        <h4>Clinics</h4>
+        <ul>
+          <li>Publishing doctors' schedules is enough for booking requests to arrive for the right days</li>
+          <li>Once a visit is confirmed, organised pre-visit answers arrive with the patient's consent</li>
+        </ul>
+        <h4>Patients</h4>
+        <ul>
+          <li>The AI finds and compares clinics that fit the symptoms and are open now</li>
+          <li>The AI fills in and submits each clinic's existing booking page (the patient checks before it is sent)</li>
+          <li>Patients are told roughly when they will be seen and leave home to match, cutting waiting times and crowded waiting rooms</li>
+        </ul>
+      </div>
+    </div>
+    <p class="same"><strong>At both stages, the clinic does the same thing:</strong> keep the file up to date. The added convenience comes from AI improving on its side. More in <a href="#h-future">our forecast</a>, <a href="#use">how a clinic uses it</a> and <a href="#match">matching without reviews</a>.</p>
+  </section>
 
   <section class="block" aria-labelledby="h-why">
     <h2 id="h-why">Why it is needed</h2>

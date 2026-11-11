@@ -72,6 +72,22 @@ section.block { padding-block: 36px; border-top: 1px solid var(--rule); display:
 section.block > h2 { font-size: clamp(22px, 3vw, 28px); }
 section.block > .intro { color: var(--muted); }
 
+/* 要点: 大事な3つと、いま・将来 */
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.pillar { background: var(--sheet); border: 1px solid var(--rule); border-top: 4px solid var(--accent); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.pillar h3 { font-size: 18px; }
+.pillar ul { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; font-size: 15px; }
+.pillar .note { margin-top: 2px; }
+.horizon { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.horizon .case h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.horizon .case h3 small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.horizon .now-ok h3 { color: var(--accent); }
+.horizon .later h3 { color: var(--ink); }
+.horizon .later { border-style: dashed; }
+.horizon h4 { font-size: 14px; margin: 6px 0 0; color: var(--muted); font-weight: 500; }
+.horizon ul { margin: 0; padding-left: 1.2em; display: grid; gap: 3px; }
+.same { background: var(--accent-soft); border-radius: var(--radius); padding: 12px 16px; }
+
 /* 課題: いまと、これから */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .case { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; align-content: start; }
@@ -191,6 +207,69 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <p class="lead" style="font-size:16px;color:var(--muted)">目的は、<strong style="background:none;color:var(--ink)">医療機関と患者さんのマッチングをよくすること</strong>。症状に合い、いま受診できる医療機関に、患者さんが迷わずたどり着けるようにします。</p>
     <div class="status"><span>導入も利用も無料</span><span>オープンソース</span><span>診断はしません</span><span>患者さんの情報をためません</span><span>医療者のご意見を募集中</span></div>
   </header>
+
+  <section class="block" id="summary" aria-labelledby="h-summary">
+    <h2 id="h-summary">ひと目でわかる要点</h2>
+    <div class="pillars">
+      <div class="pillar">
+        <h3>技術がなくても、簡単</h3>
+        <ul>
+          <li>作成ツールのフォームに入力して保存し、ホームページに置くだけ</li>
+          <li>ふだん使っている AI と会話して作ることもできる</li>
+          <li>書いた内容は、作成ツールの「表示」で読みやすく確かめられる</li>
+        </ul>
+      </div>
+      <div class="pillar">
+        <h3>リスクとデメリットが、とても小さい</h3>
+        <ul>
+          <li>載せるのは、公開してよい情報だけ。患者さんの情報は扱わない</li>
+          <li>新しく動かすシステムがなく、費用もかからない</li>
+          <li>今の予約の方法も、ホームページもそのまま</li>
+          <li>やめたいときは、ファイルを消すだけで元どおり</li>
+        </ul>
+        <p class="note">残る心配は、書いた内容が古くなること。臨時の情報には有効期限をつけ、期限を過ぎたものは AI が使わない決まりにしています。</p>
+      </div>
+      <div class="pillar">
+        <h3>医療機関にも、患者さんにも良い</h3>
+        <ul>
+          <li><strong>医療機関</strong>：休診日の来院や、診療時間の問い合わせなどの行き違いが減る。症状に合う患者さんが来やすくなる</li>
+          <li><strong>患者さん</strong>：正しい情報で、迷わずに受診先を選べる。口コミに振り回されない</li>
+        </ul>
+      </div>
+    </div>
+    <div class="horizon">
+      <div class="case now-ok">
+        <h3>いますぐ変わること<small>ファイルを置いた日から</small></h3>
+        <h4>医療機関</h4>
+        <ul>
+          <li>臨時の休診・担当医の予定・お願いを、受付の方がその日のうちに出せる</li>
+          <li>地図や口コミサイトに頼らず、自分で書いた正しい情報を AI に読んでもらえる</li>
+        </ul>
+        <h4>患者さん</h4>
+        <ul>
+          <li>ネットを調べられる AI に医院のホームページを伝えれば、正しい診療時間・臨時の休診・予約の方法で案内してもらえる</li>
+          <li>予約の前に、救急の目安を AI が確かめる</li>
+          <li>掲示された問診票に沿って、AI が受診前の記入を手伝う（印刷するか、画面で見せる）</li>
+          <li>自分の健康メモで、持病や薬を整理してから受診できる</li>
+        </ul>
+      </div>
+      <div class="case later">
+        <h3>将来できること<small>AI の進歩につれて</small></h3>
+        <h4>医療機関</h4>
+        <ul>
+          <li>担当医の予定を出しておくだけで、その日に合わせた予約の申し込みが届くようになる</li>
+          <li>受診が決まったあと、整理された問診の内容を、本人の同意のもとで受け取れる</li>
+        </ul>
+        <h4>患者さん</h4>
+        <ul>
+          <li>AI が、症状に合っていて、いま開いている医療機関を探して比べる</li>
+          <li>AI が、各医療機関の今の予約ページで、入力から送信までを代わりに行う（送る前に本人が確かめる）</li>
+          <li>「診察はおよそ何時ごろ」と案内され、それに合わせて家を出られる。待ち時間と待合室の混雑が減る</li>
+        </ul>
+      </div>
+    </div>
+    <p class="same"><strong>どちらの段階でも、医療機関がすることは同じです。</strong>ファイルを最新にしておくだけ。将来の便利さは、AI の側が進歩することで加わっていきます。くわしくは<a href="#h-future">これからの予測</a>・<a href="#use">医療機関での使い方</a>・<a href="#match">口コミに頼らないマッチング</a>へ。</p>
+  </section>
 
   <section class="block" aria-labelledby="h-why">
     <h2 id="h-why">なぜ必要か</h2>
