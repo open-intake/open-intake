@@ -29,7 +29,7 @@ AI が作った JSON や、公開中のファイルの中身を貼り付けて�
 >チェックする</button>	>Check</button>
 フォームに読み込む	Load into form
 ファイルを開く	Open file
-仕様: オープン受診案内（Open Intake）v0.2 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0	Specification: Open Intake v0.3 draft · Specification CC BY 4.0, this tool Apache-2.0
+仕様: オープン受診案内（Open Intake）v0.3 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0	Specification: Open Intake v0.3 draft · Specification CC BY 4.0, this tool Apache-2.0
 このツールは診断をしません。問診票と救急の目安は、公開の前に必ず医師に確認してもらってください。	This tool does not diagnose. Always have a doctor review questionnaires and emergency warning signs before publishing.
 ["web","Web 予約"],["phone","電話"],["walk-in","予約なしで来院"],["other","その他"]	["web","Online booking"],["phone","Phone"],["walk-in","Walk-in (no booking)"],["other","Other"]
 ["boolean","はい／いいえ"],["choice","選ぶ"],["open-choice","選ぶか書く"],["string","短い文"],["text","長い文"],["integer","整数"],["decimal","小数"],["date","日付"],["display","説明文（答えなし）"]	["boolean","Yes / no"],["choice","Choose"],["open-choice","Choose or write"],["string","Short text"],["text","Long text"],["integer","Whole number"],["decimal","Decimal number"],["date","Date"],["display","Note (no answer)"]

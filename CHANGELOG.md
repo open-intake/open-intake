@@ -2,7 +2,7 @@
 
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) にならいます。仕様の版（`specVersion`）と、ツールの変更を分けて書きます。
 
-## 未リリース（次の版 v0.3 に入る予定）
+## [0.3.0] 草案 — 2026-11
 
 ### 仕様 v0.3
 
