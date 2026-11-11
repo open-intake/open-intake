@@ -436,3 +436,185 @@ ${qi+1} 番目の問診票	Questionnaire ${qi+1}
 当番 ${i+1}	On-call duty ${i+1}
 "（"	" ("
 "）"	")"
+# --- 自分の健康メモの作成ツール（患者の側） ---
+<title>自分の健康メモ</title>	<title>My health summary</title>
+持病・薬・アレルギーなどを、自分の責任で手元にまとめる my-health.json（自分の健康メモ）の作成ツール。受診のときに印刷したり画面で見せたりできます。	A tool to create my-health.json (my health summary): your conditions, medicines and allergies, kept by you on your own device. Print it or show it on screen at a visit.
+<a href="../">← About Open Intake</a> · my-health.json · 自分の健康メモ v0.1 草案 · <a href="../en/me/" hreflang="en" lang="en">English</a>	<a href="../">← About Open Intake</a> · my-health.json · My health summary v0.1 draft · <a href="../../me/" hreflang="ja" lang="ja">&#26085;&#26412;&#35486;</a>
+<h1>自分の健康メモ</h1>	<h1>My health summary</h1>
+<p>持病・飲んでいる薬・アレルギーなどを、<strong>自分の責任で</strong>まとめる <code>my-health.json</code> を作ります。体調が悪いときに AI へ今の症状と一緒に渡したり、受診のときに印刷したり画面で見せたりできます。<strong>入力はこのブラウザの外には送りません。</strong></p>	<p>Create <code>my-health.json</code>, a summary of your conditions, medicines and allergies that you keep <strong>on your own responsibility</strong>. When you are unwell, give it to an AI together with your current symptoms; at a visit, print it or show it on screen. <strong>Nothing you enter is sent outside this browser.</strong></p>
+<strong>はじめに</strong>	<strong>Before you start</strong>
+<span>・ここに書くのは<strong>ご自身の申告</strong>です。正しいかどうかは、ご自身で確かめてください。医療記録の代わりにはなりません。</span>	<span>• What you write here is <strong>your own statement</strong>. Check that it is correct yourself. It does not replace medical records.</span>
+<span>・<strong>氏名・住所・電話番号・保険証やマイナンバーなどの番号は書かないでください。</strong></span>	<span>• <strong>Do not write your name, address, phone number, insurance or ID numbers.</strong></span>
+<span>・このツールは診断をしません。命に関わるかもしれない症状があるときは、すぐ救急（日本は119）に電話してください。</span>	<span>• This tool does not diagnose. If you may have a life-threatening symptom, call emergency services now (911 in the US).</span>
+<summary>別の方法：AI と相談して作る（お薬手帳の写真からも）</summary>	<summary>Another way: create it with an AI (including from photos of medicine records)</summary>
+<p class="small">指示書を AI に渡すと、AI が1つずつ質問して my-health.json を作ります。お薬手帳・薬袋・領収書の写真から書き起こしてもらうこともできます（AI は読み間違えることがあるので、原本と見比べてください）。写真を送るときは、氏名や番号が写らないようにしてください。</p>	<p class="small">Give the instructions to an AI and it will ask one question at a time and create my-health.json. It can also transcribe from photos of medicine records, medicine labels or receipts (AI can misread, so compare with the originals). When sending photos, make sure your name and numbers are not visible.</p>
+href="AI_INSTRUCTIONS_PERSONAL.md" download="AI_INSTRUCTIONS_PERSONAL.md">指示書をダウンロード</a>	href="AI_INSTRUCTIONS_PERSONAL.en.md" download="AI_INSTRUCTIONS_PERSONAL.en.md">Download the instructions</a>
+「作るとき」のCopy instructions	Copy instructions (creating)
+「体調が悪いとき」のCopy instructions	Copy instructions (when unwell)
+段階1　受診先の好み<small>健康の情報は含みません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small>	Stage 1: clinic preferences<small>No health information. Used by an AI when looking for a clinic. Updating it with an AI after each visit makes suggestions fit you better.</small>
+段階2　健康の情報<small>書きたい人だけ。体調が悪いときの相談や、受診用シートに使います。</small>	Stage 2: health information<small>Only if you want to. Used when asking for help while unwell, and for the visit sheet.</small>
+>受診用シート<	>Visit sheet<
+>読み込み<	>Load<
+<summary>今回の症状を整理する（ファイルには保存しません。印刷と画面にだけ出ます）</summary>	<summary>Organise today's symptoms (not saved in the file; only printed or shown on screen)</summary>
+>診断するためではなく、医師が判断しやすいように整理します。わかるところだけで構いません。<	>This is not for diagnosis; it organises things so the doctor can assess them more easily. Fill in only what you know.<
+>印刷する<	>Print<
+>画面で大きく見せる<	>Show large on screen<
+>元の画面に戻る<	>Back<
+>書き出す範囲<	>What to export<
+<option value="all">すべて（段階1・段階2）</option><option value="stage1">段階1だけ（健康の情報を含まない）</option><option value="stage2">段階2だけ（受診先の好みを含まない）</option>	<option value="all">Everything (stages 1 and 2)</option><option value="stage1">Stage 1 only (no health information)</option><option value="stage2">Stage 2 only (no clinic preferences)</option>
+>⚠ AI に渡すのは、その相談に必要な範囲だけにしましょう。受診先を探すだけなら「段階1だけ」で足ります。<	>⚠ Give an AI only what it needs for the question. To look for a clinic, "Stage 1 only" is enough.<
+id="saveJson">保存<	id="saveJson">Save<
+id="copyJson">コピー<	id="copyJson">Copy<
+>保存したファイルは、ご自身の端末に置いてください。体調が悪いときは、このファイルを AI に添付し、今の症状を伝えます。<	>Keep the saved file on your own device. When you are unwell, attach it to an AI and describe your current symptoms.<
+>前に保存した my-health.json や、AI が作った JSON を読み込みます。<	>Load a my-health.json you saved before, or JSON created by an AI.<
+aria-label="JSON を貼り付け"	aria-label="Paste JSON"
+>読み込む<	>Load<
+"本人が自分の責任で書いた健康のメモ（自己申告）。読む AI は診断・病名の推定・薬の指示をせず、救急の目安を先に確かめ、問診票の下書きは本人に確かめてもらう。渡された範囲だけを受診先探しと受診の準備に使う。"	"A health summary written by the person on their own responsibility (self-reported). An AI reading it does not diagnose, guess diseases or give medicine instructions; it checks emergency warning signs first and has the person confirm any questionnaire draft. It uses only what it was given, only to find a clinic and prepare for a visit."
+["self","自分の記憶"],["medication-notebook","お薬手帳"],["medication-label","薬袋・説明書"],["receipt","領収書・明細書"],["checkup","健康診断の結果"],["clinician-document","医療機関からの書類"]	["self","My memory"],["medication-notebook","Medicine record"],["medication-label","Medicine label or leaflet"],["receipt","Receipt or statement"],["checkup","Check-up results"],["clinician-document","Document from a clinic"]
+lead: "薬・食べ物などで起きたアレルギー。"	lead: "Allergies to medicines, foods and so on."
+"何に対して", "text", "例: ペニシリン、えび"	"To what", "text", "e.g. penicillin, shrimp"
+["medication","薬"],["food","食べ物"],["environment","花粉・動物など"]	["medication","Medicine"],["food","Food"],["environment","Pollen, animals, etc."]
+"どうなったか", "text", "例: じんましん"	"What happened", "text", "e.g. hives"
+"重さ", "select", [["", "—"],["mild","軽い"],["moderate","中くらい"],["severe","重い"]	"Severity", "select", [["", "—"],["mild","Mild"],["moderate","Moderate"],["severe","Severe"]
+"いつ（年・年月）", "text", "例: 2015"	"When (year or year-month)", "text", "e.g. 2015"
+title: "使っている薬", lead: "お薬手帳や薬袋の表記のまま書くと、医師に伝わりやすくなります。"	title: "Medicines", lead: "Writing them exactly as on your medicine record or label helps the doctor."
+"薬の名前", "text", "例: アムロジピン錠5mg"	"Medicine name", "text", "e.g. Amlodipine 5 mg tablet"
+"1回の量", "text", "例: 1回1錠"	"Dose", "text", "e.g. 1 tablet"
+"飲み方", "text", "例: 1日1回 朝食後"	"Directions", "text", "e.g. once daily after breakfast"
+["active","使っている"],["as-needed","必要なときだけ"],["stopped","やめた"]	["active","Using"],["as-needed","Only when needed"],["stopped","Stopped"]
+"使い始め", "text", "例: 2020-04"	"Started", "text", "e.g. 2020-04"
+"出した医療機関・薬局（任意）"	"Prescribed by (clinic or pharmacy, optional)"
+"何のための薬か（任意）", "text", "例: 血圧"	"What it is for (optional)", "text", "e.g. blood pressure"
+title: "持病・これまでの病気", lead: "医師から聞いた名前で書きます。"	title: "Conditions and past illnesses", lead: "Use the name a doctor told you."
+"病気の名前", "text", "例: 高血圧"	"Condition", "text", "e.g. high blood pressure"
+["active","いまもある"],["resolved","治った"]	["active","Ongoing"],["resolved","Resolved"]
+"いつから", "text", "例: 2020"	"Since", "text", "e.g. 2020"
+title: "手術・大きな処置"	title: "Operations and major procedures"
+"手術・処置", "text", "例: 虫垂の切除"	"Operation or procedure", "text", "e.g. appendix removal"
+"いつ", "text", "例: 1995"	"When", "text", "e.g. 1995"
+title: "予防接種", lead: "わかる範囲で。"	title: "Vaccinations", lead: "As far as you know."
+"予防接種", "text", "例: インフルエンザ"	"Vaccine", "text", "e.g. flu"
+"いつ", "text", "例: 2025-11"	"When", "text", "e.g. 2025-11"
+[["", "答えない"],["female","女性"],["male","男性"]	[["", "Prefer not to say"],["female","Female"],["male","Male"]
+["not-applicable","あてはまらない"],["not-pregnant","妊娠していない"],["possible","可能性がある"],["pregnant","妊娠している"]	["not-applicable","Not applicable"],["not-pregnant","Not pregnant"],["possible","Possibly"],["pregnant","Pregnant"]
+["never","吸わない"],["former","以前吸っていた"],["current","吸っている"]	["never","Never"],["former","Former smoker"],["current","Smoker"]
+["none","飲まない"],["occasional","ときどき"],["regular","よく飲む"]	["none","None"],["occasional","Occasionally"],["regular","Regularly"]
+[["walk","徒歩"],["bicycle","自転車"],["train","電車"],["bus","バス"],["car","車"],["taxi","タクシー"]]	[["walk","Walk"],["bicycle","Bicycle"],["train","Train"],["bus","Bus"],["car","Car"],["taxi","Taxi"]]
+["near","近さ"],["shortWait","待ち時間の短さ"],["openNow","いま開いている"],["specialty","専門性・得意分野"],["reputation","評判"]	["near","Nearby"],["shortWait","Short wait"],["openNow","Open now"],["specialty","Specialty, areas of focus"],["reputation","Reputation"]
+["accessibility","配慮・設備"]	["accessibility","Accessibility, support"]
+[["Mo","月"],["Tu","火"],["We","水"],["Th","木"],["Fr","金"],["Sa","土"],["Su","日"],["PH","祝"]]	[["Mo","Mon"],["Tu","Tue"],["We","Wed"],["Th","Thu"],["Fr","Fri"],["Sa","Sat"],["Su","Sun"],["PH","Hol"]]
+["onset", "いつから", "例: 昨日の夜から・急に"], ["where", "どこが", "例: 頭の右側・こめかみ"], ["quality", "どんなふうに", "例: ずきずき・締めつけられる"], ["severity", "どのくらい（0〜10）", "例: 7"],	["onset", "When it started", "e.g. last night, suddenly"], ["where", "Where", "e.g. right side of the head, temple"], ["quality", "What it is like", "e.g. throbbing, tight"], ["severity", "How bad (0–10)", "e.g. 7"],
+["timing", "続く時間・起きるタイミング", "例: 30分ほど続く・朝に強い"], ["associated", "ほかの症状", "例: 吐き気・熱 38.2℃"], ["factors", "きっかけ・悪くなる/楽になること", "例: 動くと悪化・横になると楽"], ["selfcare", "自分でした対処", "例: 市販の鎮痛剤を21時に1錠"]	["timing", "How long it lasts, when it happens", "e.g. lasts about 30 minutes, worse in the morning"], ["associated", "Other symptoms", "e.g. nausea, fever 100.8°F"], ["factors", "Triggers, what makes it worse or better", "e.g. worse when moving, better lying down"], ["selfcare", "What I have done", "e.g. 1 over-the-counter painkiller at 9 pm"]
+languages: ["ja"], addressCountry: "JP", addressRegion: "東京都"	languages: ["en"], addressCountry: "US", addressRegion: "OR"
+addressCountry: "JP", addressRegion: "東京都", addressLocality: "千代田区", nearestStation: "みどり台駅（架空）" }, travel: { modes: ["walk","train"]	addressCountry: "US", addressRegion: "OR", addressLocality: "Portland", nearestStation: "Greenhill Transit Center (fictional)" }, travel: { modes: ["walk","bus"]
+note: "平日は仕事"	note: "Work on weekdays"
+languages: ["ja"], needs: ["待合室で座って待ちたい"]	languages: ["en"], needs: ["Need to sit while waiting"]
+name: "みどり台内科クリニック（架空）", department: "内科"	name: "Greenhill Family Medicine (fictional)", department: "Family medicine"
+substance: "ペニシリン系の抗菌薬", category: "medication", reaction: "じんましん"	substance: "Penicillin antibiotics", category: "medication", reaction: "Hives"
+name: "アムロジピン錠5mg", dose: "1回1錠", frequency: "1日1回 朝食後", status: "active", since: "2020-04", reason: "血圧"	name: "Amlodipine 5 mg tablet", dose: "1 tablet", frequency: "Once daily after breakfast", status: "active", since: "2020-04", reason: "Blood pressure"
+name: "ロキソプロフェン錠60mg", dose: "1回1錠", frequency: "痛いとき"	name: "Ibuprofen 200 mg tablet", dose: "1 tablet", frequency: "When in pain"
+{ name: "高血圧", status: "active", since: "2020" }, { name: "虫垂炎"	{ name: "High blood pressure", status: "active", since: "2020" }, { name: "Appendicitis"
+name: "虫垂の切除", date: "1995" }], immunizations: [{ name: "インフルエンザ"	name: "Appendix removal", date: "1995" }], immunizations: [{ name: "Influenza"
+notes: "（架空の例）"	notes: "(Fictional example)"
+`${removeLabel} ${i + 1} を消す`	`Remove ${removeLabel} ${i + 1}`
+text: "受診先の好み"	text: "Clinic preferences"
+text: "探すときの地域と移動"	text: "Area and travel"
+"国（2文字）", "JP")	"Country (2 letters)", "US")
+"都道府県・州", "例: 東京都"	"State / region", "e.g. OR"
+"City / town", "例: 千代田区"	"City / town", "e.g. Portland"
+"最寄り駅（任意）", "番地は書かない"	"Nearest station or landmark (optional)", "No street address"
+"aria-label": "移動の手段"	"aria-label": "How you travel"
+"移動にかけてよい時間（分）", "例: 30"	"Maximum travel time (minutes)", "e.g. 30"
+text: "ふだん受診しやすい時間"	text: "Times you can usually go"
+"から", "", "time"	"From", "", "time"
+"まで", "", "time"	"To", "", "time"
+"Note", "例: 平日は仕事"	"Note", "e.g. work on weekdays"
+"＋ 時間帯を足す", "時間帯"	"+ Add a time slot", "time slot"
+text: "重視すること（大事な順）"	text: "What matters most (in order)"
+`${label(PRIOS, k)} を外す`	`Remove ${label(PRIOS, k)}`
+"aria-label": "重視することを足す"	"aria-label": "Add what matters"
+text: "＋ 重視することを足す"	text: "+ Add what matters"
+"評判は、この形式では提供しません。AI がネットの口コミなどを参考にするときは、出どころと「確かめられた情報ではない」ことを添えます。"	"This format does not provide reputation information. If an AI refers to online reviews, it states the source and that the information is not verified."
+"受診のときに使いたい言語（コード）"	"Languages for the visit (codes)"
+"例: ja")),	"e.g. en")),
+"必要な配慮（1行に1つ）"	"Support needed (one per line)"
+placeholder: "例: 車椅子で入れる"	placeholder: "e.g. wheelchair access"
+text: "かかりつけの医療機関"	text: "Regular clinics"
+"かかってよかったところを登録します。医療機関の評価や感想は書きません。"	"Register clinics you were happy with. Do not write ratings or opinions of clinics."
+"Departments", "例: 内科"	"Department", "e.g. family medicine"
+"clinic-intake.json の場所（あれば）"	"Where its clinic-intake.json is (if any)"
+"いつから", "例: 2020"	"Since", "e.g. 2020"
+"＋ かかりつけを足す", "かかりつけ"	"+ Add a regular clinic", "regular clinic"
+text: "わたしについて"	text: "About me"
+"年代や地域に合った救急の目安を選ぶのに使います。氏名・住所は書きません。"	"Used to choose emergency guidance suited to your age and region. Do not write your name or address."
+"生まれた年"	"Year of birth"
+"例: 1960", "number"	"e.g. 1960", "number"
+"性別（任意）"	"Sex (optional)"
+"話せる言語（コード）"	"Languages you speak (codes)"
+"例: ja, en"	"e.g. en, es"
+[["unknown", "まだ書いていない"], ["none", "ない"], ["some", "ある"]]	[["unknown", "Not filled in yet"], ["none", "None"], ["some", "Yes"]]
+"AI の書き起こし・未確認"	"AI transcription, not checked"
+`${cfg.title} ${i + 1} を消す`	`Remove ${cfg.title} ${i + 1}`
+"出どころ（どこから書いたか・確かめたか）"	"Source (where it came from, whether checked)"
+"どこから", select(	"From", select(
+"書類の日付"	"Document date"
+"例: 2026-10-01"	"e.g. 2026-10-01"
+"書いたのは", select(	"Written by", select(
+[["", "—"], ["self", "自分"], ["ai", "AI（写真などから）"]]	[["", "—"], ["self", "Me"], ["ai", "AI (from photos etc.)"]]
+" 原本と見比べて確かめた"	" Checked against the original"
+"＋ 足す"	"+ Add"
+"妊娠", select(	"Pregnancy", select(
+"たばこ", select(	"Smoking", select(
+"お酒", select(	"Alcohol", select(
+"そのほか医師に知っておいてほしいこと（500字まで）"	"Anything else the doctor should know (up to 500 characters)"
+`直すところが ${r.E.length} 件	`Items to fix: ${r.E.length}
+`、確かめるところが ${r.W.length} 件`	`, to check: ${r.W.length}`
+: ""}あります。`	: ""}.`
+`保存できます。確かめるところが ${r.W.length} 件あります。`	`Ready to save. Items to check: ${r.W.length}.`
+"保存できます。"	"Ready to save."
+"直すところはありません。"	"Nothing to fix."
+"（書いていない）"	"(Not filled in)"
+"なし（本人の申告）"	"None (self-reported)"
+"［AI の書き起こし・未確認］"	" [AI transcription, not checked]"
+text: "受診用メモ"	text: "Visit summary"
+`作成: ${o.updated}`	`Updated: ${o.updated}`
+`年齢: 約${age}歳（${p.birthYear}年生まれ）`	`Age: about ${age} (born ${p.birthYear})`
+`性別: ${	`Sex: ${
+`言語: ${	`Languages: ${
+"これは本人が自分の責任で書いたメモ（自己申告）です。医療機関の記録ではありません。診療の参考としてお使いください。"	"This summary was written by the patient on their own responsibility (self-reported). It is not a medical record. Please use it for reference."
+"今回の症状（本人の申告）"	"Today's symptoms (self-reported)"
+`：${x.reaction}`	`: ${x.reaction}`
+`（${label(LISTS.allergies.fields[3][3], x.severity)}）`	` (${label(LISTS.allergies.fields[3][3], x.severity)})`
+["薬の名前", "量・飲み方", "Status", "出どころ"]	["Medicine", "Dose and directions", "Status", "Source"]
+`（${label(LISTS.conditions.fields[1][3], x.status)}${x.since ? "・" + x.since + "〜" : ""}）`	` (${label(LISTS.conditions.fields[1][3], x.status)}${x.since ? ", since " + x.since : ""})`
+`（${x.since}〜）`	` (since ${x.since})`
+`（${x.date}）`	` (${x.date})`
+`妊娠: ${	`Pregnancy: ${
+`たばこ: ${	`Smoking: ${
+`お酒: ${	`Alcohol: ${
+text: "医師に知っておいてほしいこと"	text: "Anything the doctor should know"
+"空の用紙です。わかるところから書いてください。"	"This is a blank form. Start with what you know."
+"前回の続きを開きました（このブラウザの中だけに残っています）。"	"Opened where you left off (kept only in this browser)."
+"架空の例を表示しています。自分の内容を書く前に「空にする」を押してください。"	"Showing a fictional example. Press \"Clear\" before writing your own."
+"読み込みました。"	"Loaded."
+"例を見る"	"See an example"
+"このブラウザに残っていた内容を消しました。"	"Deleted what was kept in this browser."
+"このブラウザから消す"	"Delete from this browser"
+fileName() + " を保存"	"Save " + fileName()
+"JSON として読めません: "	"Cannot read as JSON: "
+"自分の健康メモ（spec が open-intake-personal）のファイルではありません。"	"This is not a health summary file (spec must be open-intake-personal)."
+"国（2文字）", input("p-country"	"Country (2 letters)", input("p-country"
+delete p.addressCountry; }, "JP")	delete p.addressCountry; }, "US")
+"都道府県・州", input("p-region"	"State / region", input("p-region"
+delete p.addressRegion; }, "例: 東京都")	delete p.addressRegion; }, "e.g. OR")
+"アレルギー"	"Allergies"
+"使っている薬"	"Medicines"
+"持病・これまでの病気"	"Conditions and past illnesses"
+"手術・大きな処置"	"Operations and major procedures"
+"予防接種"	"Vaccinations"
+"かかりつけの医療機関"	"Regular clinics"
+"かかりつけ"	"Regular doctor"
+"そのほか"	"Other"
+"わからない"	"Don't know"
+person: { languages: ["ja"], addressCountry: "JP" } }; }	person: { languages: ["en"] } }; }
+url: "https://open-intake.github.io/open-intake/#personal", summary: "A health summary	url: "https://open-intake.github.io/open-intake/en/#personal", summary: "A health summary

@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<title>My health summary</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A tool to create my-health.json (my health summary): your conditions, medicines and allergies, kept by you on your own device. Print it or show it on screen at a visit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+
+:root {
+  --paper: #F1F0EC; --sheet: #FFFFFF; --ink: #1E2326; --muted: #5F676B; --rule: #D8D6CF; --field: #FAFAF8;
+  --accent: #3D5A80; --accent-ink: #FFFFFF; --accent-soft: #E3E9F2;
+  --req: #B3261E; --req-soft: #FBE9E7; --warn: #8A5300; --warn-soft: #FFF2D9; --ok: #1D7238; --ok-soft: #E2F3E6;
+  --code-bg: #1B2128; --code-fg: #DDE3E8; --code-key: #9EC3F0; --code-str: #F2D49B;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121517; --sheet: #1B2023; --ink: #E6E9EA; --muted: #9AA3A7; --rule: #30373B; --field: #20262A;
+    --accent: #8DB0DE; --accent-ink: #10161D; --accent-soft: #233041;
+    --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+    --code-bg: #0C1014; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #121517; --sheet: #1B2023; --ink: #E6E9EA; --muted: #9AA3A7; --rule: #30373B; --field: #20262A;
+  --accent: #8DB0DE; --accent-ink: #10161D; --accent-soft: #233041;
+  --req: #FF8A80; --req-soft: #3A1D1B; --warn: #F2B85B; --warn-soft: #3A2C12; --ok: #7BD192; --ok-soft: #173222;
+  --code-bg: #0C1014; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.7; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: 0.86em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+header.top { padding-block: 28px 16px; display: grid; gap: 6px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+header.top h1 { font-size: clamp(24px, 3.4vw, 34px); }
+header.top p { margin: 0; color: var(--muted); max-width: 64ch; }
+.notice { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+.notice .spacer { flex: 1; }
+.caution { background: var(--warn-soft); color: var(--ink); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 14px; display: grid; gap: 4px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); gap: 24px; align-items: start; }
+@media (max-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.form { display: grid; gap: 16px; min-width: 0; }
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px 18px; display: grid; gap: 12px; min-width: 0; }
+.card > header { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+.card > header h2 { font-size: 18px; }
+.card > header .k { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.lead { margin: 0; color: var(--muted); font-size: 14px; }
+.grid { display: grid; gap: 10px 14px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.field { display: grid; gap: 3px; min-width: 0; }
+.field > label { font-size: 13.5px; font-weight: 500; }
+input[type="text"], input[type="number"], input[type="date"], select, textarea { font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 9px; width: 100%; min-width: 0; }
+textarea { resize: vertical; min-height: 70px; }
+.tri { display: flex; flex-wrap: wrap; gap: 6px; }
+.tri label { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; font-size: 13.5px; cursor: pointer; background: var(--field); }
+.tri label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.tri input { accent-color: var(--accent); margin: 0; }
+.rows { display: grid; gap: 10px; }
+.row { border: 1px dashed var(--rule); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 8px; min-width: 0; }
+.row-head { display: flex; gap: 8px; align-items: center; }
+.row-head .num { font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+.row-head .spacer { flex: 1; }
+details.src { font-size: 13px; }
+details.src summary { cursor: pointer; color: var(--muted); }
+details.src .grid { margin-top: 6px; }
+.badge { font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: 3px; }
+.badge.warn { color: var(--warn); background: var(--warn-soft); }
+.badge.ok { color: var(--ok); background: var(--ok-soft); }
+button { font: inherit; cursor: pointer; border-radius: 4px; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 6px 14px; font-weight: 500; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.small { padding: 3px 10px; font-size: 13px; }
+.icon-btn { border: 1px solid var(--rule); background: var(--field); color: var(--req); min-width: 30px; height: 28px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.stagehead { font-size: 20px; margin-top: 6px; display: grid; gap: 2px; }
+.stagehead small { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; font-size: 13.5px; background: var(--field); cursor: pointer; }
+.chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.chip input { accent-color: var(--accent); margin: 0; }
+.prio { display: grid; gap: 6px; counter-reset: pr; }
+.prio li { list-style: none; display: flex; gap: 8px; align-items: center; border: 1px solid var(--rule); border-radius: 4px; padding: 4px 8px; background: var(--field); }
+.prio li::before { counter-increment: pr; content: counter(pr); font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+.prio li span { flex: 1; }
+.prio { margin: 0; padding: 0; }
+details.ai { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
+details.ai > summary { cursor: pointer; padding: 12px 16px; font-family: var(--font-display); font-weight: 700; }
+details.ai .body { padding: 0 16px 16px; display: grid; gap: 10px; }
+.prompt { background: var(--field); border: 1px solid var(--rule); border-radius: 4px; padding: 10px; max-height: 200px; overflow: auto; white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; margin: 0; }
+aside.out { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; min-width: 0; }
+@media (max-width: 1000px) { aside.out { position: static; } }
+.status { display: flex; gap: 10px; align-items: center; border-radius: var(--radius); padding: 10px 14px; font-weight: 500; cursor: pointer; }
+.status.ok { background: var(--ok-soft); color: var(--ok); } .status.warn { background: var(--warn-soft); color: var(--warn); } .status.err { background: var(--req-soft); color: var(--req); }
+.status .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--rule); }
+.tab { white-space: nowrap; border: 0; background: transparent; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid transparent; border-radius: 0; font-weight: 500; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.panel { display: grid; gap: 10px; min-width: 0; }
+pre.json { background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius); padding: 12px; margin: 0; overflow: auto; max-height: 56vh; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; }
+pre.json .k { color: var(--code-key); } pre.json .s { color: var(--code-str); }
+.issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.issues li { display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 6px 10px; border-radius: 4px; }
+.issues li.e { background: var(--req-soft); } .issues li.w { background: var(--warn-soft); } .issues li.o { background: var(--ok-soft); }
+.issues .code { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; }
+.toast { min-height: 1.4em; font-size: 13px; color: var(--ok); }
+.small { font-size: 13px; color: var(--muted); }
+
+
+.sheetview { background: #FFFFFF; color: #111111; border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 20px; display: grid; gap: 12px; font-size: 14px; }
+.sheetview h3 { font-size: 18px; color: #111111; }
+.sheetview .meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: #444444; }
+.sheetview .self { border: 1px solid #999999; padding: 6px 10px; font-size: 12.5px; color: #333333; }
+.sheetview h4 { font-family: var(--font-display); font-size: 14.5px; margin: 0 0 4px; color: #111111; border-left: 4px solid #3D5A80; padding-left: 8px; }
+.sheetview table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sheetview th, .sheetview td { border: 1px solid #BBBBBB; padding: 4px 6px; text-align: left; vertical-align: top; }
+.sheetview th { background: #F0F0F0; font-weight: 500; }
+.sheetview ul { margin: 0; padding-left: 1.2em; }
+.sheetview .none { color: #555555; }
+.sheetview .unk { color: #888888; }
+.sheetview .alert { color: #B3261E; font-weight: 700; }
+.sheetview .unchecked { font-size: 11px; color: #8A5300; }
+.sheetview .visit { white-space: pre-wrap; border: 1px solid #999999; min-height: 4em; padding: 6px 8px; }
+body.showing .wrap > *:not(.layout), body.showing .form, body.showing aside.out > *:not(#panel-sheet), body.showing #panel-sheet > *:not(.sheetview):not(#exitShow) { display: none !important; }
+body.showing .layout { grid-template-columns: 1fr; }
+body.showing .sheetview { font-size: 20px; max-width: 900px; margin: 0 auto; }
+body.showing .sheetview table { font-size: 18px; }
+body.showing #exitShow { display: inline-flex !important; position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); right: max(12px, env(safe-area-inset-right, 0px)); z-index: 5; }
+@media print {
+  body { background: #FFFFFF; }
+  .wrap > *:not(.layout), .form, aside.out > *:not(#panel-sheet), #panel-sheet > *:not(.sheetview) { display: none !important; }
+  #panel-sheet { display: block !important; }
+  .layout { display: block; }
+  .sheetview { border: 0; padding: 0; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow"><a href="../">← About Open Intake</a> · my-health.json · My health summary v0.1 draft · <a href="../../me/" hreflang="ja" lang="ja">&#26085;&#26412;&#35486;</a></div>
+    <h1>My health summary</h1>
+    <p>Create <code>my-health.json</code>, a summary of your conditions, medicines and allergies that you keep <strong>on your own responsibility</strong>. When you are unwell, give it to an AI together with your current symptoms; at a visit, print it or show it on screen. <strong>Nothing you enter is sent outside this browser.</strong></p>
+  </header>
+
+  <div class="caution">
+    <strong>Before you start</strong>
+    <span>• What you write here is <strong>your own statement</strong>. Check that it is correct yourself. It does not replace medical records.</span>
+    <span>• <strong>Do not write your name, address, phone number, insurance or ID numbers.</strong></span>
+    <span>• This tool does not diagnose. If you may have a life-threatening symptom, call emergency services now (911 in the US).</span>
+  </div>
+
+  <div class="notice" id="notice"></div>
+
+  <div class="layout">
+    <main class="form" id="form">
+      <details class="ai" id="aiBox">
+        <summary>Another way: create it with an AI (including from photos of medicine records)</summary>
+        <div class="body">
+          <p class="small">Give the instructions to an AI and it will ask one question at a time and create my-health.json. It can also transcribe from photos of medicine records, medicine labels or receipts (AI can misread, so compare with the originals). When sending photos, make sure your name and numbers are not visible.</p>
+          <div class="actions">
+            <a class="btn" href="AI_INSTRUCTIONS_PERSONAL.en.md" download="AI_INSTRUCTIONS_PERSONAL.en.md">Download the instructions</a>
+            <button class="btn ghost" type="button" id="copyMake">Copy instructions (creating)</button>
+            <button class="btn ghost" type="button" id="copyUse">Copy instructions (when unwell)</button>
+            <span class="toast" id="promptToast" role="status"></span>
+          </div>
+          <pre class="prompt" id="promptMake">You are helping me create my health summary `my-health.json` (Open Intake Personal v0.1).
+
+### Rules
+
+1. **Ask about one topic at a time**, with choices or examples
+2. **Do not guess.** Do not write anything I did not tell you. If I say I have none, use an empty array `[]`; if I have not answered or do not know, leave the key out
+3. **Do not accept or write my name, address, phone number, insurance or ID numbers.** If I include them, tell me and do not use them
+4. **Do not diagnose.** Do not guess diseases or advise stopping or changing medicines
+5. If I send photos of medicine records, medicine labels, receipts or check-up results, transcribe medicine names, doses, directions and dates **exactly as written**. Do not guess characters you cannot read; say you cannot read them. Mark transcribed items with `"source": { "type": "(kind of document)", "date": "(document date)", "transcribedBy": "ai", "checkedByMe": false }`, and **at the end ask me to compare them with the originals; set `checkedByMe` to `true` only for items I confirm**
+6. **Do not ask for or record evaluations of clinics** (ratings, opinions)
+7. Output only the JSON in a single code block, with no comments
+
+### Order
+
+Ask about **stage 1 (clinic preferences)** first. Ask whether I want to add stage 2 (health information) before continuing. Stopping after stage 1 is fine.
+
+Stage 1:
+1. The area to search around (country, state/region, city, nearest station — no street address), how I travel and how long I can travel
+2. Days and times I can usually go
+3. What matters most, in order: regular doctor, nearby, short wait, open now, specialty, reputation, language, accessibility
+4. My regular clinics (clinics I was happy with, registered by me). **Do not ask for evaluations**
+5. Languages for the visit, any support I need
+
+Stage 2:
+1. Year of birth, sex (optional), languages, country and state/region
+2. Allergies to medicines or foods (or "none")
+3. Medicines I use now (use photos of medicine records if I send them), including as-needed medicines
+4. Ongoing conditions and major past illnesses
+5. Operations and major procedures
+6. Vaccinations (as far as I know)
+7. Pregnancy (if applicable), smoking and alcohol
+8. Anything else the doctor should know
+9. Show a summary table, confirm, then output the JSON
+
+### Output format
+
+```json
+{
+  "spec": "open-intake-personal",
+  "specVersion": "0.1",
+  "updated": "today YYYY-MM-DD",
+  "selfReported": true,
+  "person": { "birthYear": 1960, "sex": "female", "languages": ["en"], "addressCountry": "US", "addressRegion": "OR" },
+  "preferences": {
+    "homeArea": { "addressCountry": "US", "addressRegion": "OR", "addressLocality": "City", "nearestStation": "Station" },
+    "travel": { "modes": ["walk", "bus"], "maxMinutes": 30 },
+    "availability": [ { "days": ["Sa"], "from": "09:00", "to": "12:00" } ],
+    "priorities": ["regularDoctor", "near", "shortWait"],
+    "languages": ["en"],
+    "needs": ["Support needed"],
+    "regularClinics": [ { "name": "Regular clinic", "department": "General practice" } ]
+  },
+  "allergies": [ { "substance": "What", "category": "medication", "reaction": "What happened", "severity": "moderate" } ],
+  "medications": [ { "name": "Medicine name as written", "dose": "Dose", "frequency": "Directions", "status": "active", "source": { "type": "medication-notebook", "date": "YYYY-MM-DD", "transcribedBy": "ai", "checkedByMe": true } } ],
+  "conditions": [ { "name": "Condition (as told by a doctor)", "status": "active", "since": "YYYY" } ],
+  "procedures": [ { "name": "Procedure", "date": "YYYY" } ],
+  "immunizations": [ { "name": "Vaccine", "date": "YYYY-MM" } ],
+  "pregnancy": { "status": "not-applicable" },
+  "lifestyle": { "smoking": "never", "alcohol": "occasional" },
+  "notes": "Anything else"
+}
+```
+
+Allowed values:
+- `sex`: `female`, `male`, `other`, `unknown`
+- `category`: `medication`, `food`, `environment`, `other`. `severity`: `mild`, `moderate`, `severe`, `unknown`
+- Medicine `status`: `active`, `stopped`, `as-needed`. Condition `status`: `active`, `resolved`, `unknown`
+- `source.type`: `self`, `medication-notebook` (medicine record), `medication-label`, `receipt`, `checkup`, `clinician-document`, `other`
+- `pregnancy.status`: `pregnant`, `not-pregnant`, `possible`, `not-applicable`, `unknown`
+- `smoking`: `never`, `former`, `current`, `unknown`. `alcohol`: `none`, `occasional`, `regular`, `unknown`
+- `travel.modes`: `walk`, `bicycle`, `train`, `bus`, `car`, `taxi`. `priorities` (in order): `regularDoctor`, `near`, `shortWait`, `openNow`, `specialty`, `reputation`, `language`, `accessibility`. Days `Mo`–`Su`, `PH`
+- Dates: `YYYY`, `YYYY-MM` or `YYYY-MM-DD`
+
+After the JSON, add:
+&gt; Paste this into "Load" in the tool (https://open-intake.github.io/open-intake/en/me/) to check it, then save it as my-health.json on your own device.
+
+Please start with the first question.</pre>
+          <pre class="prompt" id="promptUse" hidden>I will give you my health summary (my-health.json, self-reported) and my current symptoms. Follow these rules.
+
+1. **Check emergency warning signs first.** If there may be a life-threatening symptom (chest pain, difficulty breathing, altered consciousness, weakness or numbness of the face or limbs, slurred speech, sudden severe headache, heavy bleeding, etc.), tell me before anything else to call emergency services now (911 in the US, 999 in the UK, 000 in Australia, 119 in Japan). Do not delay this to read my summary
+2. **Do not diagnose.** Do not name diseases or say "this is likely…". Do not advise stopping, increasing or combining medicines
+3. **Organise the information a doctor needs to make a diagnosis.** Ask only for what is missing, one question at a time:
+   - When it started (date and time, sudden or gradual)
+   - Where (location, spread)
+   - What it is like and how bad (character, severity 0–10, constant or comes and goes)
+   - Other symptoms (fever, cough, nausea, diarrhoea, etc.)
+   - Triggers, what makes it worse or better
+   - What I have done (medicines taken, dose and time)
+   - Anything in my summary that may be relevant (conditions, medicines, allergies)
+4. Turn this into a **short summary I can show at reception or to the doctor** (bullet points, no disease names, stating that it is self-reported)
+5. Give a **guide** to whether, when and which department to see. I make the final decision; if unsure, suggest calling a health advice line or the clinic
+6. To find a clinic, first check **whether my symptoms are within my regular doctor's scope** (`preferences.regularClinics`). If a regular clinic has a `url` (clinic-intake.json), read it and compare its departments, symptoms usually seen, things not provided and areas of focus. If it fits, put my regular clinic first (check it is open and not temporarily closed). If not, suggest which department to see and also the option of asking my regular doctor for a referral. If I have more than one regular clinic in the same department, compare them only on what the clinics publish themselves (areas of focus, symptoms seen, hours, temporary closures) and objective data (open now, distance, travel time), and give reasons. Do not use ratings or reputation. If my regular clinics do not fit, are closed, do not match my available times, or I ask to see others, you may also suggest **looking for other clinics**, compared the same way (I decide whether to change my regular clinics). Then use the order of my priorities, area, travel and available times to list options with reasons. **Do not drop clinics because of my conditions or medicines.** When booking, share only the reason for the visit and the minimum needed
+7. If an item in my summary was transcribed by AI and not checked by me (`transcribedBy: "ai"` without `checkedByMe: true`), say so when you use it</pre>
+        </div>
+      </details>
+      <h2 class="stagehead">Stage 1: clinic preferences<small>No health information. Used by an AI when looking for a clinic. Updating it with an AI after each visit makes suggestions fit you better.</small></h2>
+      <section class="card" id="sec-pref"></section>
+      <h2 class="stagehead">Stage 2: health information<small>Only if you want to. Used when asking for help while unwell, and for the visit sheet.</small></h2>
+      <section class="card" id="sec-person"></section>
+      <section class="card" id="sec-allergies"></section>
+      <section class="card" id="sec-medications"></section>
+      <section class="card" id="sec-conditions"></section>
+      <section class="card" id="sec-procedures"></section>
+      <section class="card" id="sec-immunizations"></section>
+      <section class="card" id="sec-other"></section>
+    </main>
+
+    <aside class="out" aria-label="Result">
+      <div class="status" id="status" role="status"></div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-sheet" aria-selected="true" type="button">Visit sheet</button>
+        <button class="tab" role="tab" id="tab-json" aria-selected="false" type="button">JSON</button>
+        <button class="tab" role="tab" id="tab-issues" aria-selected="false" type="button">Check</button>
+        <button class="tab" role="tab" id="tab-load" aria-selected="false" type="button">Load</button>
+      </div>
+      <div class="panel" id="panel-sheet" role="tabpanel">
+        <details class="src" id="visitBox" open>
+          <summary>Organise today's symptoms (not saved in the file; only printed or shown on screen)</summary>
+          <p class="small" style="margin:6px 0">This is not for diagnosis; it organises things so the doctor can assess them more easily. Fill in only what you know.</p>
+          <div class="grid" id="visitFields"></div>
+        </details>
+        <div class="actions">
+          <button class="btn" type="button" id="printBtn">Print</button>
+          <button class="btn ghost" type="button" id="showBtn">Show large on screen</button>
+        </div>
+        <button class="btn" type="button" id="exitShow" hidden>Back</button>
+        <div class="sheetview" id="sheet"></div>
+      </div>
+      <div class="panel" id="panel-json" role="tabpanel" hidden>
+        <div class="field">
+          <label for="scope">What to export</label>
+          <select id="scope"><option value="all">Everything (stages 1 and 2)</option><option value="stage1">Stage 1 only (no health information)</option><option value="stage2">Stage 2 only (no clinic preferences)</option></select>
+        </div>
+        <p class="small" style="margin:0">⚠ Give an AI only what it needs for the question. To look for a clinic, "Stage 1 only" is enough.</p>
+        <div class="actions">
+          <button class="btn" type="button" id="saveJson">Save</button>
+          <button class="btn ghost" type="button" id="copyJson">Copy</button>
+          <span class="toast" id="jsonToast" role="status"></span>
+        </div>
+        <pre class="json" id="json" tabindex="0"></pre>
+        <p class="small">Keep the saved file on your own device. When you are unwell, attach it to an AI and describe your current symptoms.</p>
+      </div>
+      <div class="panel" id="panel-issues" role="tabpanel" hidden><ul class="issues" id="issues"></ul></div>
+      <div class="panel" id="panel-load" role="tabpanel" hidden>
+        <p class="small">Load a my-health.json you saved before, or JSON created by an AI.</p>
+        <textarea id="pasteBox" rows="8" spellcheck="false" aria-label="Paste JSON" placeholder='{ "spec": "open-intake-personal", ... }'></textarea>
+        <div class="actions">
+          <button class="btn" type="button" id="loadPaste">Load</button>
+          <label class="btn ghost" for="fileIn">Open file</label>
+          <input type="file" id="fileIn" accept=".json,application/json" hidden>
+        </div>
+        <div class="toast" id="pasteToast" role="status"></div>
+        <ul class="issues" id="pasteIssues"></ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+var OpenIntakeValidate = (function () {
+"use strict";
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
+const KNOWN_ROLES = ["schedule"];
+
+const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
+const COUNTRY = /^[A-Z]{2}$/;
+const KNOWN_AGE_GROUPS = ["older", "child"];
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+const todayStr = () => { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const dayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 864e5);
+const DAY_KEYS = ["Mo","Tu","We","Th","Fr","Sa","Su","PH"];
+const TYPE_KEYS = ["group","boolean","choice","open-choice","string","text","integer","decimal","date","display"];
+const CHOICE = new Set(["choice","open-choice"]);
+function validateIntake(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!isObj(o)) { err("E1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (o.spec !== "open-intake") err("E1", "spec must be \"open-intake\".", "spec");
+  if (!isStr(o.specVersion)) err("E1", "specVersion (e.g. \"0.1\") is missing.", "specVersion");
+  else if (!/^\d+\.\d+$/.test(o.specVersion)) err("E1", "specVersion must look like \"0.1\".", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker (supports ${SUPPORTED_VERSIONS.join(", ")}). Unknown keys were ignored.`, "specVersion");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(o.updated || "")) err("E2", "updated must be a date in the form YYYY-MM-DD.", "updated");
+  else { const age = (Date.now() - new Date(o.updated + "T00:00:00").getTime()) / 864e5; if (age > 365) warn("W2", "The date last checked (updated) is more than a year ago. Check the content and update the date.", "updated"); }
+  const c = o.clinic;
+  if (!isObj(c)) err("E3", "clinic (clinic information) is missing.", "clinic");
+  else {
+    if (!isStr(c.name)) err("E3", "The clinic name is empty.", "clinic.name");
+    if (!isStr(c.telephone)) err("E3", "The phone number is empty.", "clinic.telephone");
+    else if (!/^[0-9+()\- ]{6,}$/.test(c.telephone)) warn("W1", "The phone number contains characters other than digits and hyphens.", "clinic.telephone");
+    if (isStr(c.url) && !/^https:\/\//.test(c.url)) warn("W1", "The website URL does not start with https.", "clinic.url");
+    const a = c.address;
+    if (!isObj(a) || !isStr(a.addressRegion)) err("E3", "State / region is empty.", "clinic.address.addressRegion");
+    if (!isObj(a) || !isStr(a.addressLocality)) err("E3", "City / town is empty.", "clinic.address.addressLocality");
+    if (isObj(a) && isStr(a.postalCode) && (!a.addressCountry || a.addressCountry === "JP") && !/^\d{3}-?\d{4}$/.test(a.postalCode)) warn("W1", "Use the form 100-0000 for Japanese postcodes.", "clinic.address.postalCode");
+    if (!Array.isArray(c.departments) || !c.departments.filter(isStr).length) err("E4", "Choose at least one department.", "clinic.departments");
+    if (isObj(c.address) && c.address.addressCountry !== undefined && !COUNTRY.test(String(c.address.addressCountry))) err("E15", "Country (addressCountry) must be a two-letter upper-case ISO 3166-1 code (e.g. JP).", "clinic.address.addressCountry");
+    if (c.identifiers !== undefined) {
+      if (!Array.isArray(c.identifiers)) err("E15", "identifiers must be an array ([ ]).", "clinic.identifiers");
+      else c.identifiers.forEach((id, i) => {
+        const w = `clinic.identifiers[${i}]`;
+        if (!isObj(id) || !isStr(id.system) || !isStr(id.value)) { err("E15", `Identifier ${i+1}: enter system (which scheme) and value (the number).`, w); return; }
+        const re = KNOWN_ID_SYSTEMS[id.system];
+        if (re && !re.test(id.value)) err("E15", `Identifier ${i+1}: the number does not match the format for ${id.system}.`, w + ".value");
+        if (!re && !/^(https?:|urn:)/.test(id.system)) warn("W15", `Identifier ${i+1}: system "${id.system}" is not known to this checker. A URI (https:// or urn:) is recommended.`, w + ".system");
+      });
+    }
+    if (c.geo !== undefined) {
+      const g = c.geo, okNum = (v, lo, hi) => typeof v === "number" && isFinite(v) && v >= lo && v <= hi;
+      if (!isObj(g) || !okNum(g.latitude, -90, 90) || !okNum(g.longitude, -180, 180)) err("E15", "Location (geo) must have numbers latitude (-90 to 90) and longitude (-180 to 180).", "clinic.geo");
+    }
+    if (c.focus !== undefined) {
+      if (!Array.isArray(c.focus)) err("E13", "focus (areas of focus) must be an array ([ ]).", "clinic.focus");
+      else c.focus.forEach((f, i) => {
+        const w = `clinic.focus[${i}]`;
+        if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `Area of focus ${i+1}: enter at least one item (areas).`, w + ".areas");
+        else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `Area of focus ${i+1}: department "${f.department}" is not in the list of departments.`, w + ".department");
+      });
+    }
+    if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
+    else c.openingHours.forEach((h, i) => {
+      const w = `clinic.openingHours[${i}]`;
+      if (!Array.isArray(h.days) || !h.days.length) err("E5", `Opening hours row ${i+1}: choose the days.`, w + ".days");
+      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `Opening hours row ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
+      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `Opening hours row ${i+1}: enter times in the form 09:00.`, w);
+      else if (h.opens >= h.closes) err("E5", `Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).`, w);
+    });
+    if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
+    else c.booking.forEach((b, i) => {
+      const w = `clinic.booking[${i}]`;
+      if (!["web","phone","walk-in","other"].includes(b.method)) err("E6", `Booking method ${i+1}: method is not one of web / phone / walk-in / other.`, w + ".method");
+      if (b.method === "web" && !isStr(b.url)) err("E6", `Booking method ${i+1}: enter the URL of the booking page.`, w + ".url");
+      if (b.method === "web" && isStr(b.url) && !/^https:\/\//.test(b.url)) warn("W1", `Booking method ${i+1}: the booking page URL does not start with https.`, w + ".url");
+      if (b.method === "phone" && !isStr(b.telephone)) err("E6", `Booking method ${i+1}: enter the booking phone number.`, w + ".telephone");
+    });
+  }
+  if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy must be an object ({ }) with url (where the policy is).", "policy");
+  if (o.profile !== undefined && !(isStr(o.profile) || (isObj(o.profile) && isStr(o.profile.id)))) err("E16", "profile (regional profile) must be an object with id (e.g. {\"id\": \"jp\", \"url\": \"…\"}).", "profile");
+  if (o.files !== undefined) {
+    if (!Array.isArray(o.files)) err("E12", "files (official files) must be an array ([ ]).", "files");
+    else {
+      const roles = new Map();
+      o.files.forEach((f, i) => {
+        const w = `files[${i}]`;
+        if (!isObj(f)) { err("E12", `File ${i+1}: the entry is not in the right form.`, w); return; }
+        if (!isStr(f.role)) err("E12", `File ${i+1}: role is empty (e.g. schedule).`, w + ".role");
+        else if (!KNOWN_ROLES.includes(f.role)) warn("W11", `File ${i+1}: role "${f.role}" is not known to this checker (readers will ignore it).`, w + ".role");
+        else if (roles.has(f.role)) err("E12", `File ${i+1}: there are two files with role "${f.role}". Keep only one.`, w + ".role");
+        if (isStr(f.role)) roles.set(f.role, true);
+        if (typeof f.url !== "string" || !f.url.trim() || /\s/.test(f.url)) err("E12", `File ${i+1}: url must be a URL without spaces (e.g. /clinic-schedule.json).`, w + ".url");
+        else if (/^http:\/\//.test(f.url)) warn("W1", `File ${i+1}: the URL does not start with https.`, w + ".url");
+        else if (/^https?:\/\//.test(f.url) && isStr(o.clinic?.url)) {
+          try { if (new URL(f.url).host !== new URL(o.clinic.url).host) warn("W12", `File ${i+1}: it is on a different site from the clinic's website, which makes it harder for AI to confirm it is official.`, w + ".url"); } catch (_) {}
+        }
+      });
+    }
+  }
+  const s = o.safety;
+  if (!isObj(s)) err("E7", "safety (safety rules) is missing. It cannot be left out.", "safety");
+  else {
+    if (s.noDiagnosis !== true) err("E7", "safety.noDiagnosis must be true.", "safety.noDiagnosis");
+    if (!isStr(s.emergency)) err("E7", "The emergency message is empty.", "safety.emergency");
+    if (!Array.isArray(s.redFlags) || !s.redFlags.filter(isStr).length) err("E7", "Enter at least one emergency warning sign.", "safety.redFlags");
+    if (s.redFlagsByAge !== undefined) {
+      if (!isObj(s.redFlagsByAge)) err("E7", "safety.redFlagsByAge must be an object ({ }) by age group.", "safety.redFlagsByAge");
+      else for (const [k, g] of Object.entries(s.redFlagsByAge)) {
+        if (!isObj(g) || !Array.isArray(g.items) || !g.items.filter(isStr).length) err("E7", `Enter at least one warning sign (items) for age group "${k}".`, `safety.redFlagsByAge.${k}`);
+        else if (!KNOWN_AGE_GROUPS.includes(k)) warn("W13", `Age group "${k}" is not known to this checker (older and child are defined).`, `safety.redFlagsByAge.${k}`);
+      }
+    }
+  }
+  if (typeof o.aiNotes === "string" && o.aiNotes.length > 500) warn("W5", `Notes for AI are too long (${o.aiNotes.length} characters; up to 500).`, "aiNotes");
+  if (!Array.isArray(o.questionnaires)) err("E8", "questionnaires is missing. Use [] if there are none.", "questionnaires");
+  else {
+    if (!o.questionnaires.length) warn("W4", "There are no questionnaires. The clinic information works on its own, but a questionnaire helps patients prepare before their visit.", "questionnaires");
+    const qids = new Set();
+    o.questionnaires.forEach((q, qi) => {
+      const w = `questionnaires[${qi}]`, name = (isObj(q) && isStr(q.title)) ? `"${q.title}"` : `Questionnaire ${qi+1}`;
+      if (!isObj(q)) { err("E8", `${name} is not in the right form.`, w); return; }
+      if (q.resourceType !== "Questionnaire") err("E8", `${name}: resourceType must be "Questionnaire".`, w + ".resourceType");
+      if (!/^[A-Za-z0-9\-.]{1,64}$/.test(q.id || "")) err("E8", `${name}: id must use letters, numbers and hyphens (e.g. fever).`, w + ".id");
+      else if (qids.has(q.id)) err("E8", `${name}: id "${q.id}" is used by another questionnaire.`, w + ".id");
+      else qids.add(q.id);
+      if (!["draft","active"].includes(q.status)) err("E8", `${name}: status must be draft or active.`, w + ".status");
+      else if (q.status === "draft") warn("W3", `${name} has not yet been reviewed by a doctor (draft). Change it to "In use" after review.`, w + ".status");
+      if (!isStr(q.title)) err("E8", `${name}: the questionnaire name is empty.`, w + ".title");
+      if (q.derivedFrom !== undefined && !(Array.isArray(q.derivedFrom) && q.derivedFrom.every(isStr))) err("E8", `${name}: derivedFrom (the base questionnaire it was made from) must be an array of URLs.`, w + ".derivedFrom");
+      if (!Array.isArray(q.item) || !q.item.length) { err("E8", `${name}: there are no questions.`, w + ".item"); return; }
+      const seen = new Map();
+      const walk = (items, path, depth) => items.forEach((it, i) => {
+        const p = `${path}[${i}]`, label = `${name} Q${i+1}`;
+        if (!isObj(it)) { err("E8", `${label}: the question is not in the right form.`, p); return; }
+        if (!/^[A-Za-z0-9\-._]{1,64}$/.test(it.linkId || "")) err("E9", `${label}: linkId must use letters and numbers.`, p + ".linkId");
+        else if (seen.has(it.linkId)) err("E9", `${label}: linkId "${it.linkId}" is duplicated.`, p + ".linkId");
+        if (!isStr(it.text)) err("E8", `${label}: the question text is empty.`, p + ".text");
+        else if (it.text.length > 200) warn("W5", `${label}: the question text is too long (${it.text.length} characters; up to 200).`, p + ".text");
+        if (it.derivedFrom !== undefined && !(Array.isArray(it.derivedFrom) && it.derivedFrom.every(isStr))) err("E8", `${label}: derivedFrom must be an array of URLs.`, p + ".derivedFrom");
+        if (!TYPE_KEYS.includes(it.type)) err("E10", `${label}: answer type "${it.type}" cannot be used.`, p + ".type");
+        if (CHOICE.has(it.type) && (!Array.isArray(it.answerOption) || !it.answerOption.filter(x => isStr(x?.valueString)).length)) err("E10", `${label}: enter at least one option.`, p + ".answerOption");
+        if (Array.isArray(it.enableWhen)) it.enableWhen.forEach((ew, k) => {
+          const target = seen.get(ew?.question);
+          if (!target) err("E11", `${label}: the condition refers to a question that is not earlier in the list (${ew?.question || "empty"}).`, `${p}.enableWhen[${k}]`);
+          if (!["=","exists"].includes(ew?.operator)) err("E11", `${label}: the condition operator must be "=" or "exists".`, `${p}.enableWhen[${k}].operator`);
+        });
+        if (isStr(it.linkId)) seen.set(it.linkId, it);
+        if (Array.isArray(it.item)) { if (depth >= 2) err("E8", `${label}: groups can be nested at most two levels deep.`, p + ".item"); walk(it.item, p + ".item", depth + 1); }
+      });
+      walk(q.item, w + ".item", 1);
+    });
+  }
+  return { E, W };
+}
+
+
+function validateSchedule(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const isDate = v => typeof v === "string" && DATE.test(v) && !isNaN(Date.parse(v + "T00:00:00Z"));
+  const today = todayStr();
+  if (!isObj(o)) { err("S1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (o.spec !== "open-intake-schedule") err("S1", "spec must be \"open-intake-schedule\".", "spec");
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("S1", "specVersion (e.g. \"0.2\") is missing.", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker (supports ${SUPPORTED_VERSIONS.join(", ")}). Unknown keys were ignored.`, "specVersion");
+  if (!isDate(o.updated)) err("S2", "updated (date updated) must be in the form YYYY-MM-DD.", "updated");
+  if (!isDate(o.validUntil)) err("S3", "validUntil (expiry of this information) is required, in the form YYYY-MM-DD.", "validUntil");
+  else {
+    if (isDate(o.updated) && o.validUntil < o.updated) err("S3", "The expiry date (validUntil) is before the date updated.", "validUntil");
+    if (o.validUntil < today) warn("W7", `The expiry date (${o.validUntil}) has passed. AI will not use this file. Check the content and extend the date.`, "validUntil");
+    if (isDate(o.updated) && dayDiff(o.updated, o.validUntil) > 180) warn("W8", "The expiry date is more than six months after the date updated. Keep temporary information short-lived and review it often.", "validUntil");
+  }
+  const old = (end, where, label) => { if (isDate(end) && end < today) warn("W9", `${label} has already ended. Check whether it can be removed.`, where); };
+  const hoursOk = (opens, closes, where, label, overnightOk) => {
+    if (!TIME_RE.test(opens || "") || !TIME_RE.test(closes || "")) { err("S4", `${label}: enter times in the form 09:00.`, where); return; }
+    if (!overnightOk && opens >= closes) err("S4", `${label}: the start (${opens}) is after the end (${closes}).`, where);
+  };
+  const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} must be an array ([ ]).`, k); return []; } return o[k]; };
+  list("exceptions").forEach((x, i) => {
+    const w = `exceptions[${i}]`, label = `Temporary closure or change ${i+1}`;
+    if (!isObj(x)) { err("S4", `${label}: not in the right form.`, w); return; }
+    if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: enter the period (from, to) in the form YYYY-MM-DD.`, w);
+    else { if (x.from > x.to) err("S4", `${label}: the start date is after the end date.`, w); old(x.to, w, label); }
+    if (!["closed","open","changed"].includes(x.status)) err("S4", `${label}: status must be closed, open (extra opening) or changed (changed hours).`, w + ".status");
+    if (x.status === "open" || x.status === "changed") {
+      if (!Array.isArray(x.hours) || !x.hours.length) err("S4", `${label}: enter the opening hours (hours).`, w + ".hours");
+      else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label}, hours ${k+1}`, false));
+    }
+  });
+  list("doctorSchedule").forEach((x, i) => {
+    const w = `doctorSchedule[${i}]`, label = `Doctor's schedule ${i+1}`;
+    if (!isObj(x)) { err("S5", `${label}: not in the right form.`, w); return; }
+    if (!isStr(x.department) && !isStr(x.name)) err("S5", `${label}: enter a department or a doctor.`, w);
+    const hasDays = Array.isArray(x.days) && x.days.length, hasDate = isDate(x.date);
+    if (!hasDays && !hasDate) err("S5", `${label}: enter days (days) or a date (date).`, w);
+    if (hasDays && x.days.some(d => !DAY_KEYS.includes(d))) err("S5", `${label}: only Mo–Su and PH can be used as days.`, w + ".days");
+    hoursOk(x.opens, x.closes, w, label, false);
+    if (x.from !== undefined && !isDate(x.from)) err("S5", `${label}: from must be YYYY-MM-DD.`, w + ".from");
+    if (x.to !== undefined && !isDate(x.to)) err("S5", `${label}: to must be YYYY-MM-DD.`, w + ".to");
+    old(hasDate ? x.date : x.to, w, label);
+  });
+  list("onCall").forEach((x, i) => {
+    const w = `onCall[${i}]`, label = `On-call duty ${i+1}`;
+    if (!isObj(x)) { err("S6", `${label}: not in the right form.`, w); return; }
+    if (!isDate(x.date)) err("S6", `${label}: enter the date (date) in the form YYYY-MM-DD.`, w + ".date");
+    if (!["holiday","night","other"].includes(x.kind)) err("S6", `${label}: kind must be holiday (holiday duty), night (night duty) or other.`, w + ".kind");
+    hoursOk(x.opens, x.closes, w, label, true);
+    old(x.date, w, label);
+  });
+  list("notices").forEach((x, i) => {
+    const w = `notices[${i}]`, label = `Notice ${i+1}`;
+    if (!isObj(x) || !isStr(x.text)) { err("S7", `${label}: the text is empty.`, w); return; }
+    if (x.text.length > 200) warn("W5", `${label}: the text is too long (${x.text.length} characters; up to 200).`, w + ".text");
+    for (const k of ["from","to"]) if (x[k] !== undefined && !isDate(x[k])) err("S7", `${label}: ${k} must be YYYY-MM-DD.`, `${w}.${k}`);
+    if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: the start date is after the end date.`, w);
+    old(x.to, w, label);
+  });
+  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+    warn("W10", "There is no temporary information. Even with nothing scheduled, publishing this file tells AI there are no temporary arrangements.", "$");
+  return { E, W };
+}
+
+
+function validateDirectory(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("D1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (!isStr(o.specVersion) || !/^\d+\.\d+$/.test(o.specVersion)) err("D1", "specVersion (e.g. \"0.3\") is missing.", "specVersion");
+  else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker.`, "specVersion");
+  if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("D2", "updated must be in the form YYYY-MM-DD.", "updated");
+  if (!isObj(o.publisher) || !isStr(o.publisher.name)) err("D3", "Enter publisher.name (the organisation that compiled this list).", "publisher");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("D3", "Enter area.addressCountry (country, e.g. JP).", "area");
+  if (!Array.isArray(o.entries) || !o.entries.length) err("D4", "Enter at least one entry (clinic).", "entries");
+  else {
+    const urls = new Set();
+    o.entries.forEach((e, i) => {
+      const w = `entries[${i}]`;
+      if (!isObj(e) || !isStr(e.name)) err("D4", `Entry ${i+1}: the clinic name (name) is missing.`, w);
+      if (!isObj(e) || typeof e.url !== "string" || !/^https:\/\/\S+$/.test(e.url)) err("D4", `Entry ${i+1}: enter url (where the clinic's clinic-intake.json is) starting with https://.`, w + ".url");
+      else if (urls.has(e.url)) err("D4", `Entry ${i+1}: the same url appears more than once.`, w + ".url"); else urls.add(e.url);
+      if (isObj(e) && e.geo !== undefined && !(isObj(e.geo) && typeof e.geo.latitude === "number" && typeof e.geo.longitude === "number")) err("D4", `Entry ${i+1}: geo must have numbers latitude and longitude.`, w + ".geo");
+    });
+  }
+  if (o.onCall !== undefined) {
+    if (!Array.isArray(o.onCall)) err("D5", "onCall (local on-call schedule) must be an array.", "onCall");
+    else o.onCall.forEach((x, i) => {
+      const w = `onCall[${i}]`;
+      if (!isObj(x) || !(typeof x.date === "string" && DATE.test(x.date))) err("D5", `On-call duty ${i+1}: enter the date (date) in the form YYYY-MM-DD.`, w);
+      if (!isObj(x) || !isStr(x.name)) err("D5", `On-call duty ${i+1}: enter the clinic name (name).`, w);
+      if (isObj(x) && (!TIME_RE.test(x.opens || "") || !TIME_RE.test(x.closes || ""))) err("D5", `On-call duty ${i+1}: enter times in the form 09:00.`, w);
+    });
+  }
+  return { E, W };
+}
+
+
+function validateProfile(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  if (!isObj(o)) { err("P1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (!isStr(o.id) || !/^[a-z0-9-]{2,32}$/.test(o.id)) err("P1", "id must use lower-case letters, numbers and hyphens (e.g. jp, jp-tokyo).", "id");
+  if (!isStr(o.specVersion)) err("P1", "specVersion is missing.", "specVersion");
+  if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("P2", "Enter area.addressCountry (country, e.g. JP).", "area");
+  if (!isObj(o.emergency) || !isStr(o.emergency.message) || !Array.isArray(o.emergency.numbers) || !o.emergency.numbers.length) err("P3", "Enter emergency (the emergency message and numbers).", "emergency");
+  if (!Array.isArray(o.redFlags) || !o.redFlags.filter(isStr).length) {
+    if (o.status === "draft") W.push({ code: "W16", msg: "The emergency warning signs (redFlags) are still empty. Keep this profile as a draft until they are transcribed from an official source.", where: "redFlags" });
+    else err("P3", "Enter at least one emergency warning sign (redFlags).", "redFlags");
+  }
+  if (o.questionnaires !== undefined) {
+    if (!Array.isArray(o.questionnaires)) err("P4", "questionnaires must be an array.", "questionnaires");
+    else { const r = validateIntake({ spec: "open-intake", specVersion: o.specVersion, updated: o.updated, clinic: { name: "x", telephone: "000000", address: { addressRegion: "x", addressLocality: "x" }, departments: ["x"], openingHours: [{ days: ["Mo"], opens: "09:00", closes: "10:00" }], booking: [{ method: "walk-in" }] }, safety: { noDiagnosis: true, emergency: "x", redFlags: ["x"] }, questionnaires: o.questionnaires });
+      for (const e of r.E) if (e.where.startsWith("questionnaires")) E.push({ ...e, code: "P4" });
+      o.questionnaires.forEach((q, i) => { if (!isStr(q?.url)) err("P4", `Base questionnaire ${i+1}: enter url (what other files point to with derivedFrom).`, `questionnaires[${i}].url`); }); }
+  }
+  return { E, W };
+}
+
+
+function validatePersonal(o) {
+  const E = [], W = [];
+  const err = (code, msg, where) => E.push({ code, msg, where });
+  const warn = (code, msg, where) => W.push({ code, msg, where });
+  const isStr = v => typeof v === "string" && v.trim() !== "";
+  const isObj = v => v && typeof v === "object" && !Array.isArray(v);
+  const PDATE = /^\d{4}(-\d{2}(-\d{2})?)?$/;
+  if (!isObj(o)) { err("H1", "The outermost JSON value is not an object ({ }).", "$"); return { E, W }; }
+  if (!isStr(o.specVersion)) err("H1", "specVersion (e.g. \"0.1\") is missing.", "specVersion");
+  if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("H2", "updated (date last checked) must be in the form YYYY-MM-DD.", "updated");
+  else if ((Date.now() - Date.parse(o.updated + "T00:00:00")) / 864e5 > 365) warn("H8", "The date last checked (updated) is more than a year ago. Check whether your medicines or conditions have changed.", "updated");
+  if (o.selfReported !== true) err("H3", "selfReported must be true (a declaration that this is self-reported).", "selfReported");
+  if (o.person !== undefined) {
+    if (!isObj(o.person)) err("H4", "person must be an object ({ }).", "person");
+    else for (const k of Object.keys(o.person)) if (!["birthYear","sex","languages","addressCountry","addressRegion"].includes(k)) warn("H7", `person contains "${k}". Do not include names, addresses or ID numbers.`, "person." + k);
+  }
+  if (o.preferences !== undefined) {
+    const pr = o.preferences;
+    if (!isObj(pr)) err("H9", "preferences (clinic preferences) must be an object ({ }).", "preferences");
+    else {
+      if (isObj(pr.homeArea)) for (const k of Object.keys(pr.homeArea)) if (!["addressCountry","addressRegion","addressLocality","nearestStation"].includes(k)) warn("H7", `homeArea contains "${k}". Do not include a street address.`, "preferences.homeArea." + k);
+      if (pr.travel !== undefined) {
+        if (!isObj(pr.travel)) err("H9", "travel must be an object ({ }).", "preferences.travel");
+        else {
+          if (pr.travel.modes !== undefined && !(Array.isArray(pr.travel.modes) && pr.travel.modes.every(m => ["walk","bicycle","train","bus","car","taxi"].includes(m)))) err("H9", "travel.modes must be chosen from walk, bicycle, train, bus, car, taxi.", "preferences.travel.modes");
+          if (pr.travel.maxMinutes !== undefined && !(Number.isInteger(pr.travel.maxMinutes) && pr.travel.maxMinutes > 0)) err("H9", "travel.maxMinutes must be a whole number of minutes, 1 or more.", "preferences.travel.maxMinutes");
+        }
+      }
+      if (pr.availability !== undefined) {
+        if (!Array.isArray(pr.availability)) err("H9", "availability must be an array ([ ]).", "preferences.availability");
+        else pr.availability.forEach((a, i) => {
+          const w = `preferences.availability[${i}]`;
+          if (!isObj(a)) { err("H9", `Available time ${i+1}: not in the right form.`, w); return; }
+          if (a.days !== undefined && !(Array.isArray(a.days) && a.days.every(d => DAY_KEYS.includes(d)))) err("H9", `Available time ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
+          if ((a.from !== undefined && !TIME_RE.test(a.from)) || (a.to !== undefined && !TIME_RE.test(a.to))) err("H9", `Available time ${i+1}: enter times in the form 09:00.`, w);
+          else if (a.from && a.to && a.from >= a.to) err("H9", `Available time ${i+1}: the start is after the end.`, w);
+        });
+      }
+      if (pr.priorities !== undefined) {
+        const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
+        if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities must be chosen from ${P.join(", ")}, without duplicates.`, "preferences.priorities");
+      }
+      if (pr.pastClinics !== undefined) warn("H10", "pastClinics (past clinics) is not part of this format. Register clinics you were happy with in regularClinics instead.", "preferences.pastClinics");
+      for (const k of ["regularClinics"]) {
+        if (pr[k] === undefined) continue;
+        if (!Array.isArray(pr[k])) { err("H9", `${k} must be an array ([ ]).`, "preferences." + k); continue; }
+        pr[k].forEach((c, i) => {
+          const w = `preferences.${k}[${i}]`, label = "Regular clinic " + (i + 1);
+          if (!isObj(c) || !isStr(c.name)) { err("H9", `${label}: the clinic name (name) is empty.`, w); return; }
+          for (const f of Object.keys(c)) if (!["name","url","department","since","note"].includes(f)) warn("H10", `${label}: "${f}" is present. Evaluations of or comments about clinics are not part of this format; please remove it.`, `${w}.${f}`);
+          for (const f of ["since"]) if (c[f] !== undefined && !PDATE.test(String(c[f]))) err("H5", `${label}: ${f} must be YYYY, YYYY-MM or YYYY-MM-DD.`, `${w}.${f}`);
+        });
+      }
+    }
+  }
+  const checkSrc = (x, w, label) => {
+    if (x.source === undefined) return;
+    if (!isObj(x.source)) { err("H4", `${label}: source must be an object ({ }).`, w + ".source"); return; }
+    if (x.source.date !== undefined && !PDATE.test(String(x.source.date))) err("H5", `${label}: source.date must be YYYY, YYYY-MM or YYYY-MM-DD.`, w + ".source.date");
+    if (x.source.transcribedBy === "ai" && x.source.checkedByMe !== true) warn("H6", `${label}: transcribed by AI but not yet checked by you. Compare it with the original.`, w + ".source");
+  };
+  const LISTS = { allergies: ["substance", "Allergy"], medications: ["name", "Medication"], conditions: ["name", "Condition"], procedures: ["name", "Procedure"], immunizations: ["name", "Immunization"] };
+  const ENUMS = { severity: ["mild","moderate","severe","unknown"], category: ["medication","food","environment","other"], status: null };
+  const STATUS = { medications: ["active","stopped","as-needed"], conditions: ["active","resolved","unknown"] };
+  for (const [k, [key, name]] of Object.entries(LISTS)) {
+    if (o[k] === undefined) continue;
+    if (!Array.isArray(o[k])) { err("H4", `${k} must be an array ([ ]). Write [] if there are none.`, k); continue; }
+    o[k].forEach((x, i) => {
+      const w = `${k}[${i}]`, label = `${name} ${i+1}`;
+      if (!isObj(x) || !isStr(x[key])) { err("H4", `${label}: ${key} is empty.`, w); return; }
+      if (k === "allergies") for (const f of ["severity","category"]) if (x[f] !== undefined && !ENUMS[f].includes(x[f])) err("H4", `${label}: ${f} must be one of ${ENUMS[f].join(", ")}.`, `${w}.${f}`);
+      if (STATUS[k] && x.status !== undefined && !STATUS[k].includes(x.status)) err("H4", `${label}: status must be one of ${STATUS[k].join(", ")}.`, w + ".status");
+      for (const f of ["since","until","date"]) if (x[f] !== undefined && !PDATE.test(String(x[f]))) err("H5", `${label}: ${f} must be YYYY, YYYY-MM or YYYY-MM-DD.`, `${w}.${f}`);
+      checkSrc(x, w, label);
+    });
+  }
+  if (typeof o.notes === "string" && o.notes.length > 500) warn("W5", `Notes are too long (${o.notes.length} characters; up to 500).`, "notes");
+  return { E, W };
+}
+
+
+function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : s === "open-intake-personal" ? "personal" : "intake"; }
+function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : k === "personal" ? validatePersonal(o) : validateIntake(o); }
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+})();
+if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
+</script>
+<script>
+(() => {
+"use strict";
+const STORE = "open-intake-personal-draft-v1";
+const POLICY = { url: "https://open-intake.github.io/open-intake/en/#personal", summary: "A health summary written by the person on their own responsibility (self-reported). An AI reading it does not diagnose, guess diseases or give medicine instructions; it checks emergency warning signs first and has the person confirm any questionnaire draft. It uses only what it was given, only to find a clinic and prepare for a visit." };
+const today = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+const SRC_TYPES = [["self","My memory"],["medication-notebook","Medicine record"],["medication-label","Medicine label or leaflet"],["receipt","Receipt or statement"],["checkup","Check-up results"],["clinician-document","Document from a clinic"],["other","Other"]];
+const LISTS = {
+  allergies: { title: "Allergies", lead: "Allergies to medicines, foods and so on.", key: "substance", fields: [
+    ["substance", "To what", "text", "e.g. penicillin, shrimp"], ["category", "Type", "select", [["", "—"],["medication","Medicine"],["food","Food"],["environment","Pollen, animals, etc."],["other","Other"]]],
+    ["reaction", "What happened", "text", "e.g. hives"], ["severity", "Severity", "select", [["", "—"],["mild","Mild"],["moderate","Moderate"],["severe","Severe"],["unknown","Don't know"]]], ["since", "When (year or year-month)", "text", "e.g. 2015"]] },
+  medications: { title: "Medicines", lead: "Writing them exactly as on your medicine record or label helps the doctor.", key: "name", fields: [
+    ["name", "Medicine name", "text", "e.g. Amlodipine 5 mg tablet"], ["dose", "Dose", "text", "e.g. 1 tablet"], ["frequency", "Directions", "text", "e.g. once daily after breakfast"],
+    ["status", "Status", "select", [["", "—"],["active","Using"],["as-needed","Only when needed"],["stopped","Stopped"]]], ["since", "Started", "text", "e.g. 2020-04"], ["prescriber", "Prescribed by (clinic or pharmacy, optional)", "text", ""], ["reason", "What it is for (optional)", "text", "e.g. blood pressure"]] },
+  conditions: { title: "Conditions and past illnesses", lead: "Use the name a doctor told you.", key: "name", fields: [
+    ["name", "Condition", "text", "e.g. high blood pressure"], ["status", "Status", "select", [["", "—"],["active","Ongoing"],["resolved","Resolved"],["unknown","Don't know"]]], ["since", "Since", "text", "e.g. 2020"], ["note", "Note", "text", ""]] },
+  procedures: { title: "Operations and major procedures", lead: "", key: "name", fields: [["name", "Operation or procedure", "text", "e.g. appendix removal"], ["date", "When", "text", "e.g. 1995"], ["note", "Note", "text", ""]] },
+  immunizations: { title: "Vaccinations", lead: "As far as you know.", key: "name", fields: [["name", "Vaccine", "text", "e.g. flu"], ["date", "When", "text", "e.g. 2025-11"], ["note", "Note", "text", ""]] }
+};
+const SEX = [["", "Prefer not to say"],["female","Female"],["male","Male"],["other","Other"],["unknown","Don't know"]];
+const PREG = [["", "—"],["not-applicable","Not applicable"],["not-pregnant","Not pregnant"],["possible","Possibly"],["pregnant","Pregnant"],["unknown","Don't know"]];
+const SMOKE = [["", "—"],["never","Never"],["former","Former smoker"],["current","Smoker"],["unknown","Don't know"]];
+const ALC = [["", "—"],["none","None"],["occasional","Occasionally"],["regular","Regularly"],["unknown","Don't know"]];
+const MODES = [["walk","Walk"],["bicycle","Bicycle"],["train","Train"],["bus","Bus"],["car","Car"],["taxi","Taxi"]];
+const PRIOS = [["regularDoctor","Regular doctor"],["near","Nearby"],["shortWait","Short wait"],["openNow","Open now"],["specialty","Specialty, areas of focus"],["reputation","Reputation"],["language","Languages"],["accessibility","Accessibility, support"]];
+const DAYS = [["Mo","Mon"],["Tu","Tue"],["We","Wed"],["Th","Thu"],["Fr","Fri"],["Sa","Sat"],["Su","Sun"],["PH","Hol"]];
+const label = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
+
+const VISIT = [["onset", "When it started", "e.g. last night, suddenly"], ["where", "Where", "e.g. right side of the head, temple"], ["quality", "What it is like", "e.g. throbbing, tight"], ["severity", "How bad (0–10)", "e.g. 7"],
+  ["timing", "How long it lasts, when it happens", "e.g. lasts about 30 minutes, worse in the morning"], ["associated", "Other symptoms", "e.g. nausea, fever 100.8°F"], ["factors", "Triggers, what makes it worse or better", "e.g. worse when moving, better lying down"], ["selfcare", "What I have done", "e.g. 1 over-the-counter painkiller at 9 pm"]];
+const V = {};
+
+function blank() { return { spec: "open-intake-personal", specVersion: "0.1", updated: today(), selfReported: true, policy: POLICY, person: { languages: ["en"] } }; }
+function example() {
+  return { spec: "open-intake-personal", specVersion: "0.1", updated: today(), selfReported: true, policy: POLICY,
+    person: { birthYear: 1960, sex: "female", languages: ["en"], addressCountry: "US", addressRegion: "OR" },
+    preferences: { homeArea: { addressCountry: "US", addressRegion: "OR", addressLocality: "Portland", nearestStation: "Greenhill Transit Center (fictional)" }, travel: { modes: ["walk","bus"], maxMinutes: 30 },
+      availability: [{ days: ["Sa"], from: "09:00", to: "12:00", note: "Work on weekdays" }, { days: ["Mo","Tu","We","Th","Fr"], from: "18:00", to: "20:00" }],
+      priorities: ["regularDoctor","near","shortWait","specialty","openNow"], languages: ["en"], needs: ["Need to sit while waiting"],
+      regularClinics: [{ name: "Greenhill Family Medicine (fictional)", department: "Family medicine", url: "https://example.com/clinic-intake.json", since: "2020" }] },
+    allergies: [{ substance: "Penicillin antibiotics", category: "medication", reaction: "Hives", severity: "moderate", since: "2015", source: { type: "self", transcribedBy: "self", checkedByMe: true } }],
+    medications: [{ name: "Amlodipine 5 mg tablet", dose: "1 tablet", frequency: "Once daily after breakfast", status: "active", since: "2020-04", reason: "Blood pressure", source: { type: "medication-notebook", date: "2026-10-01", transcribedBy: "ai", checkedByMe: true } },
+                  { name: "Ibuprofen 200 mg tablet", dose: "1 tablet", frequency: "When in pain", status: "as-needed", source: { type: "medication-label", date: "2026-08-20", transcribedBy: "ai", checkedByMe: false } }],
+    conditions: [{ name: "High blood pressure", status: "active", since: "2020" }, { name: "Appendicitis", status: "resolved", since: "1995" }],
+    procedures: [{ name: "Appendix removal", date: "1995" }], immunizations: [{ name: "Influenza", date: "2025-11" }],
+    pregnancy: { status: "not-applicable" }, lifestyle: { smoking: "never", alcohol: "occasional" }, notes: "(Fictional example)" };
+}
+let D, origin = "";
+
+// ---------- DOM ----------
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag); let value, checked;
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v; else if (k === "text") el.textContent = v;
+    else if (k === "value") value = v; else if (k === "checked") checked = v;
+    else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  if (value !== undefined) el.value = value; if (checked !== undefined) el.checked = checked;
+  return el;
+}
+const $ = id => document.getElementById(id);
+const field = (id, lab, control) => h("div", { class: "field" }, h("label", { for: id, text: lab }), control);
+const input = (id, get, set, ph, type = "text") => h("input", { type, id, value: get() ?? "", placeholder: ph || null, oninput: e => { set(e.target.value); changed(); } });
+const select = (id, opts, get, set) => h("select", { id, value: get() ?? "", onchange: e => { set(e.target.value); changed(); } }, opts.map(([v, n]) => h("option", { value: v, text: n })));
+const clean = o => { for (const k of Object.keys(o)) if (o[k] === "" || o[k] == null) delete o[k]; return o; };
+
+function rowsEditor(arr, fields, rerender, addLabel, removeLabel) {
+  return [h("div", { class: "rows" }, arr.map((it, i) => h("div", { class: "row" },
+      h("div", { class: "row-head" }, h("span", { class: "num", text: String(i + 1) }), h("span", { class: "spacer" }), h("button", { type: "button", class: "icon-btn", "aria-label": `Remove ${removeLabel} ${i + 1}`, onclick: () => { arr.splice(i, 1); rerender(); changed(); } }, "×")),
+      h("div", { class: "grid" }, fields.map(f => f(it, i)))))),
+    h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { arr.push({}); rerender(); changed(); } }, addLabel))];
+}
+function txt(obj, key, id, lab, ph, type) { return field(id, lab, input(id, () => obj[key], v => { if (String(v).trim()) obj[key] = type === "number" ? parseInt(v, 10) : String(v).trim(); else delete obj[key]; }, ph, type || "text")); }
+function renderPref() {
+  const el = $("sec-pref"), P = D.preferences = D.preferences || {}; el.replaceChildren();
+  const ha = P.homeArea = P.homeArea || {}, tr = P.travel = P.travel || {};
+  const av = P.availability = P.availability || [], pr = P.priorities = P.priorities || [];
+  const rc = P.regularClinics = P.regularClinics || [];
+  el.append(
+    h("header", {}, h("h2", { text: "Clinic preferences" }), h("span", { class: "k", text: "preferences" })),
+    h("h3", { style: "font-size:15px", text: "Area and travel" }),
+    h("div", { class: "grid" }, txt(ha, "addressCountry", "pr-cc", "Country (2 letters)", "US"), txt(ha, "addressRegion", "pr-rg", "State / region", "e.g. OR"), txt(ha, "addressLocality", "pr-lc", "City / town", "e.g. Portland"), txt(ha, "nearestStation", "pr-st", "Nearest station or landmark (optional)", "No street address")),
+    h("div", { class: "chips", role: "group", "aria-label": "How you travel" }, MODES.map(([k, n]) => h("label", { class: "chip" }, h("input", { type: "checkbox", id: "pr-m-" + k, checked: (tr.modes || []).includes(k), onchange: e => { const m = new Set(tr.modes || []); e.target.checked ? m.add(k) : m.delete(k); tr.modes = MODES.map(x => x[0]).filter(x => m.has(x)); if (!tr.modes.length) delete tr.modes; changed(); } }), n))),
+    h("div", { class: "grid" }, txt(tr, "maxMinutes", "pr-max", "Maximum travel time (minutes)", "e.g. 30", "number")),
+    h("h3", { style: "font-size:15px", text: "Times you can usually go" }),
+    ...rowsEditor(av, [
+      (it, i) => h("div", { class: "chips", style: "grid-column:1/-1" }, DAYS.map(([k, n]) => h("label", { class: "chip" }, h("input", { type: "checkbox", id: `pr-av-${i}-${k}`, checked: (it.days || []).includes(k), onchange: e => { const d = new Set(it.days || []); e.target.checked ? d.add(k) : d.delete(k); it.days = DAYS.map(x => x[0]).filter(x => d.has(x)); if (!it.days.length) delete it.days; changed(); } }), n))),
+      (it, i) => txt(it, "from", `pr-av-${i}-f`, "From", "", "time"), (it, i) => txt(it, "to", `pr-av-${i}-t`, "To", "", "time"), (it, i) => txt(it, "note", `pr-av-${i}-n`, "Note", "e.g. work on weekdays")
+    ], renderPref, "+ Add a time slot", "time slot"),
+    h("h3", { style: "font-size:15px", text: "What matters most (in order)" }),
+    h("ol", { class: "prio" }, pr.map((k, i) => h("li", {}, h("span", { text: label(PRIOS, k) }),
+      h("button", { type: "button", class: "icon-btn", style: "color:var(--ink)", "aria-label": "Move up", disabled: i === 0 || null, onclick: () => { [pr[i - 1], pr[i]] = [pr[i], pr[i - 1]]; renderPref(); changed(); } }, "↑"),
+      h("button", { type: "button", class: "icon-btn", "aria-label": `Remove ${label(PRIOS, k)}`, onclick: () => { pr.splice(i, 1); renderPref(); changed(); } }, "×")))),
+    !PRIOS.some(([k]) => !pr.includes(k)) ? "" : h("div", { class: "actions" }, h("select", { id: "pr-add", style: "width:auto", "aria-label": "Add what matters", onchange: e => { if (e.target.value) { pr.push(e.target.value); renderPref(); changed(); } } },
+      h("option", { value: "", text: "+ Add what matters" }), PRIOS.filter(([k]) => !pr.includes(k)).map(([k, n]) => h("option", { value: k, text: n })))),
+    !pr.includes("reputation") ? "" : h("p", { class: "small", style: "margin:0", text: "This format does not provide reputation information. If an AI refers to online reviews, it states the source and that the information is not verified." }),
+    h("div", { class: "grid" },
+      field("pr-lang", "Languages for the visit (codes)", input("pr-lang", () => (P.languages || []).join(", "), v => { const a = v.split(/[,\s\u3001]+/).filter(Boolean); if (a.length) P.languages = a; else delete P.languages; }, "e.g. en")),
+      field("pr-needs", "Support needed (one per line)", h("textarea", { id: "pr-needs", rows: 2, value: (P.needs || []).join("\n"), placeholder: "e.g. wheelchair access", oninput: e => { const a = e.target.value.split("\n").map(x => x.trim()).filter(Boolean); if (a.length) P.needs = a; else delete P.needs; changed(); } }))),
+    h("h3", { style: "font-size:15px", text: "Regular clinics" }),
+    h("p", { class: "small", style: "margin:0", text: "Register clinics you were happy with. Do not write ratings or opinions of clinics." }),
+    ...rowsEditor(rc, [(it, i) => txt(it, "name", `pr-rc-${i}-n`, "Name", ""), (it, i) => txt(it, "department", `pr-rc-${i}-d`, "Department", "e.g. family medicine"), (it, i) => txt(it, "url", `pr-rc-${i}-u`, "Where its clinic-intake.json is (if any)", "https://"), (it, i) => txt(it, "since", `pr-rc-${i}-s`, "Since", "e.g. 2020")], renderPref, "+ Add a regular clinic", "regular clinic"));
+}
+function renderPerson() {
+  const el = $("sec-person"), p = D.person = D.person || {}; el.replaceChildren();
+  el.append(h("header", {}, h("h2", { text: "About me" }), h("span", { class: "k", text: "person" })),
+    h("p", { class: "lead", text: "Used to choose emergency guidance suited to your age and region. Do not write your name or address." }),
+    h("div", { class: "grid" },
+      field("p-year", "Year of birth", input("p-year", () => p.birthYear, v => { const n = parseInt(v, 10); if (n) p.birthYear = n; else delete p.birthYear; }, "e.g. 1960", "number")),
+      field("p-sex", "Sex (optional)", select("p-sex", SEX, () => p.sex, v => { if (v) p.sex = v; else delete p.sex; })),
+      field("p-lang", "Languages you speak (codes)", input("p-lang", () => (p.languages || []).join(", "), v => { const a = v.split(/[,\s\u3001]+/).filter(Boolean); if (a.length) p.languages = a; else delete p.languages; }, "e.g. en, es")),
+      field("p-country", "Country (2 letters)", input("p-country", () => p.addressCountry, v => { if (v.trim()) p.addressCountry = v.trim().toUpperCase(); else delete p.addressCountry; }, "US")),
+      field("p-region", "State / region", input("p-region", () => p.addressRegion, v => { if (v.trim()) p.addressRegion = v.trim(); else delete p.addressRegion; }, "e.g. OR"))));
+}
+function renderList(k) {
+  const cfg = LISTS[k], el = $("sec-" + k); el.replaceChildren();
+  const arr = D[k], state = arr === undefined ? "unknown" : arr.length ? "some" : "none";
+  const setState = s => { if (s === "unknown") delete D[k]; else if (s === "none") D[k] = []; else if (!D[k] || !D[k].length) D[k] = [{}]; renderList(k); changed(); };
+  el.append(h("header", {}, h("h2", { text: cfg.title }), h("span", { class: "k", text: k })),
+    cfg.lead && h("p", { class: "lead", text: cfg.lead }),
+    h("div", { class: "tri", role: "radiogroup", "aria-label": cfg.title },
+      [["unknown", "Not filled in yet"], ["none", "None"], ["some", "Yes"]].map(([v, n]) => h("label", {}, h("input", { type: "radio", name: "st-" + k, id: `st-${k}-${v}`, checked: state === v, onchange: () => setState(v) }), n))));
+  if (state !== "some") return;
+  el.append(h("div", { class: "rows" }, D[k].map((it, i) => {
+    it.source = it.source || {};
+    const s = it.source, unchecked = s.transcribedBy === "ai" && s.checkedByMe !== true;
+    return h("div", { class: "row" },
+      h("div", { class: "row-head" }, h("span", { class: "num", text: String(i + 1) }), unchecked && h("span", { class: "badge warn", text: "AI transcription, not checked" }), h("span", { class: "spacer" }),
+        h("button", { type: "button", class: "icon-btn", "aria-label": `Remove ${cfg.title} ${i + 1}`, onclick: () => { D[k].splice(i, 1); if (!D[k].length) D[k] = [{}]; renderList(k); changed(); } }, "×")),
+      h("div", { class: "grid" }, cfg.fields.map(([f, lab, type, extra]) => {
+        const id = `${k}-${i}-${f}`;
+        return field(id, lab, type === "select" ? select(id, extra, () => it[f], v => { if (v) it[f] = v; else delete it[f]; }) : input(id, () => it[f], v => { if (v.trim()) it[f] = v.trim(); else delete it[f]; }, extra));
+      })),
+      h("details", { class: "src", open: unchecked || null }, h("summary", { text: "Source (where it came from, whether checked)" }),
+        h("div", { class: "grid" },
+          field(`${k}-${i}-st`, "From", select(`${k}-${i}-st`, [["", "—"], ...SRC_TYPES], () => s.type, v => { if (v) s.type = v; else delete s.type; })),
+          field(`${k}-${i}-sd`, "Document date", input(`${k}-${i}-sd`, () => s.date, v => { if (v.trim()) s.date = v.trim(); else delete s.date; }, "e.g. 2026-10-01")),
+          field(`${k}-${i}-sb`, "Written by", select(`${k}-${i}-sb`, [["", "—"], ["self", "Me"], ["ai", "AI (from photos etc.)"]], () => s.transcribedBy, v => { if (v) s.transcribedBy = v; else delete s.transcribedBy; renderList(k); })),
+          h("label", { class: "field", style: "align-self:end" }, h("span", {}, h("input", { type: "checkbox", id: `${k}-${i}-sc`, checked: !!s.checkedByMe, onchange: e => { if (e.target.checked) s.checkedByMe = true; else delete s.checkedByMe; renderList(k); changed(); } }), " Checked against the original")))));
+  })), h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { D[k].push({}); renderList(k); changed(); } }, "+ Add")));
+}
+function renderOther() {
+  const el = $("sec-other"); el.replaceChildren();
+  const pg = D.pregnancy = D.pregnancy || {}, ls = D.lifestyle = D.lifestyle || {};
+  el.append(h("header", {}, h("h2", { text: "Other" })),
+    h("div", { class: "grid" },
+      field("o-preg", "Pregnancy", select("o-preg", PREG, () => pg.status, v => { if (v) { pg.status = v; pg.asOf = today().slice(0, 7); } else { delete pg.status; delete pg.asOf; } })),
+      field("o-smoke", "Smoking", select("o-smoke", SMOKE, () => ls.smoking, v => { if (v) ls.smoking = v; else delete ls.smoking; })),
+      field("o-alc", "Alcohol", select("o-alc", ALC, () => ls.alcohol, v => { if (v) ls.alcohol = v; else delete ls.alcohol; })),
+      field("o-upd", "Date last checked", input("o-upd", () => D.updated, v => { D.updated = v; }, "", "date"))),
+    field("o-notes", "Anything else the doctor should know (up to 500 characters)", h("textarea", { id: "o-notes", maxlength: 500, value: D.notes || "", oninput: e => { if (e.target.value.trim()) D.notes = e.target.value; else delete D.notes; changed(); } })));
+}
+function renderVisit() {
+  const el = $("visitFields"); if (el.childElementCount) return;
+  el.append(...VISIT.map(([k, lab, ph]) => field("v-" + k, lab, h("input", { type: "text", id: "v-" + k, placeholder: ph, oninput: e => { V[k] = e.target.value.trim(); renderSheet(); } }))));
+}
+function renderAll() { renderVisit(); renderPref(); renderPerson(); for (const k of Object.keys(LISTS)) renderList(k); renderOther(); renderNotice(); changed(true); }
+
+
+function build() {
+  const o = { spec: "open-intake-personal", specVersion: "0.1", updated: D.updated || today(), selfReported: true, policy: POLICY };
+  const p = clean({ ...D.person }); if (Object.keys(p).length) o.person = p;
+  if (D.preferences) {
+    const P = D.preferences, q = {};
+    const ha = clean({ ...(P.homeArea || {}) }); if (Object.keys(ha).length) q.homeArea = ha;
+    const tr = clean({ ...(P.travel || {}) }); if (tr.maxMinutes !== undefined && !(tr.maxMinutes > 0)) delete tr.maxMinutes; if (Object.keys(tr).length) q.travel = tr;
+    const av = (P.availability || []).map(a => clean({ ...a })).filter(a => Object.keys(a).length); if (av.length) q.availability = av;
+    if (P.priorities && P.priorities.length) q.priorities = [...P.priorities];
+    if (P.languages && P.languages.length) q.languages = [...P.languages];
+    if (P.needs && P.needs.length) q.needs = [...P.needs];
+    for (const [k, keys] of [["regularClinics", ["name","department","url","since"]]]) {
+      const a = (P[k] || []).map(c => { const x = {}; for (const f of keys) if (c[f]) x[f] = c[f]; return x; }).filter(c => c.name); if (a.length) q[k] = a;
+    }
+    if (Object.keys(q).length) o.preferences = q;
+  }
+  for (const k of Object.keys(LISTS)) {
+    if (D[k] === undefined) continue;
+    const order = LISTS[k].fields.map(f => f[0]);
+    o[k] = D[k].map(it => {
+      const x = {}; for (const f of order) if (it[f] !== undefined && it[f] !== "") x[f] = it[f];
+      for (const f of Object.keys(it)) if (!order.includes(f) && f !== "source" && it[f] !== "" && it[f] != null) x[f] = it[f];
+      if (it.source) { const s = clean({ ...it.source }); if (Object.keys(s).length) x.source = s; }
+      return x;
+    }).filter(x => x[LISTS[k].key]);
+  }
+  const pg = clean({ ...(D.pregnancy || {}) }); if (pg.status) o.pregnancy = pg;
+  const ls = clean({ ...(D.lifestyle || {}) }); if (Object.keys(ls).length) o.lifestyle = ls;
+  if (D.notes && D.notes.trim()) o.notes = D.notes.trim();
+  return o;
+}
+let out = null, saveT = 0;
+const STAGE1 = ["preferences"], STAGE2 = ["person","allergies","medications","conditions","procedures","immunizations","pregnancy","lifestyle","notes"];
+function scoped(o) { const sc = $("scope").value; if (sc === "all") return o; const drop = sc === "stage1" ? STAGE2 : STAGE1; const x = {}; for (const [k, v] of Object.entries(o)) if (!drop.includes(k)) x[k] = v; return x; }
+const fileName = () => ({ all: "my-health.json", stage1: "my-health-preferences.json", stage2: "my-health-medical.json" })[$("scope").value];
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function changed(now) {
+  if (!D) return;
+  out = build();
+  $("json").innerHTML = esc(JSON.stringify(scoped(out), null, 2)).replace(/("(?:\\.|[^"\\])*")(\s*:)?/g, (m, s, c) => c ? `<span class="k">${s}</span>${c}` : `<span class="s">${s}</span>`);
+  const r = OpenIntakeValidate.validate(out);
+  const st = $("status"); st.replaceChildren(h("span", { class: "dot" }));
+  if (r.E.length) { st.className = "status err"; st.append(`Items to fix: ${r.E.length}${r.W.length ? `, to check: ${r.W.length}` : ""}.`); }
+  else if (r.W.length) { st.className = "status warn"; st.append(`Ready to save. Items to check: ${r.W.length}.`); }
+  else { st.className = "status ok"; st.append("Ready to save."); }
+  issues($("issues"), r); renderSheet();
+  clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(STORE, JSON.stringify(D)); } catch (_) {} }, now ? 0 : 400);
+}
+function issues(list, r) {
+  list.replaceChildren();
+  if (!r.E.length && !r.W.length) { list.append(h("li", { class: "o" }, h("span", { class: "code", text: "OK" }), h("span", { text: "Nothing to fix." }))); return; }
+  for (const [a, c] of [[r.E, "e"], [r.W, "w"]]) for (const x of a) list.append(h("li", { class: c }, h("span", { class: "code", text: x.code }), h("span", { text: x.msg })));
+}
+
+
+function renderSheet() {
+  const o = out, el = $("sheet"); el.replaceChildren();
+  const p = o.person || {}, age = p.birthYear ? new Date().getFullYear() - p.birthYear : null;
+  const listOrState = (k, render) => o[k] === undefined ? h("p", { class: "unk", text: "(Not filled in)" }) : !o[k].length ? h("p", { class: "none", text: "None (self-reported)" }) : render(o[k]);
+  const un = it => it.source && it.source.transcribedBy === "ai" && it.source.checkedByMe !== true ? h("span", { class: "unchecked", text: " [AI transcription, not checked]" }) : null;
+  const visit = VISIT.filter(([k]) => V[k]);
+  el.append(
+    h("h3", { text: "Visit summary" }),
+    h("div", { class: "meta" }, h("span", { text: `Updated: ${o.updated}` }), age != null && h("span", { text: `Age: about ${age} (born ${p.birthYear})` }), p.sex && h("span", { text: `Sex: ${label(SEX, p.sex)}` }), p.languages && h("span", { text: `Languages: ${p.languages.join(", ")}` })),
+    h("div", { class: "self", text: "This summary was written by the patient on their own responsibility (self-reported). It is not a medical record. Please use it for reference." }),
+    visit.length > 0 && h("section", {}, h("h4", { text: "Today's symptoms (self-reported)" }), h("table", {}, h("tbody", {}, visit.map(([k, lab]) => h("tr", {}, h("th", { text: lab, style: "width:34%" }), h("td", { text: V[k] })))))),
+    o.preferences && o.preferences.regularClinics && h("section", {}, h("h4", { text: "Regular clinics" }), h("ul", {}, o.preferences.regularClinics.map(c => h("li", { text: [c.name, c.department].filter(Boolean).join(" (") + (c.department ? ")" : "") })))),
+    h("section", {}, h("h4", { text: "Allergies" }), listOrState("allergies", a => h("ul", {}, a.map(x => h("li", {}, h("span", { class: "alert", text: x.substance }), x.reaction ? `: ${x.reaction}` : "", x.severity ? ` (${label(LISTS.allergies.fields[3][3], x.severity)})` : "", un(x)))))),
+    h("section", {}, h("h4", { text: "Medicines" }), listOrState("medications", a => h("table", {}, h("thead", {}, h("tr", {}, ["Medicine", "Dose and directions", "Status", "Source"].map(t => h("th", { text: t })))),
+      h("tbody", {}, a.map(x => h("tr", {}, h("td", {}, x.name, un(x)), h("td", { text: [x.dose, x.frequency].filter(Boolean).join(" ") }), h("td", { text: x.status ? label(LISTS.medications.fields[3][3], x.status) : "" }), h("td", { text: x.source ? [label(SRC_TYPES, x.source.type || ""), x.source.date].filter(Boolean).join(" ") : "" }))))))),
+    h("section", {}, h("h4", { text: "Conditions and past illnesses" }), listOrState("conditions", a => h("ul", {}, a.map(x => h("li", {}, x.name, x.status ? ` (${label(LISTS.conditions.fields[1][3], x.status)}${x.since ? ", since " + x.since : ""})` : x.since ? ` (since ${x.since})` : "", un(x)))))),
+    h("section", {}, h("h4", { text: "Operations and major procedures" }), listOrState("procedures", a => h("ul", {}, a.map(x => h("li", {}, x.name, x.date ? ` (${x.date})` : "", un(x)))))),
+    h("section", {}, h("h4", { text: "Vaccinations" }), listOrState("immunizations", a => h("ul", {}, a.map(x => h("li", {}, x.name, x.date ? ` (${x.date})` : "", un(x)))))),
+    (o.pregnancy || o.lifestyle) && h("section", {}, h("h4", { text: "Other" }), h("ul", {}, o.pregnancy && h("li", { text: `Pregnancy: ${label(PREG, o.pregnancy.status)}` }), o.lifestyle && o.lifestyle.smoking && h("li", { text: `Smoking: ${label(SMOKE, o.lifestyle.smoking)}` }), o.lifestyle && o.lifestyle.alcohol && h("li", { text: `Alcohol: ${label(ALC, o.lifestyle.alcohol)}` }))),
+    o.notes && h("section", {}, h("h4", { text: "Anything the doctor should know" }), h("p", { style: "margin:0;white-space:pre-wrap", text: o.notes })));
+}
+
+
+function renderNotice(extra) {
+  const el = $("notice"); el.replaceChildren();
+  const m = { blank: "This is a blank form. Start with what you know.", draft: "Opened where you left off (kept only in this browser).", example: "Showing a fictional example. Press \"Clear\" before writing your own.", loaded: "Loaded." }[origin] || "";
+  el.append(h("span", { text: m }), extra ? h("span", { text: extra }) : "", h("span", { class: "spacer" }),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { D = example(); origin = "example"; renderAll(); } }, "See an example"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { D = blank(); origin = "blank"; renderAll(); } }, "Clear"),
+    h("button", { type: "button", class: "btn ghost small", onclick: () => { try { localStorage.removeItem(STORE); } catch (_) {} D = blank(); origin = "blank"; renderAll(); renderNotice("Deleted what was kept in this browser."); } }, "Delete from this browser"));
+}
+for (const t of ["sheet", "json", "issues", "load"]) $("tab-" + t).addEventListener("click", () => { for (const u of ["sheet", "json", "issues", "load"]) { $("tab-" + u).setAttribute("aria-selected", String(u === t)); $("panel-" + u).hidden = u !== t; } });
+$("status").addEventListener("click", () => $("tab-issues").click());
+$("printBtn").addEventListener("click", () => { renderSheet(); window.print(); });
+$("showBtn").addEventListener("click", () => { document.body.classList.add("showing"); $("exitShow").hidden = false; window.scrollTo(0, 0); });
+$("exitShow").addEventListener("click", () => { document.body.classList.remove("showing"); $("exitShow").hidden = true; });
+function copy(text, toast, el) {
+  const done = m => { toast.textContent = m; setTimeout(() => { toast.textContent = ""; }, 3000); };
+  const fb = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("Selected. Press Ctrl+C (⌘+C) to copy."); };
+  try { navigator.clipboard.writeText(text).then(() => done("Copied."), fb); } catch (_) { fb(); }
+}
+$("copyJson").addEventListener("click", () => copy(JSON.stringify(scoped(out), null, 2) + "\n", $("jsonToast"), $("json")));
+$("scope").addEventListener("change", () => { $("saveJson").textContent = "Save " + fileName(); changed(); });
+$("copyMake").addEventListener("click", () => { $("promptUse").hidden = true; $("promptMake").hidden = false; copy($("promptMake").textContent.trim() + "\n", $("promptToast"), $("promptMake")); });
+$("copyUse").addEventListener("click", () => { $("promptMake").hidden = true; $("promptUse").hidden = false; copy($("promptUse").textContent.trim() + "\n", $("promptToast"), $("promptUse")); });
+$("saveJson").addEventListener("click", () => {
+  const b = new Blob([JSON.stringify(scoped(out), null, 2) + "\n"], { type: "application/json" });
+  const a = h("a", { href: URL.createObjectURL(b), download: fileName() }); document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+function load(text) {
+  const list = $("pasteIssues"), toast = $("pasteToast"); list.replaceChildren(); toast.textContent = "";
+  let o; try { o = JSON.parse(text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "")); }
+  catch (e) { list.append(h("li", { class: "e" }, h("span", { class: "code", text: "JSON" }), h("span", { text: "Cannot read as JSON: " + e.message }))); return; }
+  if (!o || o.spec !== "open-intake-personal") { list.append(h("li", { class: "e" }, h("span", { class: "code", text: "spec" }), h("span", { text: "This is not a health summary file (spec must be open-intake-personal)." }))); return; }
+  D = JSON.parse(JSON.stringify(o)); origin = "loaded"; renderAll(); issues(list, OpenIntakeValidate.validate(o)); toast.textContent = "Loaded.";
+}
+$("loadPaste").addEventListener("click", () => load($("pasteBox").value));
+$("fileIn").addEventListener("change", e => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("pasteBox").value = String(r.result); load(String(r.result)); }; r.readAsText(f, "utf-8"); e.target.value = ""; });
+
+
+let saved = null; try { const s = localStorage.getItem(STORE); if (s) saved = JSON.parse(s); } catch (_) {}
+if (saved && saved.spec === "open-intake-personal") { D = saved; origin = "draft"; } else { D = blank(); origin = "blank"; }
+renderAll();
+window.OpenIntakePersonal = { build, load, example };
+})();
+</script>
+
+</body>
+</html>
