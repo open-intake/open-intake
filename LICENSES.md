@@ -2,7 +2,7 @@
 
 | 対象 | ライセンス | 使うときにしてほしいこと |
 |---|---|---|
-| `SPEC.md`・`AI_INSTRUCTIONS.md`・`README.md` などの文書 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.ja) | 出所（「オープン受診案内（Open Intake）」とリポジトリの URL）を書く |
+| `SPEC.md`・`AI_INSTRUCTIONS*.md`・`README.md` などの文書 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.ja) | 出所（「オープン受診案内（Open Intake）」とリポジトリの URL）を書く |
 | `schema/`・`examples/` | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode.ja) | なし（自由に使える） |
 | `src/`・`tools/`・`docs/index.html` | [Apache License 2.0](LICENSE) | ライセンスの文と著作権の表示を残す |
 

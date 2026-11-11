@@ -123,6 +123,14 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }
 
+// 指示書の「出力の形」の例が、エラーなしで通る（AI が例をまねても壊れたファイルにならないこと）
+for (const f of ["AI_INSTRUCTIONS_SCHEDULE.md", "AI_INSTRUCTIONS_SCHEDULE.en.md"]) {
+  const md = fs.readFileSync(f, "utf8"), blocks = [...md.matchAll(/```json\n([\s\S]*?)\n```/g)].map(x => x[1]);
+  ok(blocks.length === 1, `${f} に出力の形の例が1つある`);
+  for (const b of blocks) { let d = null; try { d = JSON.parse(b); } catch (e) { ok(false, `${f} の例が JSON として読める`, String(e)); continue; }
+    const r = validate(d); ok(d.spec === "open-intake-schedule" && r.E.length === 0, `${f} の例がエラーなしで通る`, JSON.stringify(r.E)); }
+}
+
 // 3. docs/ が最新
 try { execFileSync(process.execPath, ["tools/build.mjs", "--check"], { stdio: "pipe" }); ok(true, "docs/ が最新"); }
 catch (e) { ok(false, "docs/ が最新", String(e.stderr || e)); }

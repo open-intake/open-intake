@@ -204,7 +204,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
             <li>AI が出した JSON を、右の「貼り付けて確認」に貼り付けて確かめます。フォームに読み込んで直すこともできます。</li>
           </ol>
           <p class="small">⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。</p>
-          <div class="actions"><button class="btn" type="button" id="copyPrompt">指示文をコピー</button><span class="toast" id="promptToast" role="status"></span></div>
+          <div class="actions"><button class="btn" type="button" id="copyPrompt">指示文をコピー</button><button class="btn ghost" type="button" id="savePrompt" data-file="open-intake-ai-instructions.txt">指示文を保存</button><span class="toast" id="promptToast" role="status"></span></div>
           <pre class="prompt" id="aiPrompt"><!--PROMPT--></pre>
         </div>
       </details>
@@ -217,6 +217,20 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
       <section class="sheet" id="sec-notes"></section>
     </main>
     <main class="form" id="form-schedule" hidden>
+      <details class="ai" id="aiBoxS">
+        <summary>別の方法：AI と会話して作る・直す</summary>
+        <div class="body">
+          <ol>
+            <li>ふだん使っている AI のチャットを新しく開き、下の指示文を貼り付けて送信します。</li>
+            <li>初めてなら AI の質問に答えます。今のファイルを直すなら、公開中の clinic-schedule.json の中身を貼り、「12月29日から1月3日まで休診を足して」のように頼みます。</li>
+            <li>AI が出した JSON を、右の「貼り付けて確認」に貼り付けて確かめ、保存します。</li>
+          </ol>
+          <p class="small">この指示文で変わるのは臨時の情報だけです。名前やふだんの診療時間などの固定の情報には触れません。指示文を保存しておけば、いつでも使えます。</p>
+          <p class="small">⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。</p>
+          <div class="actions"><button class="btn" type="button" id="copyPromptS">指示文をコピー</button><button class="btn ghost" type="button" id="savePromptS" data-file="open-intake-schedule-ai-instructions.txt">指示文を保存</button><span class="toast" id="promptToastS" role="status"></span></div>
+          <pre class="prompt" id="aiPromptS"><!--PROMPT_S--></pre>
+        </div>
+      </details>
       <section class="sheet" id="sec-s-meta"></section>
       <section class="sheet" id="sec-s-exc"></section>
       <section class="sheet" id="sec-s-doc"></section>
@@ -909,9 +923,19 @@ function copyText(textValue, toastEl, fallbackEl) {
 }
 $("copyJson").addEventListener("click", () => copyText(JSON.stringify(lastOut, null, 2) + "\n", $("jsonToast"), $("json")));
 $("copyPrompt").addEventListener("click", () => copyText($("aiPrompt").textContent.trim() + "\n", $("promptToast"), $("aiPrompt")));
+$("copyPromptS").addEventListener("click", () => copyText($("aiPromptS").textContent.trim() + "\n", $("promptToastS"), $("aiPromptS")));
 
 let framed = true; try { framed = window.self !== window.top; } catch (_) { framed = true; }
 if (framed) $("saveJson").hidden = true;
+// 指示文を手元に保存する（何度でも使えるように）
+for (const [btn, pre] of [["savePrompt", "aiPrompt"], ["savePromptS", "aiPromptS"]]) {
+  if (framed) { $(btn).hidden = true; continue; }
+  $(btn).addEventListener("click", () => {
+    const blob = new Blob([$(pre).textContent.trim() + "\n"], { type: "text/plain;charset=utf-8" });
+    const a = h("a", { href: URL.createObjectURL(blob), download: $(btn).dataset.file }); document.body.append(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  });
+}
 $("saveJson").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(lastOut, null, 2) + "\n"], { type: "application/json" });
   const a = h("a", { href: URL.createObjectURL(blob), download: FILE[mode] }); document.body.append(a); a.click();

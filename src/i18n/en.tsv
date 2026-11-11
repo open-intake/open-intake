@@ -11,6 +11,12 @@ aria-label="作るファイル"	aria-label="File to create"
 臨時の休診・担当医・当番・お知らせ。受付の方が毎週〜毎日更新	Temporary closures, doctors, on-call duty, notices. Updated weekly or daily by front-desk staff
 <strong>固定の情報</strong>	<strong>Regular information</strong>
 <strong>臨時の情報</strong>	<strong>Temporary information</strong>
+別の方法：AI と会話して作る・直す	Another way: create or update it by talking with an AI
+ふだん使っている AI のチャットを新しく開き、下の指示文を貼り付けて送信します。	Open a new chat with the AI you usually use, paste the instructions below and send.
+初めてなら AI の質問に答えます。今のファイルを直すなら、公開中の clinic-schedule.json の中身を貼り、「12月29日から1月3日まで休診を足して」のように頼みます。	The first time, answer the AI's questions. To update the file, paste the content of your published clinic-schedule.json and ask, for example, "add a closure from 29 December to 3 January".
+AI が出した JSON を、右の「貼り付けて確認」に貼り付けて確かめ、保存します。	Paste the JSON the AI gives you into "Paste and check" on the right, check it and save it.
+この指示文で変わるのは臨時の情報だけです。名前やふだんの診療時間などの固定の情報には触れません。指示文を保存しておけば、いつでも使えます。	These instructions only change the temporary information. They never touch regular information such as the name or regular hours. Save the instructions to reuse them any time.
+>指示文を保存</button>	>Save instructions</button>
 別の方法：AI と会話して作る	Another way: create it by talking with an AI
 ChatGPT・Claude・Gemini など、ふだん使っている AI のチャットを新しく開きます。	Open a new chat with the AI you usually use, such as ChatGPT, Claude or Gemini.
 下の指示文をコピーして貼り付け、送信します。AI の質問に順に答えます。	Copy the instructions below, paste them and send. Answer the AI's questions one by one.

@@ -33,7 +33,7 @@
 |---|---|
 | **説明のページ** | https://open-intake.github.io/open-intake/ ：この取り組みの意義と仕組み |
 | **作成ツール** | https://open-intake.github.io/open-intake/maker/ （英語版 https://open-intake.github.io/open-intake/en/maker/ ）：画面に入力すると `clinic-intake.json`・`clinic-schedule.json` ができます。入力内容はブラウザの外に送りません |
-| **AI と会話して作る** | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) の指示文を、ふだん使っている AI に貼り付けます |
+| **AI と会話して作る** | 固定の情報は [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)、臨時の情報は [AI_INSTRUCTIONS_SCHEDULE.md](AI_INSTRUCTIONS_SCHEDULE.md) の指示文を、ふだん使っている AI に貼り付けます。臨時の情報は、公開中のファイルを貼って「休診を足して」のように直すこともできます |
 
 できたファイルは、医療機関のサイトのいちばん上（例: `https://example.com/clinic-intake.json`）に置きます。
 
@@ -47,7 +47,8 @@
 | [PERSONAL.md](PERSONAL.md)・[AI 向けの指示書](AI_INSTRUCTIONS_PERSONAL.md) | **患者の側**のファイル「自分の健康メモ」（草案）。患者が自分の責任で、持病・薬・アレルギーなどを手元にまとめる。作成ツール: https://open-intake.github.io/open-intake/me/ （英語版 [/en/me/](https://open-intake.github.io/open-intake/en/me/)・[英語の指示書](AI_INSTRUCTIONS_PERSONAL.en.md)） |
 | [MAPPING.md](MAPPING.md) | schema.org・HL7 FHIR との対応表 |
 | [examples/](examples/) | 各版の例（架空の医院） |
-| [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)・[英語版](AI_INSTRUCTIONS.en.md) | AI と会話してファイルを作るための指示書 |
+| [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)・[英語版](AI_INSTRUCTIONS.en.md) | AI と会話してファイルを作るための指示書（固定の情報） |
+| [AI_INSTRUCTIONS_SCHEDULE.md](AI_INSTRUCTIONS_SCHEDULE.md)・[英語版](AI_INSTRUCTIONS_SCHEDULE.en.md) | 臨時の情報（`clinic-schedule.json`）を AI と会話して作る・直すための指示書 |
 | `src/` | トップの原稿（`index.src.html`・英語版 `index.en.body.html`）、作成ツールの原稿（`generator.src.html`）、言語ごとのデータ（`locale.*.js`）、英語版の対訳表（`i18n/en.tsv`）、検査器（`validate.js`） |
 | `docs/` | 公開されるサイト（トップと作成ツール。**生成物。手で直さない**） |
 | [REVIEW.md](REVIEW.md) | **医療に携わる方へ**: ご確認いただきたい点（見る場所と問い） |
@@ -65,7 +66,7 @@ node tools/build.mjs
 node tools/test.mjs
 ```
 
-`src/`・`AI_INSTRUCTIONS.md`・`schema/`・`examples/` を直したら、`build.mjs` で `docs/` を作り直してから `test.mjs` を通してください（`docs/` が古いとテストが落ちます）。画面の動作確認は `tools/smoke.cjs`（Playwright）で行えます。
+`src/`・`AI_INSTRUCTIONS*.md`・`schema/`・`examples/` を直したら、`build.mjs` で `docs/` を作り直してから `test.mjs` を通してください（`docs/` が古いとテストが落ちます）。画面の動作確認は `tools/smoke.cjs`（Playwright）で行えます。
 
 ## 大事な注意
 

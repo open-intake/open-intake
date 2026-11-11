@@ -13,8 +13,11 @@ const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&
 const md = read("AI_INSTRUCTIONS.md");
 const m = /## ここから（AI に貼り付ける文）\n([\s\S]*?)\n## ここまで/.exec(md);
 if (!m) throw new Error("AI_INSTRUCTIONS.md に「ここから」「ここまで」が見つかりません");
+// 臨時の情報（clinic-schedule.json）の指示文。AI_INSTRUCTIONS_SCHEDULE.md の「ここから〜ここまで」
+const mS = /## ここから（AI に貼り付ける文）\n([\s\S]*?)\n## ここまで/.exec(read("AI_INSTRUCTIONS_SCHEDULE.md"));
+if (!mS) throw new Error("AI_INSTRUCTIONS_SCHEDULE.md に「ここから」「ここまで」が見つかりません");
 const src = read("src/generator.src.html");
-for (const mark of ["<!--PROMPT-->", "/*VALIDATE*/"]) if (!src.includes(mark)) throw new Error(`src/generator.src.html に ${mark} がありません`);
+for (const mark of ["<!--PROMPT-->", "<!--PROMPT_S-->", "/*VALIDATE*/"]) if (!src.includes(mark)) throw new Error(`src/generator.src.html に ${mark} がありません`);
 const validateJs = read("src/validate.js");
 if (validateJs.includes("</script")) throw new Error("validate.js に </script が含まれています");
 // 地域プロファイル（作成ツールに埋め込む）
@@ -36,15 +39,15 @@ function translate(text, table, where) {
 }
 const table = read("src/i18n/en.tsv").split("\n").filter(l => l && !l.startsWith("#")).map(l => { const i = l.indexOf("\t"); if (i < 0) throw new Error("en.tsv にタブのない行: " + l); return [l.slice(0, i), l.slice(i + 1)]; });
 function makeMaker(lang) {
-  let s = src, v = validateJs, prompt = esc(m[1].trim()), locale = read(`src/locale.${lang}.js`);
+  let s = src, v = validateJs, prompt = esc(m[1].trim()), promptS = esc(mS[1].trim()), locale = read(`src/locale.${lang}.js`);
   if (lang === "en") {
-    s = translate(s.replace("<!--PROMPT-->", "@@PROMPT@@"), table, "src/generator.src.html").replace("@@PROMPT@@", "<!--PROMPT-->");
+    s = translate(s.replace("<!--PROMPT-->", "@@PROMPT@@").replace("<!--PROMPT_S-->", "@@PROMPT_S@@"), table, "src/generator.src.html").replace("@@PROMPT@@", "<!--PROMPT-->").replace("@@PROMPT_S@@", "<!--PROMPT_S-->");
     v = translate(v, table, "src/validate.js");
-    const pe = /## Start of the text to paste\n([\s\S]*?)\n## End of the text to paste/.exec(read("AI_INSTRUCTIONS.en.md"));
-    if (!pe) throw new Error("AI_INSTRUCTIONS.en.md に「Start/End of the text to paste」がありません");
-    prompt = esc(pe[1].trim());
+    const enPrompt = f => { const r = /## Start of the text to paste\n([\s\S]*?)\n## End of the text to paste/.exec(read(f)); if (!r) throw new Error(`${f} に「Start/End of the text to paste」がありません`); return esc(r[1].trim()); };
+    prompt = enPrompt("AI_INSTRUCTIONS.en.md");
+    promptS = enPrompt("AI_INSTRUCTIONS_SCHEDULE.en.md");
   }
-  return s.replace("<!--PROMPT-->", () => prompt).replace("/*VALIDATE*/", () => v).replace("/*LOCALE*/", () => locale).replace("/*PROFILES*/[]", () => profilesJs);
+  return s.replace("<!--PROMPT-->", () => prompt).replace("<!--PROMPT_S-->", () => promptS).replace("/*VALIDATE*/", () => v).replace("/*LOCALE*/", () => locale).replace("/*PROFILES*/[]", () => profilesJs);
 }
 const body = makeMaker("ja");
 

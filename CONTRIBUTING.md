@@ -39,6 +39,6 @@
 
 ## 開発に加わる方へ
 
-- `docs/` は生成物です。`src/`・`AI_INSTRUCTIONS.md`・`schema/`・`examples/` を直し、`node tools/build.mjs` で作り直してください
+- `docs/` は生成物です。`src/`・`AI_INSTRUCTIONS*.md`・`schema/`・`examples/` を直し、`node tools/build.mjs` で作り直してください
 - 送る前に `node tools/test.mjs` を通してください
 - 仕様を変えるときは [SPEC.md](SPEC.md) §8「版と互換の決まり」を守ってください（既にあるキーの意味を変えない、など）
