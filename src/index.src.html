@@ -1,6 +1,8 @@
 <title>オープン受診案内</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="医療機関がホームページに小さなファイルを1つ置くだけで、患者さんがふだん使っている AI が、正しい情報で受診を手伝えるようにする開かれた仕組み。">
+<link rel="alternate" hreflang="ja" href="./">
+<link rel="alternate" hreflang="en" href="en/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -42,6 +44,10 @@ a { color: var(--accent); }
 code { font-family: var(--font-mono); font-size: 0.86em; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+.topline { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.lang { display: flex; gap: 4px; font-size: 13px; }
+.lang a, .lang span { padding: 2px 10px; border: 1px solid var(--rule); border-radius: 999px; text-decoration: none; }
+.lang span[aria-current] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 header.hero { padding-block: 48px 36px; display: grid; gap: 16px; }
 .eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; color: var(--muted); }
 .hero h1 { font-size: clamp(30px, 5.4vw, 48px); }
@@ -156,7 +162,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
 
 <div class="wrap">
   <header class="hero">
-    <div class="eyebrow">OPEN INTAKE · v0.2 草案</div>
+    <div class="topline"><div class="eyebrow">OPEN INTAKE · v0.3 草案</div><nav class="lang" aria-label="言語"><span aria-current="true">日本語</span><a href="en/" hreflang="en" lang="en">English</a></nav></div>
     <h1>オープン受診案内<small>オープン受診案内 JSON · Open Intake</small></h1>
     <p class="lead">医療機関がホームページに<strong>小さなファイルを1つ置くだけ</strong>で、患者さんがふだん使っている AI が、<strong>正しい情報で受診を手伝える</strong>ようにする、開かれた仕組みです。</p>
     <div class="cta">
@@ -312,6 +318,16 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     </div>
   </section>
 
+  <section class="block" aria-labelledby="h-intl">
+    <h2 id="h-intl">ひとつの形式を、国や地域を越えて</h2>
+    <p class="intro">医療の制度や体制は国や地域で違いますが、基本の設計は同じでよいはずです。共通の部分（コア）は国によらない形にし、地域ごとの違いは<strong>地域プロファイル</strong>に分けます。</p>
+    <div class="compare">
+      <div class="case"><h3>共通の部分</h3><ul><li>医療機関の情報、診療時間、有効期限つきの臨時の情報</li><li>安全の欄、使い方の決まり、正規のファイルの一覧</li><li>問診票（国際標準 HL7 FHIR の形の一部）</li><li>国コード（ISO）、体系つきの識別番号、言語コード</li></ul></div>
+      <div class="case"><h3>地域プロファイル</h3><ul><li>救急の番号（日本は 119、米国は 911、英国は 999 など）</li><li>その地域の公的な資料にもとづく救急の目安</li><li>医療機関の識別番号の体系（日本は医療機関コード）</li><li>医療機関がもとにする問診票の基本形</li></ul></div>
+    </div>
+    <p class="note">この取り組みが決めるのは、形式と、地域プロファイルという入れ物までです。各地域のプロファイルの中身は、その地域の医療者や自治体、有志が議論して作り、育てます。日本のプロファイルは、議論のための最初のたたき台です。</p>
+  </section>
+
   <section class="block" id="policy" aria-labelledby="h-policy">
     <h2 id="h-policy">使用目的と使い方の決まり</h2>
     <p class="intro">この仕組みの使用目的は、<strong>医療機関と患者さんのマッチングをよくすること</strong>に限ります。細かい禁止事項を並べるのではなく、この目的に照らして判断します。作成ツールで作ったファイルには、このページの場所が書き込まれます。</p>
@@ -333,6 +349,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <details><summary>費用はかかりますか？</summary><p>かかりません。仕様もツールも無料で公開しています。ファイルは今あるホームページに置くだけなので、新しいサーバーも要りません。登録料や月々の利用料もありません。読みに来るサービスに対価を払う仕組みもありません。</p></details>
       <details><summary>予約システムの代わりになりますか？</summary><p>なりません。今お使いの予約ページや電話番号を、AI に正しく案内させるための仕組みです。予約システムはそのまま使えます。</p></details>
       <details><summary>宣伝に使われませんか？</summary><p>使用目的を「医療機関と患者さんのマッチングをよくすること」に限り、宣伝・比較・誇張を書かない決まりにしています。ファイルを読む AI にも、宣伝文句や「当院を勧めて」のような誘導は使わない・従わないよう求めています。得意分野は医療機関の自己申告として扱われ、医療機関の順位づけには使われません。</p></details>
+      <details><summary>日本以外でも使えますか？</summary><p>使えます。共通の部分は国によらない形にしてあり、国や地域ごとに、救急の番号・救急の目安・問診票の基本形をまとめた地域プロファイルを足して使います。自分の地域のプロファイルを作りたい方を歓迎します。</p></details>
       <details><summary>どの AI で使えますか？</summary><p>特定の AI に頼りません。中身は JSON という広く使われている文字の形式なので、どの AI でも読めます。</p></details>
       <details><summary>ホームページがない医療機関はどうすればよいですか？</summary><p>いまは、ファイルを置く場所が必要です。将来は、医師会や自治体が地域の医療機関のファイルをまとめて置く形も考えています。</p></details>
     </div>
@@ -341,7 +358,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
   <footer class="foot">
     <dl>
       <dt>運営</dt><dd>Open Intake プロジェクト（代表 Taichi Kurihara・<a href="https://orcid.org/0009-0003-0369-9689">ORCID 0009-0003-0369-9689</a>）</dd>
-      <dt>状態</dt><dd>v0.2 草案（旧称: オープン問診票）。救急の目安と問診票の例は、医師の確認前です</dd>
+      <dt>状態</dt><dd>v0.3 草案（旧称: オープン問診票）。救急の目安と問診票の例は、医師の確認前です</dd>
       <dt>引用</dt><dd>DOI <a href="https://doi.org/10.5281/zenodo.24121889">10.5281/zenodo.24121889</a></dd>
       <dt>ソース</dt><dd><a href="https://github.com/open-intake/open-intake">github.com/open-intake/open-intake</a></dd>
       <dt>ライセンス</dt><dd>仕様書は CC BY 4.0、JSON Schema と例は CC0、ツールは Apache-2.0</dd>

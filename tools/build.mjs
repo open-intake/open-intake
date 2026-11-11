@@ -19,10 +19,16 @@ const validateJs = read("src/validate.js");
 if (validateJs.includes("</script")) throw new Error("validate.js に </script が含まれています");
 const body = src.replace("<!--PROMPT-->", () => esc(m[1].trim())).replace("/*VALIDATE*/", () => validateJs);
 
-const page = b => `<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<style>[hidden]{display:none!important}body{margin:0}</style>\n</head>\n<body>\n${b}\n</body>\n</html>\n`;
+const page = (b, lang = "ja") => `<!doctype html>\n<html lang="${lang}">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<style>[hidden]{display:none!important}body{margin:0}</style>\n</head>\n<body>\n${b}\n</body>\n</html>\n`;
 const outputs = new Map();
 outputs.set("docs/maker/index.html", page(body));   // 作成ツール
 outputs.set("docs/index.html", page(read("src/index.src.html")));   // トップ（取り組みの説明）
+{ // 英語版のトップ: 日本語版と同じ <style> を使い、本文だけ差し替える
+  const ja = read("src/index.src.html"), st = ja.slice(ja.indexOf("<style>"), ja.indexOf("</style>") + 8);
+  const fonts = ja.match(/<link rel="stylesheet"[^>]+>/)[0];
+  const head = `<title>Open Intake</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<meta name="description" content="An open JSON format that lets clinics publish correct information on their own website, so that patients' AI assistants can match them with the right clinic.">\n<link rel="alternate" hreflang="ja" href="../">\n<link rel="alternate" hreflang="en" href="./">\n<link rel="preconnect" href="https://fonts.googleapis.com">\n${fonts}\n`;
+  outputs.set("docs/en/index.html", page(head + st + "\n\n" + read("src/index.en.body.html"), "en"));
+}
 outputs.set("docs/.nojekyll", "");
 const copyTree = (from, to) => { for (const e of fs.readdirSync(from, { withFileTypes: true })) {
   const a = path.join(from, e.name), b = path.join(to, e.name);

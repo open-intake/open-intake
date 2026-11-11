@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<title>Open Intake</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="An open JSON format that lets clinics publish correct information on their own website, so that patients' AI assistants can match them with the right clinic.">
+<link rel="alternate" hreflang="ja" href="../">
+<link rel="alternate" hreflang="en" href="./">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 1段組みの読み物。課題 → 仕組み → 5つの利点 → 原則 → 始め方 → 運営。作成ツールと同じ色と書体 */
+:root {
+  --paper: #EEF2F1;
+  --sheet: #FFFFFF;
+  --ink: #17242C;
+  --muted: #586A73;
+  --rule: #D3DCDB;
+  --accent: #0D6863;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DDEFEC;
+  --alert: #B3261E;
+  --alert-soft: #FBE9E7;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41;
+    --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39; --alert: #FF8A80; --alert-soft: #3A1D1B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1719; --sheet: #172227; --ink: #E4ECEE; --muted: #9AABB2; --rule: #2C3B41;
+  --accent: #4FB8AE; --accent-ink: #0B1A1C; --accent-soft: #183A39; --alert: #FF8A80; --alert-soft: #3A1D1B;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.8; }
+.wrap { max-width: 920px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 56px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+p { margin: 0; }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: 0.86em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.topline { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.lang { display: flex; gap: 4px; font-size: 13px; }
+.lang a, .lang span { padding: 2px 10px; border: 1px solid var(--rule); border-radius: 999px; text-decoration: none; }
+.lang span[aria-current] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+header.hero { padding-block: 48px 36px; display: grid; gap: 16px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; color: var(--muted); }
+.hero h1 { font-size: clamp(30px, 5.4vw, 48px); }
+.hero h1 small { display: block; font-size: 0.42em; font-weight: 500; color: var(--muted); margin-top: 6px; letter-spacing: 0.04em; }
+.hero .lead { font-size: clamp(17px, 2.2vw, 20px); max-width: 38em; }
+.hero .lead strong { background: linear-gradient(transparent 62%, var(--accent-soft) 62%); }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 10px 18px; border-radius: 4px; font-weight: 500; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.status { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.status span::before { content: "● "; color: var(--accent); }
+
+section.block { padding-block: 36px; border-top: 1px solid var(--rule); display: grid; gap: 18px; }
+section.block > h2 { font-size: clamp(22px, 3vw, 28px); }
+section.block > .intro { color: var(--muted); max-width: 40em; }
+
+/* 課題: いまと、これから */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.case { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; align-content: start; }
+.case h3 { font-size: 17px; }
+.case.now h3 { color: var(--alert); }
+.case.next h3 { color: var(--accent); }
+.case ul { margin: 0; padding-left: 1.2em; }
+.quote { border-left: 3px solid var(--alert); background: var(--alert-soft); padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; }
+
+/* 患者さんの探し方 */
+.journey { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: j; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
+.journey > li { display: grid; grid-template-columns: 2.2em minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: 6px 16px; padding: 14px 16px; border-bottom: 1px solid var(--rule); align-items: start; }
+.journey > li:last-child { border-bottom: 0; }
+.journey > li::before { counter-increment: j; content: counter(j); font-family: var(--font-display); font-weight: 700; color: var(--accent); font-size: 20px; line-height: 1.3; }
+.journey > li.head { background: var(--paper); font-size: 12.5px; color: var(--muted); padding-block: 8px; }
+.journey > li.head::before { content: ""; counter-increment: none; }
+.journey .act { font-weight: 500; }
+.journey .src { font-size: 14px; color: var(--muted); }
+.journey .gap { font-size: 14px; color: var(--alert); }
+.journey > li.ai { background: var(--accent-soft); }
+.journey > li.ai .gap { color: var(--ink); }
+@media (max-width: 720px) { .journey > li { grid-template-columns: 2.2em minmax(0, 1fr); } .journey > li > span:not(.act) { grid-column: 2; } .journey > li.head { display: none; } }
+
+/* 仕組み: 3者の流れ */
+.flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: stretch; }
+.node { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.node h3 { font-size: 16px; }
+.node .files { display: grid; gap: 4px; }
+.node .file { font-family: var(--font-mono); font-size: 12px; background: var(--accent-soft); color: var(--accent); border-radius: 3px; padding: 3px 8px; overflow-wrap: anywhere; }
+.node p { font-size: 14px; color: var(--muted); }
+.arrow { align-self: center; color: var(--accent); font-size: 22px; text-align: center; }
+.arrow small { display: block; font-size: 11px; color: var(--muted); }
+@media (max-width: 760px) { .flow { grid-template-columns: 1fr; } .arrow { transform: rotate(90deg); } .arrow small { transform: rotate(-90deg); } }
+
+/* 掲示: 個別に連絡 と 掲示して読みに来てもらう */
+.post { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.post .case { gap: 12px; }
+.lines { display: grid; gap: 6px; font-size: 14px; }
+.lines div { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
+.lines .from, .lines .to { border: 1px solid var(--rule); border-radius: 4px; padding: 4px 8px; text-align: center; background: var(--paper); }
+.lines .arr { color: var(--muted); }
+.board { display: grid; gap: 8px; justify-items: center; font-size: 14px; }
+.board .center { border: 2px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; text-align: center; font-weight: 500; }
+.board .center code { display: block; color: var(--accent); }
+.board .readers { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.board .readers span { border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; background: var(--paper); }
+.board .up { color: var(--accent); }
+.precedent { background: var(--sheet); border: 1px dashed var(--rule); border-radius: var(--radius); padding: 14px 18px; display: grid; gap: 6px; font-size: 14.5px; }
+.precedent strong { font-family: var(--font-display); }
+.note { font-size: 13.5px; color: var(--muted); }
+
+/* これからの姿 */
+.timeline { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.timeline > li { display: grid; grid-template-columns: 8em minmax(0, 1fr); gap: 4px 18px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.timeline > li:last-child { border-bottom: 0; }
+.timeline .when { font-family: var(--font-display); font-weight: 700; color: var(--accent); }
+.timeline .when small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
+.timeline h3 { font-size: 17px; margin-bottom: 4px; }
+.timeline ul { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; }
+@media (max-width: 560px) { .timeline > li { grid-template-columns: 1fr; } }
+
+/* 5つの利点 */
+.benefits { display: grid; gap: 12px; counter-reset: b; }
+.benefit { display: grid; grid-template-columns: 3.2em minmax(0, 1fr); gap: 4px 14px; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; }
+.benefit::before { counter-increment: b; content: counter(b); grid-row: span 2; font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1.2; }
+.benefit h3 { font-size: 18px; }
+.benefit p { color: var(--ink); }
+.benefit.risk { border-color: var(--alert); }
+.benefit.risk::before { color: var(--alert); }
+
+/* 原則 */
+.principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 22px; margin: 0; padding: 0; list-style: none; }
+.principles li { display: grid; gap: 2px; align-content: start; padding-left: 14px; border-left: 3px solid var(--accent); }
+.principles strong { font-family: var(--font-display); }
+.principles span { color: var(--muted); font-size: 14.5px; }
+
+/* 立場ごと */
+.who { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.who .case h3 { color: var(--ink); }
+
+/* 医療者へのお願い */
+.ask { background: var(--accent-soft); border-radius: var(--radius); padding: 22px; display: grid; gap: 10px; }
+.ask h2 { font-size: 22px; }
+
+/* よくある質問 */
+details { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
+details + details { margin-top: 8px; }
+summary { cursor: pointer; padding: 12px 16px; font-weight: 500; }
+details > p { padding: 0 16px 14px; color: var(--ink); }
+
+footer.foot { border-top: 1px solid var(--rule); padding-top: 24px; display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+footer.foot dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 0; }
+footer.foot dt { color: var(--muted); }
+footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="topline"><div class="eyebrow">OPEN INTAKE · v0.3 DRAFT</div><nav class="lang" aria-label="Language"><a href="../" hreflang="ja" lang="ja">日本語</a><span aria-current="true">English</span></nav></div>
+    <h1>Open Intake<small>An open JSON format for clinics</small></h1>
+    <p class="lead">By putting <strong>one small file on their own website</strong>, clinics let the AI assistants patients already use <strong>guide them with correct information</strong>.</p>
+    <p class="lead" style="font-size:16px;color:var(--muted)">The goal is to <strong style="background:none;color:var(--ink)">improve the match between clinics and patients</strong>: helping patients reach a clinic that fits their symptoms and is open now, without getting lost.</p>
+    <div class="status"><span>Free to adopt and use</span><span>Open source</span><span>No diagnosis</span><span>No patient data stored</span><span>Feedback from clinicians welcome</span></div>
+    <div class="cta">
+      <a class="btn" href="../maker/">Create the file (Japanese UI)</a>
+      <a class="btn ghost" href="https://github.com/open-intake/open-intake">Specification on GitHub</a>
+    </div>
+  </header>
+
+  <section class="block" aria-labelledby="h-why">
+    <h2 id="h-why">Why it is needed</h2>
+    <p class="intro">When people feel unwell, most of them search for a clinic on their phone. At every step, they are reading information that someone other than the clinic has compiled.</p>
+    <ol class="journey" aria-label="How patients look for a clinic today">
+      <li class="head"><span>What the patient does</span><span>Where the information comes from</span><span>What often goes wrong</span></li>
+      <li><span class="act">Searches for "clinic near me" or "fever clinic"</span><span class="src">Search results and map listings</span><span class="gap">Each service decides what is shown and in what order</span></li>
+      <li><span class="act">Checks opening hours on a map</span><span class="src">Data registered with the map service, sometimes edited by users</span><span class="gap">Temporary closures and changed hours are missing. Clinics often cannot get them corrected quickly</span></li>
+      <li><span class="act">Reads clinic directories and reviews</span><span class="src">Each site's own collection, sometimes shaped by paid listings</span><span class="gap">Sites disagree, and it is unclear which is current</span></li>
+      <li><span class="act">Books online or by phone</span><span class="src">Availability from booking services the clinic has joined</span><span class="gap">Clinics outside the service do not appear. Phones only work during opening hours</span></li>
+      <li class="ai"><span class="act">Now: asks an AI "where should I go?"</span><span class="src">The AI reads the same search results, maps and sites</span><span class="gap"><strong>If the source is out of date, so is the AI's answer.</strong> That is why the clinic itself needs to publish the source</span></li>
+    </ol>
+    <div class="compare">
+      <div class="case now">
+        <h3>What happens today</h3>
+        <ul>
+          <li>Opening hours and similar facts depend on map services and review sites</li>
+          <li>Temporary closures and on-call duties are slow to appear</li>
+          <li>The places to correct them are scattered, and some cannot be corrected by the clinic</li>
+          <li>Putting an AI chatbot on a clinic's site costs money and effort, and must be rebuilt as AI changes</li>
+        </ul>
+      </div>
+      <div class="case next">
+        <h3>What this makes possible</h3>
+        <ul>
+          <li>AI reads <strong>what the clinic itself wrote</strong>, directly</li>
+          <li>Front-desk staff can update closures, duties and notices right away</li>
+          <li>AI helps patients fill in the clinic's intake questionnaire before the visit</li>
+          <li>The clinic needs no AI and no server</li>
+        </ul>
+      </div>
+    </div>
+    <p class="quote">At a rural petrol station in Japan, the opening days shown on a map service were wrong. The staff said, "We told them, but it never gets fixed." The same can happen to clinics. The difference is that the people misled are patients who feel unwell.</p>
+  </section>
+
+  <section class="block" aria-labelledby="h-future">
+    <h2 id="h-future">How seeing a doctor will change (our forecast)</h2>
+    <p class="intro">Independently of this project, the front door of healthcare is changing. AI is becoming a <strong>concierge</strong> that stays with people when they feel unwell. This is what we expect.</p>
+    <ol class="timeline">
+      <li><div class="when">Today</div><div><h3>People ask AI, then find a clinic themselves</h3><ul><li>More people describe their symptoms to an AI instead of searching</li><li>The AI gives general explanations. Where and when to go is still up to the patient</li></ul></div></li>
+      <li><div class="when">Within a few years</div><div><h3>AI guides people from home to a booked visit</h3><ul><li><strong>Simple triage</strong>: the AI asks about symptoms and suggests whether to call an ambulance, see a doctor soon, or wait and watch</li><li><strong>Advice and information</strong>: self-care at home, changes to watch for, which department to visit</li><li><strong>Simple intake</strong>: since when, fever, conditions, medicines, organised through conversation</li><li><strong>Finding and booking</strong>: a nearby clinic that fits and is open now, through to booking</li></ul></div></li>
+      <li><div class="when">Beyond</div><div><h3>Before and after the visit becomes one flow</h3><ul><li>With the patient's consent, the organised answers reach the clinic before the visit</li><li>Guidance considers existing conditions and medicines, and follows up after the visit</li><li>Diagnosis and treatment remain the doctor's decision. AI is the guide that gets patients there correctly</li></ul></div></li>
+    </ol>
+    <div class="precedent">
+      <strong>What the AI will be missing</strong>
+      <span>However capable the guide becomes, only the clinic knows whether it is open today, what it treats, how to book, and what to ask before a visit. If this is not published correctly in a form AI can read, the AI's guidance fails at that point. Open Intake lets any clinic provide this <strong>clinic-side entry point</strong>, free of charge.</span>
+      <span>What clinics need in this flow is not more sophisticated software, but <strong>correct information circulating in a form AI can read</strong>. Software keeps improving on the AI side. Correct information is what only the clinic can provide.</span>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-how">
+    <h2 id="h-how">How it works</h2>
+    <p class="intro">The AI sits on the patient's side. The clinic only provides public information in a form AI can read.</p>
+    <div class="flow">
+      <div class="node">
+        <h3>Clinic</h3>
+        <div class="files"><span class="file">clinic-intake.json</span><span class="file">clinic-schedule.json</span></div>
+        <p>Puts the files on its website: regular information, and temporary information with an expiry date</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→<small>reads</small></div>
+      <div class="node">
+        <h3>Patient's AI</h3>
+        <p>Any AI assistant. It checks emergency warning signs first, explains hours and how to book, and helps with the questionnaire</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→<small>guides</small></div>
+      <div class="node">
+        <h3>Patient</h3>
+        <p>Decides whether, when and where to go, with correct information. If symptoms may be life-threatening: call emergency services before booking</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-post">
+    <h2 id="h-post">Publish once, and every service can read it</h2>
+    <p class="intro">Think of the <strong>notice on a clinic's front door</strong>. Instead of calling everyone to say you are closed, you put up one notice and everyone who passes reads it. This file is that notice, on the internet.</p>
+    <div class="post">
+      <div class="case now">
+        <h3>Today: tell each service separately</h3>
+        <div class="lines" aria-label="The clinic contacts each service separately">
+          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">Map service</span></div>
+          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">Review site</span></div>
+          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">Booking site</span></div>
+          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">AI services…</span></div>
+        </div>
+        <p class="note">Every new service means more work: registering in different ways and correcting all of them at every closure. Corrections are not always accepted, and visibility may require paid plans.</p>
+      </div>
+      <div class="case next">
+        <h3>From now: publish on your own site</h3>
+        <div class="board" aria-label="Services read the file on the clinic's website">
+          <div class="readers"><span>Search</span><span>AI</span><span>Maps</span><span>Booking</span><span>Local government</span></div>
+          <div class="up" aria-hidden="true">↓ come to read ↓</div>
+          <div class="center">The clinic's website<code>clinic-intake.json</code></div>
+        </div>
+        <p class="note">All the clinic does is <strong>keep its own file up to date</strong>. No need to ask any particular service. <strong>No registration or usage fees.</strong> The more readers support it, the more places the same file is used.</p>
+      </div>
+    </div>
+    <div class="precedent">
+      <strong>A long-standing pattern on the internet</strong>
+      <span>Put <code>robots.txt</code> or <code>sitemap.xml</code> on a site and search engines around the world come to read it. RSS works the same way. Site owners never contact each search engine. They place a file in an agreed place, in an agreed format.</span>
+    </div>
+    <p class="note">Not every service reads this file today. But any AI that can browse the web can read it as soon as a patient gives it the clinic's web address. Because the format is fixed and open to all, clinics that publish it benefit first as support grows.</p>
+  </section>
+
+  <section class="block" aria-labelledby="h-merit">
+    <h2 id="h-merit">Six benefits for clinics</h2>
+    <div class="benefits">
+      <div class="benefit"><h3>Easy to adopt</h3><p>Fill in the creation tool or talk with an AI, and the file is ready. Put it on your website and you are done. No server, no monthly fees.</p></div>
+      <div class="benefit"><h3>Easy to manage</h3><p>Regular and temporary information live in separate files. Front-desk staff only update the temporary file, and each file can have its own editors. The tool shows the content in plain language, so no technical skill is needed to check it.</p></div>
+      <div class="benefit"><h3>Safe</h3><p>No patient information is sent to or stored by the clinic. The file holds only information that is fine to publish. The format itself requires that AI does not diagnose, and that it recommends emergency services before booking when warning signs apply.</p></div>
+      <div class="benefit"><h3>Future-proof</h3><p>Fast-changing AI is kept separate from slow-changing information such as hours and questionnaire items, so the file keeps working as AI changes. The format follows international standards (HL7 FHIR and schema.org) and has rules so older versions remain readable.</p></div>
+      <div class="benefit"><h3>Show what you focus on</h3><p>Two clinics in the same department can differ: one may focus on diabetes, another on thyroid disease. Clinics can state their areas of focus, helping AI find a clinic that fits the symptoms. This is treated as the clinic's own statement and written within local advertising rules.</p></div>
+      <div class="benefit risk"><h3>Without it, wrong information gets used</h3><p>If clinics do not publish their own information, AI can only guess from maps and old pages. "Arrived on a closed day" and "could not find the on-call clinic" will become more common in the age of AI.</p></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-rule">
+    <h2 id="h-rule">What we hold to</h2>
+    <ul class="principles">
+      <li><strong>No diagnosis</strong><span>No naming of diseases and no urgency judgements. The format only defines how information is passed on</span></li>
+      <li><strong>Life comes first</strong><span>Emergency warning signs, by age group and based on public sources in each region, are checked before any booking</span></li>
+      <li><strong>No data collection</strong><span>Patients' symptoms and personal information are not gathered by clinics or by this project</span></li>
+      <li><strong>No ranking; patients choose</strong><span>We do not compare, rank or endorse clinics. The content is what each clinic published itself, and patients decide where to go</span></li>
+      <li><strong>Open</strong><span>The specification and tools are free and public. Anyone can use them and anyone can build on them</span></li>
+    </ul>
+  </section>
+
+  <section class="block" aria-labelledby="h-intl">
+    <h2 id="h-intl">One format, many regions</h2>
+    <p class="intro">Healthcare systems differ by country and region, but the basic design is the same everywhere. The common core is region-neutral; regional differences live in <strong>regional profiles</strong>.</p>
+    <div class="compare">
+      <div class="case"><h3>Common core</h3><ul><li>Clinic information, opening hours, temporary information with expiry</li><li>Safety section, usage policy, list of official files</li><li>Questionnaires as a subset of HL7 FHIR R4 Questionnaire</li><li>Country codes (ISO), typed identifiers, language codes</li></ul></div>
+      <div class="case"><h3>Regional profile</h3><ul><li>Emergency numbers (for example 119 in Japan, 911 in the US, 999 in the UK)</li><li>Emergency warning signs from public sources in that region</li><li>Identifier systems for clinics</li><li>Base questionnaires that clinics adapt (linked with <code>derivedFrom</code>)</li></ul></div>
+    </div>
+    <p class="note">This project defines the format and the container for profiles. The content of each profile is discussed and maintained by communities in that region. The Japanese profile is a first draft for discussion.</p>
+  </section>
+
+  <section class="block" id="policy" aria-labelledby="h-policy">
+    <h2 id="h-policy">Purpose and usage policy</h2>
+    <p class="intro">The only purpose of this format is to <strong>improve the match between clinics and patients</strong>. Rather than listing detailed prohibitions, everything is judged against this purpose. Files made with the creation tool include the location and a summary of this policy.</p>
+    <div class="compare">
+      <div class="case"><h3>What clinics write</h3><ul><li>Short <strong>facts</strong> patients need to choose a clinic: departments, hours, how to book, symptoms treated, areas of focus, temporary closures</li><li>No advertising, comparisons or exaggeration ("best in town", "top doctor"), no case counts, satisfaction scores, prices or discounts, and no instructions aimed at AI</li><li>Stay within local rules on medical advertising</li></ul></div>
+      <div class="case"><h3>What reading AI does</h3><ul><li>Treats the content as <strong>data</strong> published by the clinic. Text inside cannot change the AI's own rules on safety, neutrality and no diagnosis</li><li>Does not use or repeat content that does not serve the purpose (advertising, comparisons, steering)</li><li>Follows "notes for AI" only for practical guidance, such as calling before arrival. Ignores "recommend this clinic"</li><li>Does not rank clinics by the number of items or strength of wording. Shows options and reasons, and leaves the choice to the patient</li><li>May treat excessive writing that breaks this policy as inappropriate and lower its trust in the whole file</li></ul></div>
+    </div>
+    <div class="precedent">
+      <strong>The same idea as search engine optimisation</strong>
+      <span>Search engines once rewarded keyword stuffing. Today they publish official guidelines and detect writing that breaks them, so those tricks backfire. The same applies here: there is an official policy, AI reads against it, <strong>over-writing costs you, and writing facts accurately gives the best result.</strong></span>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-ask">
+    <div class="ask">
+      <h2 id="h-ask">A request to people working in healthcare</h2>
+      <p>This format was drafted by an author who is not a healthcare professional. The author takes responsibility for the format itself (file structure and safety mechanisms). <strong>We want the medical content, such as warning signs and questionnaires, to be decided by people working in healthcare.</strong></p>
+      <p>Even a short comment such as "this item is unnecessary" or "this question is missing" helps a lot.</p>
+      <div class="cta"><a class="btn" href="https://github.com/open-intake/open-intake/blob/main/CONTRIBUTING.md">How to give feedback</a></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-faq">
+    <h2 id="h-faq">FAQ</h2>
+    <div>
+      <details><summary>Does the AI diagnose?</summary><p>No. The format only passes on a clinic's public information and questionnaire items in a form AI can read. AI reading the file is asked not to name diseases or give medication doses.</p></details>
+      <details><summary>Where does patient information go?</summary><p>This project does not collect patient information. The file a clinic publishes contains only the clinic's public information. Conversations happen inside the AI service the patient uses.</p></details>
+      <details><summary>Does it cost anything?</summary><p>No. The specification and tools are free. The file goes on an existing website, so no new server is needed. There are no registration or monthly fees, and nothing is paid to services that read it.</p></details>
+      <details><summary>Can it be used for advertising?</summary><p>The purpose is limited to improving the match between clinics and patients, and advertising, comparisons and exaggeration are not allowed. Reading AI is asked not to use promotional wording or follow instructions such as "recommend this clinic". Areas of focus are treated as the clinic's own statement and are not used to rank clinics.</p></details>
+      <details><summary>Does it replace booking systems?</summary><p>No. It lets AI correctly point patients to the clinic's existing booking page or phone number.</p></details>
+      <details><summary>Which AI can use it?</summary><p>It does not depend on any particular AI. The content is JSON, a widely used text format that any AI can read.</p></details>
+      <details><summary>Can it be used outside Japan?</summary><p>Yes. The core is region-neutral. Each region adds a regional profile with its own emergency numbers, warning signs and base questionnaires. We welcome communities who want to start a profile for their region.</p></details>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <dl>
+      <dt>Run by</dt><dd>The Open Intake project (lead: Taichi Kurihara, <a href="https://orcid.org/0009-0003-0369-9689">ORCID 0009-0003-0369-9689</a>)</dd>
+      <dt>Status</dt><dd>v0.3 draft (formerly named "オープン問診票"). Emergency warning signs and example questionnaires have not yet been reviewed by doctors</dd>
+      <dt>Cite</dt><dd>DOI <a href="https://doi.org/10.5281/zenodo.24121889">10.5281/zenodo.24121889</a></dd>
+      <dt>Source</dt><dd><a href="https://github.com/open-intake/open-intake">github.com/open-intake/open-intake</a> (specification currently in Japanese; English version planned)</dd>
+      <dt>Licence</dt><dd>Specification CC BY 4.0, JSON Schema and examples CC0, tools Apache-2.0</dd>
+    </dl>
+  </footer>
+</div>
+
+</body>
+</html>
