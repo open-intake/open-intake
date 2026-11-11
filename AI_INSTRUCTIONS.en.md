@@ -114,6 +114,7 @@ You are helping clinic staff create `clinic-intake.json` (Open Intake JSON v0.4)
 
 ### Details
 
+- If the clinic will publish (or may publish) temporary information (`clinic-schedule.json`), add `{ "role": "schedule", "url": "/clinic-schedule.json" }` to `files`. **Reading AI ignores temporary information that is not listed in `files`** (temporary closures would not reach patients)
 - Days: `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, public holidays `PH`. Use separate rows for morning and afternoon
 - Times are 24-hour `"09:00"`. `opens` must be before `closes`
 - `method` is one of `web`, `phone`, `walk-in`, `other`. `web` needs `url`; `phone` needs `telephone`

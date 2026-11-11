@@ -101,7 +101,7 @@ This is the same idea as search engine optimisation (SEO). Keyword stuffing once
 |---|---|---|
 | `spec` | yes | Fixed value `"open-intake"` |
 | `specVersion` | yes | Specification version, currently `"0.4"` (files of `"0.1"` to `"0.3"` remain readable) |
-| `updated` | yes | Date the content was last checked (`YYYY-MM-DD`). **AI may lower its trust if older than a year** |
+| `updated` | yes | Date the content was last changed (`YYYY-MM-DD`; §3c). **AI may lower its trust if older than a year** |
 | `profile` | | Regional profile in use (§4d, from v0.3) |
 | `files` | | List of official files (§3b, from v0.2) |
 | `clinic` | yes | Clinic information (§4) |
@@ -176,7 +176,7 @@ Key names follow schema.org (`MedicalClinic`, `PostalAddress`) where possible.
 | `departments` | yes | array of strings (1+) | Departments. `["General practice", "Paediatrics"]` |
 | `openingHours` | yes | array (1+) | See below |
 | `closedNote` | | string | `"Closed on Sundays and public holidays"` |
-| `appointmentRequired` | | boolean | Whether the clinic as a whole is appointment-only (from v0.4). **Include it only when the clinic states this clearly.** Leaving it out means "unknown". An `entry` on an `openingHours` entry takes priority. Do not infer `true` from "appointments preferred" |
+| `appointmentRequired` | | boolean | Whether the clinic as a whole is appointment-only (from v0.4). **Include it only when the clinic states this clearly.** Leaving it out means "unknown". An `entry` on an `openingHours` entry takes priority. Do not infer `true` from "appointments preferred". **`false` means the clinic as a whole is not appointment-only; it does not mean every time is open to walk-ins** (look at each entry's `entry`; even if `booking` has `walk-in`, an entry with `entry: "appointment"` wins for its time) |
 | `focus` | | array | Areas of focus (from v0.2; see below). **The clinic's own statement** |
 | `handles` | | array of strings | Symptoms and concerns usually seen. `["Fever", "Cough", "Blood pressure checks"]` |
 | `notHandled` | | array of strings | Not provided. `["Hospital admission", "Babies under 6 months"]`. **Only services, procedures or age groups not provided. Do not describe patients' conditions or medicines ("patients taking …")**, so that it does not become a notice of refusal (§1b) |
@@ -222,7 +222,7 @@ Rules:
 | `note` | | `"Fever clinic uses a separate entrance"` |
 | `reception` | | Check-in start and cut-off (from v0.4). `{"opens": "08:45", "closes": "12:00", "note": "…"}`. Either `opens` or `closes` alone is fine (having neither is an error). Check-in may start before consultations start |
 | `department` | | Department these hours apply to (from v0.4). Use a name from `departments` (otherwise W20). If absent, the whole clinic |
-| `service` | | Array of the services these hours apply to (from v0.4). Defined values: `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (surgery, tests, etc.), `rehabilitation`, `other`. If absent, general outpatient (the entry says nothing about other services). Readers ignore unknown values (W21) |
+| `service` | | Array of the services these hours apply to (from v0.4). Defined values: `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (surgery, tests, etc.), `rehabilitation`, `other`. If absent, general outpatient (the entry says nothing about other services). Readers ignore unknown values (W21). **But do not use an entry whose values are all unknown as general outpatient hours** (for that service, the answer is "unknown") |
 | `visitType` | | Whether these hours are for new or returning patients only (from v0.4): `"all"`, `"first"` (first visit), `"return"` (return visit). If absent, treat it as `all`, but do not claim there are no rules for first visits (the distinction is simply not stated). How a first visit is defined (for example "more than three months since the last visit") differs by clinic, so write it in `note` |
 | `entry` | | How patients are accepted in these hours (from v0.4). `"walk-in"` = accepted without an appointment (people with appointments may go first); `"appointment"` = appointments only; `"none"` = no new check-ins (only continuing care, handing over prescriptions, etc.). **`none` does not mean closed** |
 | `mayEndEarly` | | Boolean (from v0.4). Check-in may end before the cut-off, for example when it is busy |
@@ -391,7 +391,7 @@ The defaults are **transcribed verbatim from official public sources in each reg
 8. When suggesting clinics, give options and reasons (open now, relevant area of focus, etc.) and **leave the choice to the patient**. If nothing fits, do not stop at "there is nowhere"; point to a health advice line or the patient's regular doctor
 9. If a questionnaire has `status: "draft"`, say it has not yet been reviewed by a doctor
 10. **When a check-in cut-off (`reception.closes`) is given, give the cut-off, not the end of consultations, as the time to arrive by** (from v0.4; the same applies to 11 to 17)
-11. Do not call `entry: "none"` "closed". Say it is a time when no new check-ins are taken
+11. Do not call `entry: "none"` "closed". Say it is a time when no new check-ins are taken. **Do not take `entry: "none"` or `"appointment"` to mean that people who already have a booking or have checked in are turned away** (suggest phoning to check how they are handled). A check-in cut-off is not a promise of being seen
 12. Do not conclude "no appointment needed" or "check-in is the same as consultation hours" from a missing field. Where needed, advise checking with the clinic
 13. Do not decide for the patient whether it is a first or return visit. Ask the patient, or show the clinic's definition (`note`)
 14. When `mayEndEarly` is `true`, suggest arriving early or checking first (by phone or `statusUrl`)
@@ -603,7 +603,7 @@ Rules:
 - W18 `notHandled` appears to describe patients' conditions or medicines (list only services, procedures or age groups not provided)
 - W19 The check-in cut-off (`reception.closes`) is later than the end of consultations (`closes`)
 - W20 An `openingHours` department (`department`) is not in `departments`
-- W21 `service` has a value unknown to the checker (readers ignore it)
+- W21 `service` has a value unknown to the checker (readers ignore it; an entry with only unknown values is not used as general outpatient hours)
 - W22 In temporary information, `reception` or `entry` is given with `status: "closed"` (use `changed` to change only check-in)
 
 ---
@@ -641,7 +641,7 @@ This format aims to be usable in any country or region.
 ## 10. Future work (v0.5 and later)
 
 - **Splitting the common core from regional profiles (survey abroad, 2026-11)**: we checked the booking and check-in information of 40 clinics in 8 countries. Check-in cut-offs, hours by department or service, how patients are taken, booking-line hours, a link to the current queue and nth-week rules work in common with Japan. Missing from 0.4: (1) **whether new patients are accepted, or only registered patients** (a separate axis from first and return visits; 21 of 40 differed for new patients or first and return visits, and 9 had registration or catchment rules), (2) when booking slots open, how far ahead bookings are taken, and how they are confirmed, (3) appointments and walk-ins in the same hours, or "phone first to be triaged", (4) regional after-hours services, kept separate from the clinic's own on-call duty, (5) time zone and the region for public holidays. Regional profiles hold the detailed `service` values, how first and return visits are defined, insurance and payment schemes, after-hours numbers and the holiday calendar. No region needed a field of its own (common structure, regional vocabulary and `note` were enough)
-- **Where narrowed entries belong (from the v0.4 design review)**: entries narrowed by department, service, first or return visit, how patients are accepted or week of the month are misread by readers that do not know 0.4 (§8). Decide whether to move narrowed entries and narrowed temporary changes to new keys. At the same time, consider splitting the meanings of `entry: "none"` (no outpatients at this time, new bookings paused, no new patients), how to record one doctor's absence (separately from `doctorSchedule`?), how to record paused bookings, per-time-band check-in in `exceptions`, the last week of the month ("last Saturday"), time zones, and a field for "phone before coming"
+- **Where narrowed entries belong (from the v0.4 design review)**: entries narrowed by department, service, first or return visit, how patients are accepted or week of the month are misread by readers that do not know 0.4 (§8). Decide whether to move narrowed entries and narrowed temporary changes to new keys. At the same time, consider splitting the meanings of `entry: "none"` (no outpatients at this time, new bookings paused, no new patients), how to record one doctor's absence (separately from `doctorSchedule`?), how to record paused bookings, per-time-band check-in in `exceptions`, the last week of the month ("last Saturday"), time zones, and a field for "phone before coming". From the second review (Astra), also consider deciding precedence by which conditions contain which rather than by how many fields are set, giving booking channels (`booking`) a department and service, defining exactly what a temporary change replaces (including check-in times and how patients are taken), and distinguishing working, absent and covering in `doctorSchedule`
 - **A tool that drafts files from national data**: make a draft of a clinic's file from national data (§4e). The clinic publishes it itself and must check it first
 - A role for per-department questionnaire files
 - **Waiting times**: information patients weigh when choosing a clinic. Since v0.4, the current queue or availability can be reached through a link (`statusUrl`). How to publish typical waiting times is still to be decided

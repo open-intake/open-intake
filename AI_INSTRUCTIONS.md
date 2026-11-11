@@ -118,6 +118,7 @@
 
 ### 細かい決まり
 
+- 臨時の情報（`clinic-schedule.json`）も置くとき、または置くかもしれないときは、`files` に `{ "role": "schedule", "url": "/clinic-schedule.json" }` を入れる。**`files` に載っていない臨時の情報は、読む AI が使わない**（臨時の休診が伝わらない）
 - 曜日は `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`、祝日は `PH`。午前と午後は別の行にする
 - 時刻は `"09:00"` のように24時間・2桁。`opens` は `closes` より前
 - `method` は `web`・`phone`・`walk-in`・`other` のどれか。`web` には `url`、`phone` には `telephone` が必須

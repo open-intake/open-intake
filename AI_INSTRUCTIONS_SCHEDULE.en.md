@@ -7,6 +7,7 @@
 3. **The first time**, answer the AI's questions. **To update the file**, paste the content of your published `clinic-schedule.json` and say what to change, for example "add a closure from 29 December to 3 January"
 4. Open **"Temporary information" in the maker (https://open-intake.github.io/open-intake/en/maker/)** and paste the AI's JSON into **"Paste and check"**. If there are no errors, save it as `clinic-schedule.json`
 5. Overwrite the file at its fixed place on your website. If you cannot upload it yourself, send the file or a summary of the change to your website administrator
+6. **The first time you publish it**, ask your website administrator to check that the `files` list in your usual information (`clinic-intake.json`) contains `{ "role": "schedule", "url": "/clinic-schedule.json" }`. **If it is not listed, reading AI will not use the temporary information** (temporary closures will not reach patients)
 
 Keep these instructions on your computer and reuse them any time, with any AI.
 
