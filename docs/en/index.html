@@ -60,7 +60,7 @@ header.hero { padding-block: 48px 36px; display: grid; gap: 16px; }
 .eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; color: var(--muted); }
 .hero h1 { font-size: clamp(30px, 5.4vw, 48px); }
 .hero h1 small { display: block; font-size: 0.42em; font-weight: 500; color: var(--muted); margin-top: 6px; letter-spacing: 0.04em; }
-.hero .lead { font-size: clamp(17px, 2.2vw, 20px); max-width: 38em; }
+.hero .lead { font-size: clamp(17px, 2.2vw, 20px); }
 .hero .lead strong { background: linear-gradient(transparent 62%, var(--accent-soft) 62%); }
 .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
 .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 10px 18px; border-radius: 4px; font-weight: 500; }
@@ -70,7 +70,7 @@ header.hero { padding-block: 48px 36px; display: grid; gap: 16px; }
 
 section.block { padding-block: 36px; border-top: 1px solid var(--rule); display: grid; gap: 18px; }
 section.block > h2 { font-size: clamp(22px, 3vw, 28px); }
-section.block > .intro { color: var(--muted); max-width: 40em; }
+section.block > .intro { color: var(--muted); }
 
 /* 課題: いまと、これから */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
@@ -79,7 +79,6 @@ section.block > .intro { color: var(--muted); max-width: 40em; }
 .case.now h3 { color: var(--alert); }
 .case.next h3 { color: var(--accent); }
 .case ul { margin: 0; padding-left: 1.2em; }
-.quote { border-left: 3px solid var(--alert); background: var(--alert-soft); padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; }
 
 /* 患者さんの探し方 */
 .journey { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: j; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
@@ -109,16 +108,28 @@ section.block > .intro { color: var(--muted); max-width: 40em; }
 /* 掲示: 個別に連絡 と 掲示して読みに来てもらう */
 .post { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
 .post .case { gap: 12px; }
-.lines { display: grid; gap: 6px; font-size: 14px; }
-.lines div { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
-.lines .from, .lines .to { border: 1px solid var(--rule); border-radius: 4px; padding: 4px 8px; text-align: center; background: var(--paper); }
-.lines .arr { color: var(--muted); }
-.board { display: grid; gap: 8px; justify-items: center; font-size: 14px; }
-.board .center { border: 2px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; text-align: center; font-weight: 500; }
-.board .center code { display: block; color: var(--accent); }
-.board .readers { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.board .readers span { border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; background: var(--paper); }
-.board .up { color: var(--accent); }
+/* 概念図: 医療機関を真ん中に置き、まわりのサービスとの矢印の向きで違いを見せる（左は外へ・右は内へ） */
+.hub svg { display: block; width: 100%; height: auto; max-width: 420px; margin: 0 auto; }
+.hub text { font-family: var(--font-body); font-size: 13px; fill: var(--ink); }
+.hub .leaf rect { fill: var(--paper); stroke: var(--rule); }
+.hub .core rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.hub .core text { font-weight: 500; }
+.hub .core .mono { font-family: var(--font-mono); font-size: 12px; font-weight: 400; fill: var(--accent); }
+.hub .lbl { font-size: 11px; fill: var(--muted); }
+.hub line { stroke-width: 1.6; }
+.hub .push line { stroke: var(--muted); }
+.hub .pull line { stroke: var(--accent); }
+.hub .ah-push { fill: var(--muted); }
+.hub .ah-pull { fill: var(--accent); }
+
+/* 医療機関での使い方 */
+.role { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 0; font-size: 15px; }
+.role dt { color: var(--muted); font-size: 13.5px; padding-top: 2px; }
+.role dd { margin: 0; }
+.role dd ul { margin: 0; padding-left: 1.2em; }
+.case .freq { font-size: 13.5px; color: var(--muted); }
+.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
+@media (max-width: 480px) { .role { grid-template-columns: 1fr; } .role dt { padding-top: 6px; } }
 .precedent { background: var(--sheet); border: 1px dashed var(--rule); border-radius: var(--radius); padding: 14px 18px; display: grid; gap: 6px; font-size: 14.5px; }
 .precedent strong { font-family: var(--font-display); }
 .note { font-size: 13.5px; color: var(--muted); }
@@ -188,9 +199,9 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <li class="head"><span>What the patient does</span><span>Where the information comes from</span><span>What often goes wrong</span></li>
       <li><span class="act">Searches for "clinic near me" or "fever clinic"</span><span class="src">Search results and map listings</span><span class="gap">Each service decides what is shown and in what order</span></li>
       <li><span class="act">Checks opening hours on a map</span><span class="src">Data registered with the map service, sometimes edited by users</span><span class="gap">Temporary closures and changed hours are missing. Clinics often cannot get them corrected quickly</span></li>
-      <li><span class="act">Reads clinic directories and reviews</span><span class="src">Each site's own collection, sometimes shaped by paid listings</span><span class="gap">Sites disagree, and it is unclear which is current</span></li>
+      <li><span class="act">Reads clinic directories and reviews</span><span class="src">Each site's own collection, sometimes shaped by paid listings</span><span class="gap">Sites disagree, and it is unclear which is current. Some reviews are of unknown authenticity</span></li>
       <li><span class="act">Books online or by phone</span><span class="src">Availability from booking services the clinic has joined</span><span class="gap">Clinics outside the service do not appear. Phones only work during opening hours</span></li>
-      <li class="ai"><span class="act">Now: asks an AI "where should I go?"</span><span class="src">The AI reads the same search results, maps and sites</span><span class="gap"><strong>If the source is out of date, so is the AI's answer.</strong> That is why the clinic itself needs to publish the source</span></li>
+      <li class="ai"><span class="act">Now: asks an AI "where should I go?"</span><span class="src">The AI reads the same search results, maps and review sites</span><span class="gap"><strong>If the source is out of date, so is the AI's answer.</strong> Its answer can also be swayed by ratings on maps and review sites, some of unknown authenticity. That is why the clinic itself needs to publish the source</span></li>
     </ol>
     <div class="compare">
       <div class="case now">
@@ -212,7 +223,6 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
       </div>
     </div>
-    <p class="quote">At a rural petrol station in Japan, the opening days shown on a map service were wrong. The staff said, "We told them, but it never gets fixed." The same can happen to clinics. The difference is that the people misled are patients who feel unwell.</p>
   </section>
 
   <section class="block" aria-labelledby="h-future">
@@ -221,7 +231,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <ol class="timeline">
       <li><div class="when">Today</div><div><h3>People ask AI, then find a clinic themselves</h3><ul><li>More people describe their symptoms to an AI instead of searching</li><li>The AI gives general explanations. Where and when to go is still up to the patient</li></ul></div></li>
       <li><div class="when">Within a few years</div><div><h3>AI guides people from home to a booked visit</h3><ul><li><strong>Checking for emergencies</strong>: the AI asks about symptoms and suggests whether to call an ambulance or see a doctor soon. It only errs on the side of safety and never says there is no need to see a doctor</li><li><strong>Information</strong>: changes to watch for, which department to visit, where to call for advice</li><li><strong>Simple intake</strong>: since when, fever, conditions, medicines, organised through conversation</li><li><strong>Finding and booking</strong>: a nearby clinic that fits and is open now, through to booking</li></ul></div></li>
-      <li><div class="when">Beyond</div><div><h3>Before and after the visit becomes one flow</h3><ul><li>With the patient's consent, the organised answers reach the clinic once the visit is confirmed (never before the clinic has accepted the patient)</li><li>Existing conditions and medicines are organised so that the doctor sees them, and the AI follows up after the visit</li><li>Diagnosis and treatment remain the doctor's decision. AI is the guide that gets patients there correctly</li></ul></div></li>
+      <li><div class="when">Beyond</div><div><h3>Before and after the visit becomes one flow</h3><ul><li>The patient's AI fills in and submits each clinic's <strong>existing booking page</strong> on the patient's behalf, adapting to how each clinic works. The patient checks the content before it is sent. The clinic does not need to build any new system</li><li>The AI prepares the pre-visit answers in advance, following the questionnaire the clinic has published. Only the reason for the visit and the minimum go with the booking; details such as conditions and medicines are shared with the patient's consent after the visit is confirmed (never before the clinic has accepted the patient)</li><li>If the booking page shows queue numbers or expected times, the AI can read them and tell the patient roughly when they will be seen. Patients can leave home to match, which cuts waiting times and crowded waiting rooms. Clinic options can also show the expected time if booked now</li><li>Existing conditions and medicines are organised so that the doctor sees them, and the AI follows up after the visit</li><li>Diagnosis and treatment remain the doctor's decision. AI is the guide that gets patients there correctly</li></ul></div></li>
     </ol>
     <div class="precedent">
       <strong>What the AI will be missing</strong>
@@ -258,21 +268,49 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <div class="post">
       <div class="case now">
         <h3>Today: tell each service separately</h3>
-        <div class="lines" aria-label="The clinic contacts each service separately">
-          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">Map service</span></div>
-          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">Review site</span></div>
-          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">Booking site</span></div>
-          <div><span class="from">Clinic</span><span class="arr">→</span><span class="to">AI services…</span></div>
-        </div>
+        <figure class="hub" style="margin:0">
+          <svg viewBox="0 0 360 250" role="img" aria-label="The clinic notifies a map service, a review site, a booking site and AI services, each separately">
+            <defs><marker id="ah-push" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah-push" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+            <g class="push">
+              <line x1="135" y1="102" x2="96" y2="58" marker-end="url(#ah-push)"/>
+              <line x1="225" y1="102" x2="264" y2="58" marker-end="url(#ah-push)"/>
+              <line x1="135" y1="148" x2="96" y2="192" marker-end="url(#ah-push)"/>
+              <line x1="225" y1="148" x2="264" y2="192" marker-end="url(#ah-push)"/>
+            </g>
+            <g class="leaf" text-anchor="middle">
+              <rect x="8" y="20" width="116" height="32" rx="4"/><text x="66" y="41">Map service</text>
+              <rect x="236" y="20" width="116" height="32" rx="4"/><text x="294" y="41">Review site</text>
+              <rect x="8" y="198" width="116" height="32" rx="4"/><text x="66" y="219">Booking site</text>
+              <rect x="236" y="198" width="116" height="32" rx="4"/><text x="294" y="219">AI services…</text>
+            </g>
+            <g class="core" text-anchor="middle"><rect x="125" y="103" width="110" height="44" rx="6"/><text x="180" y="130">Clinic</text></g>
+          </svg>
+        </figure>
         <p class="note">Every new service means more work: registering in different ways and correcting all of them at every closure. Corrections are not always accepted, and visibility may require paid plans.</p>
       </div>
       <div class="case next">
         <h3>From now: publish on your own site</h3>
-        <div class="board" aria-label="Services read the file on the clinic's website">
-          <div class="readers"><span>Search</span><span>AI</span><span>Maps</span><span>Booking</span><span>Local government</span></div>
-          <div class="up" aria-hidden="true">↓ come to read ↓</div>
-          <div class="center">The clinic's website<code>clinic-intake.json</code></div>
-        </div>
+        <figure class="hub" style="margin:0">
+          <svg viewBox="0 0 360 250" role="img" aria-label="Search engines, AI, maps, booking services and local government each come to read clinic-intake.json on the clinic's website">
+            <defs><marker id="ah-pull" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah-pull" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+            <g class="pull">
+              <line x1="180" y1="44" x2="180" y2="94" marker-end="url(#ah-pull)"/>
+              <line x1="92" y1="80" x2="124" y2="98" marker-end="url(#ah-pull)"/>
+              <line x1="268" y1="80" x2="236" y2="98" marker-end="url(#ah-pull)"/>
+              <line x1="92" y1="198" x2="124" y2="158" marker-end="url(#ah-pull)"/>
+              <line x1="268" y1="198" x2="236" y2="158" marker-end="url(#ah-pull)"/>
+            </g>
+            <g class="leaf" text-anchor="middle">
+              <rect x="132" y="10" width="96" height="30" rx="15"/><text x="180" y="30">Search</text>
+              <rect x="8" y="50" width="96" height="30" rx="15"/><text x="56" y="70">AI</text>
+              <rect x="256" y="50" width="96" height="30" rx="15"/><text x="304" y="70">Maps</text>
+              <rect x="8" y="200" width="112" height="30" rx="15"/><text x="64" y="220">Booking</text>
+              <rect x="226" y="200" width="126" height="30" rx="15"/><text x="289" y="220">Local government</text>
+            </g>
+            <g class="core" text-anchor="middle"><rect x="100" y="98" width="160" height="58" rx="6"/><text x="180" y="122">The clinic's website</text><text class="mono" x="180" y="143">clinic-intake.json</text></g>
+            <text class="lbl" x="188" y="72">come to read</text>
+          </svg>
+        </figure>
         <p class="note">All the clinic does is <strong>keep its own file up to date</strong>. No need to ask any particular service. <strong>No registration or usage fees.</strong> The more readers support it, the more places the same file is used.</p>
       </div>
     </div>
@@ -283,6 +321,73 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <p class="note">Not every service reads this file today. But any AI that can browse the web can read it as soon as a patient gives it the clinic's web address. Because the format is fixed and open to all, clinics that publish it benefit first as support grows.</p>
   </section>
 
+  <section class="block" id="use" aria-labelledby="h-use">
+    <h2 id="h-use">How a clinic uses it</h2>
+    <p class="intro">There are two files, because the information <strong>changes at different speeds</strong> and is <strong>kept by different people</strong>. The regular file is made once and rarely touched; only the temporary file is updated by staff as needed.</p>
+    <div class="compare">
+      <div class="case">
+        <h3>Regular information <code>clinic-intake.json</code></h3>
+        <p class="freq">Almost fixed. Reviewed a few times a year</p>
+        <dl class="role">
+          <dt>Contents</dt><dd>Name, departments, regular hours, how to book, areas of focus, questionnaires</dd>
+          <dt>Who</dt><dd>The director or the website manager creates it or reviews it. Not touched day to day</dd>
+          <dt>How</dt><dd><ul><li>Fill in the form in the <a href="maker/">creation tool</a> and save the file</li><li>Or copy the AI instructions from the creation tool and build it in conversation with any AI you already use</li></ul></dd>
+        </dl>
+      </div>
+      <div class="case">
+        <h3>Temporary information <code>clinic-schedule.json</code></h3>
+        <p class="freq">Any time. Update it as often as needed</p>
+        <dl class="role">
+          <dt>Contents</dt><dd><ul><li>Temporary closures and changed hours</li><li>Doctors' schedules (for example, a specialist clinic on Tuesday and Thursday afternoons)</li><li>Weekend and night on-call duties</li><li>Notices and requests of the moment (for example, vaccinations are by appointment)</li></ul></dd>
+          <dt>Who</dt><dd>Front-desk or other assigned staff. They never touch the regular file, so a mistake cannot break it</dd>
+          <dt>Updating</dt><dd><ol class="steps"><li>Fill in "Temporary information" in the creation tool and save the file</li><li>Overwrite the file at its fixed place on the website</li><li>If you cannot upload it yourself, you can email a summary of the change to your website manager</li></ol></dd>
+          <dt>Expiry</dt><dd>The file has an expiry date. After it passes, AI stops using the file, so old notices never linger</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="compare">
+      <div class="case">
+        <h3>No new system to run</h3>
+        <p>What you publish is a plain text file. There is no login page, no database and no new program running on the clinic's server. The creation tool does not send what you type anywhere; it runs only in your own browser. So this format <strong>adds no new point of attack</strong>.</p>
+        <p class="note">If the website itself is taken over, the file can be altered too. Looking after the website matters as much as ever.</p>
+      </div>
+      <div class="case">
+        <h3>Check the content without technical skills</h3>
+        <ul>
+          <li>The creation tool's "View" tab shows the content in plain language. A published file can be checked the same way: open it in a browser and paste its content into "Paste and check"</li>
+          <li>The content is text, so people can roughly read it. Give it to an AI and it can summarise it or turn it into a PDF or Word document</li>
+          <li>Give an AI that can browse the web the file's address (for example <code>https://your-site/clinic-intake.json</code>) and ask what it says. Anyone can check it, at work or at home, at any time. AI can misread, though, so check with the creation tool's "View" tab before publishing</li>
+          <li>Only information that is fine to publish goes in. Patient information and internal matters are never included, so it does not matter who sees it</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="match" aria-labelledby="h-match">
+    <h2 id="h-match">Matching without reviews</h2>
+    <p class="intro">This format has no reviews, no scores and no rating fields. <strong>There is simply nowhere to post a bad review.</strong> AI compares only what each clinic has published itself and objective data that is the same for everyone.</p>
+    <div class="compare">
+      <div class="case">
+        <h3>On the patient's side</h3>
+        <ul>
+          <li>Patients add only the clinics they want to go back to as their <strong>regular clinics</strong> in their health summary. There is no field for a negative rating</li>
+          <li>AI does not use online reviews or star ratings to compare options</li>
+          <li>AI shows options and reasons based on data. <strong>The patient decides where to go</strong></li>
+        </ul>
+      </div>
+      <div class="case">
+        <h3>Example: two regular clinics in internal medicine</h3>
+        <p>When the patient describes their current symptoms, the AI lines up what each clinic publishes, <strong>areas of focus, hours and temporary closures</strong>, together with <strong>whether it is open now and the distance or travel time</strong> (when the patient shares where they are). It shows them with other options, each with a reason (for example, "Clinic A lists diabetes as an area of focus" or "Clinic B is open now").</p>
+      </div>
+    </div>
+    <div class="precedent">
+      <strong>For clinics</strong>
+      <span><strong>Areas of focus</strong> are optional. If you list them, they help patients looking for care in that area to find you, so you can expect more patients whose symptoms fit what you do. They are treated as the clinic's own statement and are not used for ranking.</span>
+      <span><strong>Requests specific to your clinic</strong> (for example, "If you have a fever, please call before coming in") are passed on to patients by AI that reads the file before they visit. That means less work telling each patient. Not every patient uses AI, so keep your notices in the clinic as before.</span>
+      <span><strong>Doctors' schedules</strong>, once published officially, let AI say "that doctor sees patients on Tuesdays and Thursdays", so patients can choose that day when booking. You keep your current booking method (phone or booking page) without adding a complex booking system.</span>
+    </div>
+  </section>
+
   <section class="block" aria-labelledby="h-merit">
     <h2 id="h-merit">Six benefits for clinics</h2>
     <div class="benefits">
@@ -291,7 +396,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <div class="benefit"><h3>Safe</h3><p>No patient information is sent to or stored by the clinic. The file holds only information that is fine to publish. The format itself requires that AI does not diagnose, and that it recommends emergency services before booking when warning signs apply.</p></div>
       <div class="benefit"><h3>Future-proof</h3><p>Fast-changing AI is kept separate from slow-changing information such as hours and questionnaire items, so the file keeps working as AI changes. The format follows international standards (HL7 FHIR and schema.org) and has rules so older versions remain readable.</p></div>
       <div class="benefit"><h3>Show what you focus on</h3><p>Two clinics in the same department can differ: one may focus on diabetes, another on thyroid disease. Clinics can state their areas of focus, helping AI find a clinic that fits the symptoms. This is treated as the clinic's own statement and written within local advertising rules.</p></div>
-      <div class="benefit risk"><h3>Without it, wrong information gets used</h3><p>If clinics do not publish their own information, AI can only guess from maps and old pages. "Arrived on a closed day" and "could not find the on-call clinic" will become more common in the age of AI.</p></div>
+      <div class="benefit risk"><h3>Without it, wrong information gets used</h3><p>If clinics do not publish their own information, AI can only guess from maps and old pages. "Arrived on a closed day" and "could not find the on-call clinic" will become more common in the age of AI. For example, if a holiday closure is missing from a map, a family with a feverish child may arrive at a locked door. Clinics cannot always get map listings corrected quickly.</p></div>
     </div>
   </section>
 

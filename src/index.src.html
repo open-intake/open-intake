@@ -52,7 +52,7 @@ header.hero { padding-block: 48px 36px; display: grid; gap: 16px; }
 .eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; color: var(--muted); }
 .hero h1 { font-size: clamp(30px, 5.4vw, 48px); }
 .hero h1 small { display: block; font-size: 0.42em; font-weight: 500; color: var(--muted); margin-top: 6px; letter-spacing: 0.04em; }
-.hero .lead { font-size: clamp(17px, 2.2vw, 20px); max-width: 38em; }
+.hero .lead { font-size: clamp(17px, 2.2vw, 20px); }
 .hero .lead strong { background: linear-gradient(transparent 62%, var(--accent-soft) 62%); }
 .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
 .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); padding: 10px 18px; border-radius: 4px; font-weight: 500; }
@@ -62,7 +62,7 @@ header.hero { padding-block: 48px 36px; display: grid; gap: 16px; }
 
 section.block { padding-block: 36px; border-top: 1px solid var(--rule); display: grid; gap: 18px; }
 section.block > h2 { font-size: clamp(22px, 3vw, 28px); }
-section.block > .intro { color: var(--muted); max-width: 40em; }
+section.block > .intro { color: var(--muted); }
 
 /* 課題: いまと、これから */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
@@ -71,7 +71,6 @@ section.block > .intro { color: var(--muted); max-width: 40em; }
 .case.now h3 { color: var(--alert); }
 .case.next h3 { color: var(--accent); }
 .case ul { margin: 0; padding-left: 1.2em; }
-.quote { border-left: 3px solid var(--alert); background: var(--alert-soft); padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; }
 
 /* 患者さんの探し方 */
 .journey { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: j; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
@@ -101,16 +100,28 @@ section.block > .intro { color: var(--muted); max-width: 40em; }
 /* 掲示: 個別に連絡 と 掲示して読みに来てもらう */
 .post { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
 .post .case { gap: 12px; }
-.lines { display: grid; gap: 6px; font-size: 14px; }
-.lines div { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
-.lines .from, .lines .to { border: 1px solid var(--rule); border-radius: 4px; padding: 4px 8px; text-align: center; background: var(--paper); }
-.lines .arr { color: var(--muted); }
-.board { display: grid; gap: 8px; justify-items: center; font-size: 14px; }
-.board .center { border: 2px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; text-align: center; font-weight: 500; }
-.board .center code { display: block; color: var(--accent); }
-.board .readers { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.board .readers span { border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; background: var(--paper); }
-.board .up { color: var(--accent); }
+/* 概念図: 医療機関を真ん中に置き、まわりのサービスとの矢印の向きで違いを見せる（左は外へ・右は内へ） */
+.hub svg { display: block; width: 100%; height: auto; max-width: 420px; margin: 0 auto; }
+.hub text { font-family: var(--font-body); font-size: 13px; fill: var(--ink); }
+.hub .leaf rect { fill: var(--paper); stroke: var(--rule); }
+.hub .core rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.hub .core text { font-weight: 500; }
+.hub .core .mono { font-family: var(--font-mono); font-size: 12px; font-weight: 400; fill: var(--accent); }
+.hub .lbl { font-size: 11px; fill: var(--muted); }
+.hub line { stroke-width: 1.6; }
+.hub .push line { stroke: var(--muted); }
+.hub .pull line { stroke: var(--accent); }
+.hub .ah-push { fill: var(--muted); }
+.hub .ah-pull { fill: var(--accent); }
+
+/* 医療機関での使い方 */
+.role { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 0; font-size: 15px; }
+.role dt { color: var(--muted); font-size: 13.5px; padding-top: 2px; }
+.role dd { margin: 0; }
+.role dd ul { margin: 0; padding-left: 1.2em; }
+.case .freq { font-size: 13.5px; color: var(--muted); }
+.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
+@media (max-width: 480px) { .role { grid-template-columns: 1fr; } .role dt { padding-top: 6px; } }
 .precedent { background: var(--sheet); border: 1px dashed var(--rule); border-radius: var(--radius); padding: 14px 18px; display: grid; gap: 6px; font-size: 14.5px; }
 .precedent strong { font-family: var(--font-display); }
 .note { font-size: 13.5px; color: var(--muted); }
@@ -180,9 +191,9 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <li class="head"><span>患者さんがすること</span><span>見ている情報の出どころ</span><span>起こりがちなこと</span></li>
       <li><span class="act">「近くの内科」「発熱 クリニック」と検索する</span><span class="src">検索サイトの結果、地図アプリの一覧</span><span class="gap">表示の順番や内容は、各サービスが決めている</span></li>
       <li><span class="act">地図で営業時間を見る</span><span class="src">地図サービスに登録された情報。利用者の報告で書き換わることもある</span><span class="gap">臨時の休診や、時間の変更が反映されていない。医療機関が直そうとしても、すぐには直らない</span></li>
-      <li><span class="act">病院検索サイトや口コミを見る</span><span class="src">各サイトが集めた情報。掲載料で目立ち方が変わることもある</span><span class="gap">サイトごとに内容が違う。どれが最新かわからない</span></li>
+      <li><span class="act">病院検索サイトや口コミを見る</span><span class="src">各サイトが集めた情報。掲載料で目立ち方が変わることもある</span><span class="gap">サイトごとに内容が違う。どれが最新かわからない。口コミには、真偽のわからないものも混じる</span></li>
       <li><span class="act">予約サイトか電話で予約する</span><span class="src">予約サービスに加盟している医療機関の空き</span><span class="gap">加盟していない医療機関は出てこない。電話は診療時間内しかつながらない</span></li>
-      <li class="ai"><span class="act">最近は、AI に「どこに行けばいい？」と聞く</span><span class="src">AI は、上の検索結果・地図・サイトを読んで答える</span><span class="gap"><strong>AI に聞いても、元の情報が古ければ答えも古い。</strong>だから、元の情報を医療機関自身が出すことが大事になる</span></li>
+      <li class="ai"><span class="act">最近は、AI に「どこに行けばいい？」と聞く</span><span class="src">AI は、上の検索結果・地図・口コミサイトを読んで答える</span><span class="gap"><strong>AI に聞いても、元の情報が古ければ答えも古い。</strong>地図や口コミサイトの評判（真偽のわからないものもある）に、答えが引きずられることもある。だから、元の情報を医療機関自身が出すことが大事になる</span></li>
     </ol>
     <div class="compare">
       <div class="case now">
@@ -204,7 +215,6 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
       </div>
     </div>
-    <p class="quote">地方のガソリンスタンドで、地図サービスに表示された営業日が間違っていた。店の人は「伝えても直らない」と言う。医療機関でも同じことが起こりえます。違うのは、間違った情報で困るのが、具合の悪い患者さんだということです。</p>
   </section>
 
   <section class="block" aria-labelledby="h-future">
@@ -213,7 +223,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <ol class="timeline">
       <li><div class="when">いま</div><div><h3>AI に相談するが、受診先は自分で探す</h3><ul><li>検索の代わりに、AI に症状を相談する人が増えている</li><li>AI の答えは一般的な説明にとどまり、どこに行くか・いつ行くかは、患者さんが自分で調べて決める</li></ul></div></li>
       <li><div class="when">数年のうちに</div><div><h3>AI が、自宅での相談から予約までを案内する</h3><ul><li><strong>救急の確認</strong>：AI が症状を聞き取り、救急車を呼ぶべきか、早めに受診したほうがよいかの目安を示す。目安は安全な側にだけ倒し、「受診しなくてよい」とは言わない</li><li><strong>情報</strong>：気をつける変化、受診するなら何科か、相談の窓口を伝える</li><li><strong>簡易な問診</strong>：いつから・熱は・持病は・飲んでいる薬は、を会話で整理する</li><li><strong>医療機関探しと予約</strong>：いま開いていて、症状に合う近くの医療機関を探し、予約まで進める</li></ul></div></li>
-      <li><div class="when">その先</div><div><h3>受診の前後まで、一続きになる</h3><ul><li>本人の同意のもとで、整理した問診の内容を、受診が決まったあとに医療機関へ渡す（受け入れを決める前には渡さない）</li><li>持病や飲んでいる薬も医師に伝わる形に整理し、受診のあとの経過も見守る</li><li>診断と治療を決めるのは、これからも医師。AI は、そこへ正しくたどり着くための案内役になる</li></ul></div></li>
+      <li><div class="when">その先</div><div><h3>受診の前後まで、一続きになる</h3><ul><li>患者さんの AI が、各医療機関の<strong>今の予約ページ</strong>に合わせて、予約フォームの入力から送信までを代わりに行う。送る前には、本人が内容を確かめる。医療機関の側で新しいシステムを作る必要はない</li><li>AI が、医療機関の掲示した問診票に沿って、受診前の記入を前もって用意する。予約のときに送るのは受診の理由と最低限だけで、持病や薬などの詳しい内容は、本人の同意のもとで、受診が決まったあとに渡す（受け入れを決める前には渡さない）</li><li>予約ページに順番や見込みの時間が出ていれば、AI がそれを読み、「診察はおよそ何時ごろ」と案内できる。患者さんはそれに合わせて家を出られるので、待ち時間と待合室の混雑が減る。受診先の候補にも「いま予約した場合の見込み時間」を並べられる</li><li>持病や飲んでいる薬も医師に伝わる形に整理し、受診のあとの経過も見守る</li><li>診断と治療を決めるのは、これからも医師。AI は、そこへ正しくたどり着くための案内役になる</li></ul></div></li>
     </ol>
     <div class="precedent">
       <strong>そのとき、AI に足りなくなるもの</strong>
@@ -251,21 +261,49 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <div class="post">
       <div class="case now">
         <h3>いま：サービスごとに知らせる</h3>
-        <div class="lines" aria-label="医療機関がサービスごとに連絡する図">
-          <div><span class="from">医療機関</span><span class="arr">→</span><span class="to">地図サービス</span></div>
-          <div><span class="from">医療機関</span><span class="arr">→</span><span class="to">口コミサイト</span></div>
-          <div><span class="from">医療機関</span><span class="arr">→</span><span class="to">予約サイト</span></div>
-          <div><span class="from">医療機関</span><span class="arr">→</span><span class="to">AI のサービス…</span></div>
-        </div>
+        <figure class="hub" style="margin:0">
+          <svg viewBox="0 0 360 250" role="img" aria-label="医療機関が、地図サービス・口コミサイト・予約サイト・AI のサービスのそれぞれに、別々に知らせる図">
+            <defs><marker id="ah-push" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah-push" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+            <g class="push">
+              <line x1="135" y1="102" x2="96" y2="58" marker-end="url(#ah-push)"/>
+              <line x1="225" y1="102" x2="264" y2="58" marker-end="url(#ah-push)"/>
+              <line x1="135" y1="148" x2="96" y2="192" marker-end="url(#ah-push)"/>
+              <line x1="225" y1="148" x2="264" y2="192" marker-end="url(#ah-push)"/>
+            </g>
+            <g class="leaf" text-anchor="middle">
+              <rect x="8" y="20" width="116" height="32" rx="4"/><text x="66" y="41">地図サービス</text>
+              <rect x="236" y="20" width="116" height="32" rx="4"/><text x="294" y="41">口コミサイト</text>
+              <rect x="8" y="198" width="116" height="32" rx="4"/><text x="66" y="219">予約サイト</text>
+              <rect x="236" y="198" width="116" height="32" rx="4"/><text x="294" y="219">AI のサービス…</text>
+            </g>
+            <g class="core" text-anchor="middle"><rect x="125" y="103" width="110" height="44" rx="6"/><text x="180" y="130">医療機関</text></g>
+          </svg>
+        </figure>
         <p class="note">サービスが増えるたびに手間が増えます。それぞれのやり方で登録し、休診のたびに全部を直す必要があります。直してもらえないこともあります。目立たせるには、掲載料や有料のプランが要ることもあります。</p>
       </div>
       <div class="case next">
         <h3>これから：自分のサイトに掲示する</h3>
-        <div class="board" aria-label="医療機関のサイトのファイルを、各サービスが読みに来る図">
-          <div class="readers"><span>検索サイト</span><span>AI</span><span>地図</span><span>予約サービス</span><span>自治体</span></div>
-          <div class="up" aria-hidden="true">↓ 読みに来る ↓</div>
-          <div class="center">医療機関のホームページ<code>clinic-intake.json</code></div>
-        </div>
+        <figure class="hub" style="margin:0">
+          <svg viewBox="0 0 360 250" role="img" aria-label="医療機関のホームページにある clinic-intake.json を、検索サイト・AI・地図・予約サービス・自治体が、それぞれ読みに来る図">
+            <defs><marker id="ah-pull" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah-pull" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+            <g class="pull">
+              <line x1="180" y1="44" x2="180" y2="94" marker-end="url(#ah-pull)"/>
+              <line x1="92" y1="80" x2="124" y2="98" marker-end="url(#ah-pull)"/>
+              <line x1="268" y1="80" x2="236" y2="98" marker-end="url(#ah-pull)"/>
+              <line x1="92" y1="198" x2="124" y2="158" marker-end="url(#ah-pull)"/>
+              <line x1="268" y1="198" x2="236" y2="158" marker-end="url(#ah-pull)"/>
+            </g>
+            <g class="leaf" text-anchor="middle">
+              <rect x="132" y="10" width="96" height="30" rx="15"/><text x="180" y="30">検索サイト</text>
+              <rect x="8" y="50" width="96" height="30" rx="15"/><text x="56" y="70">AI</text>
+              <rect x="256" y="50" width="96" height="30" rx="15"/><text x="304" y="70">地図</text>
+              <rect x="8" y="200" width="112" height="30" rx="15"/><text x="64" y="220">予約サービス</text>
+              <rect x="240" y="200" width="112" height="30" rx="15"/><text x="296" y="220">自治体</text>
+            </g>
+            <g class="core" text-anchor="middle"><rect x="100" y="98" width="160" height="58" rx="6"/><text x="180" y="122">医療機関のホームページ</text><text class="mono" x="180" y="143">clinic-intake.json</text></g>
+            <text class="lbl" x="188" y="72">読みに来る</text>
+          </svg>
+        </figure>
         <p class="note">医療機関がするのは、<strong>自分のサイトのファイルを最新にしておくことだけ</strong>。特定のサービスに頼む必要はありません。<strong>登録料も利用料もかかりません。</strong>読む側が対応するほど、同じ1枚が多くの場所で使われます。</p>
       </div>
     </div>
@@ -276,6 +314,73 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <p class="note">いまの時点では、すべてのサービスがこのファイルを読むわけではありません。ただ、ネットを調べられる AI なら、患者さんがホームページの住所を伝えればすぐに読めます。形が決まっていて誰でも使えるので、対応するサービスが増えるほど、置いてある医療機関から順に恩恵を受けます。</p>
   </section>
 
+  <section class="block" id="use" aria-labelledby="h-use">
+    <h2 id="h-use">医療機関での使い方</h2>
+    <p class="intro">ファイルは2つに分けます。分ける理由は、<strong>変わる速さ</strong>と<strong>直す人</strong>が違うからです。ふだんの情報は一度作ればほとんど触らず、臨時の情報だけを担当の方が随時直します。</p>
+    <div class="compare">
+      <div class="case">
+        <h3>ふだんの情報 <code>clinic-intake.json</code></h3>
+        <p class="freq">ほぼ固定。見直すのは年に数回</p>
+        <dl class="role">
+          <dt>中身</dt><dd>名前・診療科・ふだんの診療時間・予約の方法・得意分野・問診票</dd>
+          <dt>誰が</dt><dd>院長やホームページの管理者が作るか、内容を確かめる（監修する）。ふだんは触らない</dd>
+          <dt>作り方</dt><dd><ul><li><a href="maker/">作成ツール</a>のフォームに入力して、ファイルを保存する</li><li>または、作成ツールにある AI 向けの指示文をコピーし、ふだん使っている AI（どれでもよい）と会話して作る</li></ul></dd>
+        </dl>
+      </div>
+      <div class="case">
+        <h3>臨時の情報 <code>clinic-schedule.json</code></h3>
+        <p class="freq">随時。必要なときに、何度でも直せる</p>
+        <dl class="role">
+          <dt>中身</dt><dd><ul><li>臨時の休診、診療時間の変更</li><li>担当医の予定（例: 専門の先生の外来は火曜と木曜の午後）</li><li>休日・夜間の当番</li><li>その時々のお知らせやお願い（例: 予防接種は予約制です）</li></ul></dd>
+          <dt>誰が</dt><dd>受付などの担当の方。ふだんの情報のファイルには触らないので、操作を間違えて壊す心配がない</dd>
+          <dt>直し方</dt><dd><ol class="steps"><li>作成ツールの「臨時の情報」に入力し、ファイルを保存する</li><li>ホームページの決まった場所に、上書きで置く</li><li>自分で置けないときは、変更の概要をメールでホームページの管理者に送り、置き換えてもらってもよい</li></ol></dd>
+          <dt>期限</dt><dd>ファイルに有効期限をつける。期限が過ぎると AI は使わないので、古いお知らせが残り続けることがない</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="compare">
+      <div class="case">
+        <h3>新しく動かすシステムがない</h3>
+        <p>置くのは、文字だけのファイルです。ログインの画面も、データベースも、医療機関のサーバーで新しく動かすプログラムもありません。作成ツールも、入力した内容をどこにも送らず、使っている人のブラウザの中だけで動きます。そのため、この仕組みのために<strong>攻撃される入口が増えることはありません</strong>。</p>
+        <p class="note">ただし、ホームページそのものが乗っ取られれば、ファイルも書き換えられます。ホームページの管理は、これまでどおり大切です。</p>
+      </div>
+      <div class="case">
+        <h3>技術がなくても、中身を確かめられる</h3>
+        <ul>
+          <li>作成ツールの「表示」で、書いた内容を読みやすい形で確かめられる。公開中のファイルも、ブラウザで開いて中身を「貼り付けて確認」に貼れば、同じように表示できる</li>
+          <li>中身は文字なので、人が読んでもおおよそわかる。AI に渡せば、要点をまとめたり、PDF や Word など好きな形にしたりしてもらえる</li>
+          <li>ネットを調べられる AI に、ファイルの住所（例: <code>https://あなたのサイト/clinic-intake.json</code>）を伝えて「中身を教えて」と頼めば、職場でも家でも、誰でもいつでも確かめられる。ただし AI は読み違えることもあるので、公開前の確認は作成ツールの「表示」で行う</li>
+          <li>載せるのは、公開してよい情報だけ。患者さんの情報や院内の機密は載せない決まりなので、誰に見られても困らない</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="match" aria-labelledby="h-match">
+    <h2 id="h-match">口コミに頼らないマッチング</h2>
+    <p class="intro">この仕組みには、口コミも、点数も、評価の欄もありません。<strong>悪評が書き込まれる場所が、そもそもありません。</strong>AI が比べるのは、医療機関が自分で掲示した情報と、誰が見ても同じになる客観的なデータだけです。</p>
+    <div class="compare">
+      <div class="case">
+        <h3>患者さんの側</h3>
+        <ul>
+          <li>「また通いたい」と思った医療機関だけを、自分の健康メモに<strong>かかりつけ</strong>として登録する。よくなかったという評価は、そもそも入れる欄がない</li>
+          <li>AI は、ネットの口コミや星の数を、候補を比べる材料にしない</li>
+          <li>AI はデータをもとに候補と理由を示すだけ。<strong>どこに行くかを決めるのは患者さん</strong></li>
+        </ul>
+      </div>
+      <div class="case">
+        <h3>たとえば、かかりつけの内科が2つあるとき</h3>
+        <p>患者さんが今の症状を AI に相談すると、AI は2つの医院が掲示している<strong>得意分野・診療時間・臨時の休診</strong>と、<strong>いま開いているか・通院にかかる距離や時間</strong>（本人が今いる場所を伝えたとき）を並べて比べ、ほかの候補とあわせて、根拠つきで示します（例: 「糖尿病を得意分野に挙げているのは A 医院」「いま開いているのは B 医院」）。</p>
+      </div>
+    </div>
+    <div class="precedent">
+      <strong>医療機関にとっては</strong>
+      <span><strong>得意分野</strong>は、書いても書かなくてもかまいません。書いておけば、その分野の症状で受診先を探している患者さんが、医院を見つける手がかりになります。症状に合った患者さんが来やすくなることが期待できます（得意分野は医院の自己申告として扱われ、順位づけには使われません）。</span>
+      <span><strong>医院ごとのお願い</strong>（例: 「発熱のある方は、来院の前にお電話ください」）を書いておけば、ファイルを読んだ AI が、受診の前に患者さんに伝えます。一人ひとりに知らせる手間が減ります。AI を使わない患者さんもいるので、院内の掲示などはこれまでどおり続けてください。</span>
+      <span><strong>担当医の予定</strong>を公式に出しておけば、AI が「その先生の外来は火曜と木曜」と案内でき、患者さんはその日を選んで予約しやすくなります。新しく複雑な予約システムを入れなくても、今の予約の方法（電話・予約ページ）のままで使えます。</span>
+    </div>
+  </section>
+
   <section class="block" aria-labelledby="h-merit">
     <h2 id="h-merit">医療機関にとっての6つの利点</h2>
     <div class="benefits">
@@ -284,7 +389,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <div class="benefit"><h3>安全</h3><p>患者さんの情報を医療機関のサーバーに送らず、ためません。ファイルに入るのは公開してよい情報だけです。AI には診断をさせず、救急の目安に当てはまれば予約より先に119番を勧めるよう、形式そのもので決めています。</p></div>
       <div class="benefit"><h3>将来も使える</h3><p>変わりやすい AI と、変わりにくい情報（診療時間や問診票の項目）を分けました。AI が入れ替わっても、ファイルは直さずに使えます。形式は国際標準（HL7 FHIR・schema.org）に合わせ、古い版のファイルも読めるよう決まりを設けています。</p></div>
       <div class="benefit"><h3>自分の特徴を伝えられる</h3><p>同じ「内科」でも、糖尿病に力を入れている、甲状腺を診ている、など医療機関ごとに違います。その得意分野を医療機関が自分で書けるので、AI が症状に合う医療機関を探すときの手がかりになります（医療機関の自己申告として扱われ、医療広告ガイドラインの範囲で書きます）。</p></div>
-      <div class="benefit risk"><h3>置かないと、間違った情報が使われる</h3><p>医療機関が自分で情報を出さなければ、AI は地図サービスや古いページから推し量るしかありません。「休診日に来てしまった」「当番医を探せなかった」ということが、AI の時代にはもっと起こりやすくなります。</p></div>
+      <div class="benefit risk"><h3>置かないと、間違った情報が使われる</h3><p>医療機関が自分で情報を出さなければ、AI は地図サービスや古いページから推し量るしかありません。「休診日に来てしまった」「当番医を探せなかった」ということが、AI の時代にはもっと起こりやすくなります。たとえば、年末年始の臨時の休診が地図に出ていなければ、熱のある子どもを連れた家族が、閉まった医院の前に着いてしまいます。地図の表示は、医療機関が直そうとしても、すぐには直らないことがあります。</p></div>
     </div>
   </section>
 
@@ -313,7 +418,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
   <section class="block" aria-labelledby="h-who">
     <h2 id="h-who">立場ごとの使い方</h2>
     <div class="who">
-      <div class="case"><h3>医療機関の方</h3><p><a href="maker/">作成ツール</a>で、医院の情報と問診票を入力します。できたファイルを、ホームページの管理者に頼んでサイトに置いてもらいます。</p></div>
+      <div class="case"><h3>医療機関の方</h3><p><a href="maker/">作成ツール</a>で、医院の情報と問診票を入力します。できたファイルを、ホームページの管理者に頼んでサイトに置いてもらいます。分担の仕方は<a href="#use">医療機関での使い方</a>へ。</p></div>
       <div class="case"><h3>患者さん</h3><p>ふだん使っている AI に、医療機関のホームページの住所を伝えて「受診したい」と相談します。対応している医療機関なら、AI が正しい情報で案内できます。</p></div>
       <div class="case"><h3>開発者の方</h3><p><a href="https://github.com/open-intake/open-intake/blob/main/SPEC.md">仕様書</a>と <a href="schema/clinic-intake.schema.json">JSON Schema</a> を公開しています。AI のサービスや予約システムから読み込めます。</p></div>
     </div>
