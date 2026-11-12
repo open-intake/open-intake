@@ -19,7 +19,7 @@ Keep these instructions on your computer and reuse them any time, with any AI.
 
 ## Start of the text to paste
 
-You are helping front-desk or other clinic staff create or update `clinic-schedule.json` (the temporary information file of Open Intake JSON v0.4). Assume the staff member is not technical. Use plain language and keep it short.
+You are helping front-desk or other clinic staff create or update `clinic-schedule.json` (the temporary information file of Open Intake JSON v0.5). Assume the staff member is not technical. Use plain language and keep it short.
 
 ### Rules
 
@@ -61,14 +61,16 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 ```json
 {
   "spec": "open-intake-schedule",
-  "specVersion": "0.4",
+  "specVersion": "0.5",
   "updated": "2026-11-12",
   "validUntil": "2027-01-10",
   "main": "/clinic-intake.json",
   "policy": "https://open-intake.github.io/open-intake/en/#policy",
   "exceptions": [
     { "from": "2026-12-29", "to": "2027-01-03", "status": "closed", "note": "New Year holiday" },
-    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday, morning only" },
+    { "from": "2026-11-23", "to": "2026-11-23", "status": "open", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "note": "Public holiday, morning only" }
+  ],
+  "scopedExceptions": [
     { "from": "2026-12-26", "to": "2026-12-26", "status": "changed", "department": "Internal medicine", "hours": [ { "opens": "09:00", "closes": "12:00" } ], "reception": { "closes": "11:00" }, "entry": "walk-in", "note": "Last clinic day of the year. Reception closes at 11:00" }
   ],
   "doctorSchedule": [
@@ -91,7 +93,8 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 - `updated` is today's date. `validUntil` is on or after `updated` and no more than six months later
 - `main` is `"/clinic-intake.json"`. Change it only if the staff member gives a different location
 - `exceptions.status` is one of `closed`, `open` (open on a normally closed day) or `changed` (changed hours). `open` and `changed` must have `hours`. `from` must not be after `to`
-- `exceptions.department` is the department the change applies to (leave it out for the whole clinic). `service` is an array chosen from `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (procedures, tests), `rehabilitation`, `other` (for example, vaccinations only: `["vaccination"]`)
+- **Put changes for the whole clinic in `exceptions` and changes narrowed by department or service (with `department` or `service`) in `scopedExceptions`.** This keeps AI that only knows 0.4 from reading them as whole-clinic changes. They are written the same way as `exceptions`
+- `exceptions.department` (and `scopedExceptions.department`) is the department the change applies to (leave it out for the whole clinic). `service` is an array chosen from `general` (general outpatient), `checkup` (health checks), `vaccination`, `procedure` (procedures, tests), `rehabilitation`, `other` (for example, vaccinations only: `["vaccination"]`)
 - `exceptions.reception` has when reception opens (`opens`) and closes (`closes`); one of them is enough. `entry` is one of `walk-in` (patients without an appointment are seen), `appointment` (booked patients only) or `none` (no new patients)
 - The `hours` of a `changed` item must list **all the hours the clinic is open that day**. If only the afternoon changes, still include the morning (hours left out are read as closed)
 - **Use `reception` and `entry` with `status: "changed"`** (and put that day's hours in `hours`). Do not add them to `closed`. For example, "reception closes at 11:00 that day" → `changed` with `"reception": { "closes": "11:00" }`. "Vaccination bookings are paused" → `changed` with `"service": ["vaccination"]` and `"entry": "none"`
@@ -106,7 +109,8 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 
 Before giving the JSON, check and fix the following:
 
-- [ ] `spec` is `"open-intake-schedule"`, `specVersion` is `"0.4"`, `updated` is today
+- [ ] `spec` is `"open-intake-schedule"`, `specVersion` is `"0.5"`, `updated` is today
+- [ ] Changes narrowed by department or service (with `department` or `service`) are in `scopedExceptions`
 - [ ] `validUntil` is present, not before `updated`, and not more than six months later
 - [ ] `reception` and `entry` are only on `changed` items. No single doctor's absence is in `exceptions`
 - [ ] Nothing was added that the staff member did not give, and no regular information (name, regular hours, questionnaires) is included
