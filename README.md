@@ -18,7 +18,7 @@
 
 作者: Taichi Kurihara（[ORCID 0009-0003-0369-9689](https://orcid.org/0009-0003-0369-9689)）
 
-引用するときは DOI [10.5281/zenodo.24121889](https://doi.org/10.5281/zenodo.24121889) をお使いください。いつも最新版を指します。特定の版を示すときは、版ごとの DOI（v0.4.0 は [10.5281/zenodo.24148223](https://doi.org/10.5281/zenodo.24148223)、v0.3.1 は [10.5281/zenodo.24132416](https://doi.org/10.5281/zenodo.24132416)、v0.3.0 は [10.5281/zenodo.24124491](https://doi.org/10.5281/zenodo.24124491)、v0.2.0 は [10.5281/zenodo.24121890](https://doi.org/10.5281/zenodo.24121890)）を使ってください。GitHub の右側の「Cite this repository」からも書式を取れます。
+引用するときは DOI [10.5281/zenodo.24121889](https://doi.org/10.5281/zenodo.24121889) をお使いください。いつも最新版を指します。特定の版を示すときは、版ごとの DOI（v0.5.0 は [10.5281/zenodo.24149031](https://doi.org/10.5281/zenodo.24149031)、v0.4.0 は [10.5281/zenodo.24148223](https://doi.org/10.5281/zenodo.24148223)、v0.3.1 は [10.5281/zenodo.24132416](https://doi.org/10.5281/zenodo.24132416)、v0.3.0 は [10.5281/zenodo.24124491](https://doi.org/10.5281/zenodo.24124491)、v0.2.0 は [10.5281/zenodo.24121890](https://doi.org/10.5281/zenodo.24121890)）を使ってください。GitHub の右側の「Cite this repository」からも書式を取れます。
 
 **私は医療者ではありません。** ソフトウェアを作る立場から、この形式を考えました。
 
