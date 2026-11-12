@@ -58,17 +58,17 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 
 ## 今の状況（2026年11月）
 
-- 区分 A（案内）を、小さいモデル3つで段階2のまま **3回ずつ**解かせた（[結果](results-2026-11.md)の5回目）。まとめに「答えの書き方」を足して、もう一度3回ずつ解かせた（6回目）。電話の一文を条件なしにするなど、さらに直して3回ずつ解かせた（7回目・8回目）。
-  - **Haiku（Anthropic）と Flash（Google）は、5回目・6回目とも、3回とも 2 と 3 を満たした**（7回目の ○ は Haiku 20・19・20、Flash 20・20・20。8回目は両方とも 20・20・20。× は 0）
-  - **Luna（OpenAI）は、× は 0 だが、○ が 5回目 14〜16・6回目 17・7回目 19・17・19・8回目 17・20・20 で、3回とも 3 を満たすには届かなかった**
-- 二つの系統の小さいモデルが満たしたので、区分 A は、6 の「この企画として使ってよい」に当たる。ただし、この基準そのものがとりあえずの案なので、企画としてそう書くかは、基準の妥当性を確かめてから作者が決める。
+- 区分 A（案内）を、小さいモデル3つで段階2のまま **3回ずつ**解かせた（[結果](results-2026-11.md)の5回目）。まとめに「答えの書き方」を足して、もう一度3回ずつ解かせた（6回目）。電話の一文を条件なしにするなど、さらに直して3回ずつ解かせた（7回目〜9回目）。
+  - **Haiku（Anthropic）と Flash（Google）は、5回目・6回目とも、3回とも 2 と 3 を満たした**（7回目の ○ は Haiku 20・19・20、Flash 20・20・20。8回目は両方とも 20・20・20、9回目は Haiku 20・20・20、Flash 20・20・19。× は 0）
+  - **Luna（OpenAI）は、× は 0 だが、○ が 5回目 14〜16・6回目 17・7回目 19・17・19・8回目 17・20・20 で、3回とも 3 を満たすには届かなかった。まとめに言い方の型を足した9回目に、初めて3回とも満たした（20・20・20）**
+- 二つの系統の小さいモデルが満たしたので、区分 A は、6 の「この企画として使ってよい」に当たる。9回目では、三つの系統がそろって満たした。ただし、この基準そのものがとりあえずの案なので、企画としてそう書くかは、基準の妥当性を確かめてから作者が決める。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
 
 - 安全に関わる問の選び方と、○ の割合（9割）、繰り返しの回数（3回）が妥当か
 - 判定役の AI が甘い・厳しいことの影響（2026年11月には、判定役によって 1〜2問ずつ判定が割れた）。割れたときは、基準の文のかっこの中も必要な中身として数えたが、この読み方でよいか
-- 短く答えるモデル（Luna）が、細かいところを落として ○ が足りなくなること。まとめに答えの書き方を足すと 17、さらに直すと 19・17・19、言い方の型を渡すと 17・20・20 まで上がった。まとめの言い方（「確かめられると添える」）が、答えの言い方を弱くすることもある。どこまでまとめの書き方で補えるか
+- 短く答えるモデル（Luna）が、細かいところを落として ○ が足りなくなること。まとめに答えの書き方を足すと 17、さらに直すと 19・17・19、言い方の型を渡すと 17・20・20、型を足すと 20・20・20 まで上がった。まとめの言い方（「確かめられると添える」）が、答えの言い方を弱くすることもある。どこまでまとめの書き方で補えるか
 - 区分 B〜D の問を、どれだけ用意すれば足りるか
 - 汎用のベンチマークを、どれをどう使うか
 
@@ -132,16 +132,16 @@ Results are kept in `conformance/results-*.md`.
 
 ### Status (November 2026)
 
-- Group A (guidance) was given to three small models at level 2, **3 times each** (round 5 in the [results](results-2026-11.md)). After "how to answer" was added to the summary, it was run 3 times each again (round 6). After further changes such as making the phone sentence unconditional, it was run 3 times each again (rounds 7 and 8).
-  - **Haiku (Anthropic) and Flash (Google) met 2 and 3 in all 3 runs, in both round 5 and round 6** (○ in round 7: Haiku 20, 19, 20; Flash 20, 20, 20; in round 8, 20, 20, 20 for both; no ×)
-  - **Luna (OpenAI) had no ×, but 14–16 ○ in round 5, 17 in round 6, 19, 17, 19 in round 7 and 17, 20, 20 in round 8, so it did not meet 3 in all 3 runs**
-- Since small models from two families met the criteria, group A falls under "the project says this feature may be used" in 6. But these criteria are themselves provisional, so whether the project says so is for the author to decide after checking whether the criteria are right.
+- Group A (guidance) was given to three small models at level 2, **3 times each** (round 5 in the [results](results-2026-11.md)). After "how to answer" was added to the summary, it was run 3 times each again (round 6). After further changes such as making the phone sentence unconditional, it was run 3 times each again (rounds 7 to 9).
+  - **Haiku (Anthropic) and Flash (Google) met 2 and 3 in all 3 runs, in both round 5 and round 6** (○ in round 7: Haiku 20, 19, 20; Flash 20, 20, 20; in round 8, 20, 20, 20 for both; in round 9, Haiku 20, 20, 20 and Flash 20, 20, 19; no ×)
+  - **Luna (OpenAI) had no ×, but 14–16 ○ in round 5, 17 in round 6, 19, 17, 19 in round 7 and 17, 20, 20 in round 8, so it did not meet 3 in all 3 runs. In round 9, after more wording patterns were added to the summary, it met 3 in all 3 runs for the first time (20, 20, 20)**
+- Since small models from two families met the criteria, group A falls under "the project says this feature may be used" in 6. In round 9, small models from three families all met them. But these criteria are themselves provisional, so whether the project says so is for the author to decide after checking whether the criteria are right.
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later
 
 - Whether the choice of safety cases, the 90% share and the 3 repeats are right
 - How lenient or strict judges affect the result (in November 2026, judges disagreed on 1–2 cases per set). Disagreements were decided by counting the parts in brackets in the criteria as required content; whether this reading is right
-- A model that answers briefly (Luna) drops small details and falls short on ○. Adding "how to answer" to the summary raised it to 17, further changes to 19, 17, 19, and wording patterns to 17, 20, 20. The summary's wording ("add that the patient can phone") can also weaken the answer's wording. How far the summary's wording can make up for this
+- A model that answers briefly (Luna) drops small details and falls short on ○. Adding "how to answer" to the summary raised it to 17, further changes to 19, 17, 19, wording patterns to 17, 20, 20, and more patterns to 20, 20, 20. The summary's wording ("add that the patient can phone") can also weaken the answer's wording. How far the summary's wording can make up for this
 - How many cases groups B–D need
 - Which general benchmarks to use, and how

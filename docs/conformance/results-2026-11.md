@@ -227,13 +227,36 @@ F は Fable、A は Astra、C は Carbon。
 - Haiku の C18 は、3回とも 119番のあとに予約の案内を続けなかった
 - 判定役の片方は、まとめが「更新日」と書いた日付を、基準の「最後に確かめた日」と違うとして △ にした。まとめの言い方と基準の言い方がずれると、判定が割れる
 
+## 9回目: 「◯曜の午後は休診」・当番の食い違い・Web 予約の URL の型を足して（同じ日）
+
+8回目で Luna の1回目に残った C02・C05・C16 に向けて、まとめを直し、3つのモデルとも3回ずつ解かせ直した。
+
+- 今日このあと全員向けの受付がないときは、「答えの初めに「木曜の午後は、ふだんの診療時間に書かれていません（休診です）」と書く」と、言い方の型を渡した
+- 当番の食い違いには、「答えの初めに「地域の一覧（…）では、今日の当番は 13:00〜17:00 です。医療機関の臨時の情報（9:00〜17:00）と食い違うので、地域の一覧を優先します」と書く」と型を渡した。当番の日は「受付が終わったとき」の行を出さないようにした
+- 予約の方法の行に、「Web で予約できるかを聞かれたら、答えに Web の URL をそのまま書く」と足した
+- 判定は8回目と同じ。一致したのは 180 のうち 179。食い違った1問は、作者側で答えを読み合わせて決めた（Luna C12 は ○: 冒頭は「はい」だが、同じ答えの中で1年を過ぎた未確認の情報として電話で確かめるよう勧めている。7回目と同じ読み方）
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | 満たす |
+
+### 9回目で分かったこと
+
+- **× は 180 のうち 0。3つの系統の小さいモデルが、3回とも基準を満たした**（Haiku と Luna は 60 問すべて ○）
+- Luna は、8回目に落とした C02・C05・C16 が3回とも ○ になった。答えの短いモデルでも、まとめに言い方の型を渡すと、細かいところを落としにくくなる
+- Flash の3回目の △ は C04（祝日の午前を、臨時の情報ではなく「ふだんの診療」と書いた）。まとめの臨時の情報の行に、医療機関の文（「当院のふだんの診療は午前のみ」）がそのまま入っていて、その言葉を写した
+- Luna の C12 は、7回目と同じく、冒頭で「はい」と答えてから未確認の情報だと書く形が出た。判定役の片方は × にした。1年を過ぎた情報のときは、冒頭で言い切らない型を渡すか、考える
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
 - C16 の基準を「Web 予約のページを案内する（予約サービスの名前は、添えても添えなくてもよい）」に直した（同じ日。上の判定もこの読み方）
 - 小さいモデルでも解かせた（上の3回目・4回目）。この企画は小さいモデルを基準にし、読む側のアプリの標準のやり方を F の形（段階2）とする（[機能を使い始める基準](criteria.md)）
 - まとめの C15 の書き方を直し、F を3回ずつ解かせた（上の5回目）。Haiku と Flash は基準を満たし、Luna は ○ が足りなかった
-- まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。電話の一文を条件なしにし、受付が終わったときの書き方を足した7回目では、Luna は 19・17・19 になった。対象を絞った時間の言い方の型などを足した8回目では、Luna は 17・20・20 になった。次は、このあと受付がない日の「◯曜の午後は休診」の型、当番の食い違いの言い方の型、Web 予約の URL をそのまま書くことを、まとめに足す（当番の日は「受付が終わったとき」の行を出さない）
+- まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。電話の一文を条件なしにし、受付が終わったときの書き方を足した7回目では、Luna は 19・17・19 になった。対象を絞った時間の言い方の型などを足した8回目では、Luna は 17・20・20 になった。「◯曜の午後は休診」・当番の食い違い・Web 予約の URL の型を足した9回目では、3つのモデルとも3回とも基準を満たした（Haiku 20・20・20、Luna 20・20・20、Flash 20・20・19）
+- まとめを作る手順（今の時刻から状況を計算し、言い方の型を添える）を、読む側の参考として書き出すかを決める
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
 
@@ -468,13 +491,36 @@ To address C01, C02 and C15, which Luna still missed in round 7, and Haiku's C18
 - In Haiku C18, none of the 3 runs went on to booking details after saying to call 119
 - One judge marked △ when the answer gave the date that the summary called the "update date", because the criterion says "last verified date". When the summary's wording and the criterion's wording differ, the judges split
 
+### Round 9: patterns for "Thursday afternoon is closed", on-call conflicts and the online booking URL (same day)
+
+To address C02, C05 and C16, which Luna missed in run 1 of round 8, the summary was changed and all three models were run 3 times each again.
+
+- When no reception open to everyone remains today, the summary now gives a pattern: "begin the answer with 'Thursday afternoon is not in the usual hours (closed)'"
+- For on-call conflicts, it gives a pattern: "begin the answer with 'According to the regional list (…), today's on-call hours are 13:00–17:00. This differs from the facility's notice (9:00–17:00), so the regional list comes first'". On on-call days the "when reception has closed" line is no longer shown
+- The booking line now adds "if asked whether online booking is possible, give the online URL as is"
+- Judging as in round 8. The judges agreed on 179 of 180. The 1 disagreement was decided by the author's side after reading the answer (Luna C12 ○: it opens with "yes", but in the same answer treats the information as unconfirmed after more than a year and recommends phoning; the same reading as in round 7)
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | Met |
+
+#### Findings in round 9
+
+- **No × in 180 answers. Small models from three families met the criteria in all 3 runs** (Haiku and Luna got ○ on all 60)
+- Luna's C02, C05 and C16, missed in round 8, were ○ in all 3 runs. Even a model that answers briefly drops fewer details when the summary gives wording patterns
+- Flash's △ in run 3 was C04 (it called the holiday morning "usual hours" rather than the facility's notice). The summary's notice line carried the facility's own words ("our usual hours are mornings only"), and the answer copied them
+- Luna's C12 again opened with "yes" before saying the information is unconfirmed, as in round 7. One judge marked it ×. Consider giving a pattern that avoids a firm opening when the information is more than a year old
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
 - The C16 criterion now reads "Point to the online booking page (naming the booking service is optional)" (same day; the verdicts above already used this reading)
 - The set was run on small models (rounds 3 and 4 above). The project takes small models as the baseline, and the standard way for a reader app is the F form (level 2) ([criteria for turning features on](criteria.md))
 - The summary's C15 line was fixed and F was run 3 times each (round 5 above). Haiku and Flash met the criteria; Luna had too few ○
-- "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. In round 7 the phone sentence was made unconditional and a line for closed reception was added; Luna got 19, 17 and 19. In round 8 a wording pattern for narrowed hours and other changes were added; Luna got 17, 20 and 20. Next, add to the summary a pattern for days with no reception left ("Thursday afternoon is closed"), a pattern for on-call conflicts, and that the online booking URL should be given as is (and do not show the "when reception has closed" line on on-call days)
+- "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. In round 7 the phone sentence was made unconditional and a line for closed reception was added; Luna got 19, 17 and 19. In round 8 a wording pattern for narrowed hours and other changes were added; Luna got 17, 20 and 20. In round 9 patterns for "Thursday afternoon is closed", on-call conflicts and the online booking URL were added, and all three models met the criteria in all 3 runs (Haiku 20, 20, 20; Luna 20, 20, 20; Flash 20, 20, 19)
+- Decide whether to write up how the summary is made (computing the situation from the current time and adding wording patterns) as a reference for readers
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
 
