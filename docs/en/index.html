@@ -638,7 +638,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
       <div class="pillar">
         <h3>Versions: a global version and regional versions</h3>
         <ul>
-          <li>Two levels of versions: a <strong>global version</strong> shared by every country (for example 0.4) and a <strong>regional version</strong> for each profile (for example the Japanese profile jp-1.0)</li>
+          <li>Two levels of versions: a <strong>global version</strong> shared by every country (for example 0.5) and a <strong>regional version</strong> for each profile (for example the Japanese profile jp-1.0)</li>
           <li>For example, when doctors review Japan's emergency warning signs, only the Japanese version goes up; the global version stays the same</li>
           <li>Files written for older versions keep working by rule. Changes are announced in advance and recorded in the changelog and with a DOI for each release (a number for citing it in papers and elsewhere)</li>
         </ul>
@@ -673,7 +673,33 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
         </ul>
       </div>
     </div>
-    <p class="note">The exact range of regional adaptation will be decided in the next version, based on our survey of how clinics in Japan and abroad describe their hours and booking rules.</p>
+    <p class="note">The exact range of regional adaptation is still to be decided, based on our survey of how clinics in Japan and abroad describe their hours and booking rules (<a href="#h-next">What is still to be decided</a>).</p>
+  </section>
+
+  <section class="block" id="next" aria-labelledby="h-next">
+    <h2 id="h-next">What is still to be decided</h2>
+    <p class="intro">What v0.5 left undecided, and the main open questions. They come from an assessment and design reviews by three AI models from different families, and from surveys of clinics in Japan and abroad. None of them is decided yet. Your views are welcome.</p>
+    <div class="compare">
+      <div class="case">
+        <h3>Left undecided</h3>
+        <ul>
+          <li>Whether to copy the emergency warning signs into each clinic's file, or refer to a shared regional list instead. Whether a country or region has guidance, and whether it is complete, varies, and the answer may also depend on the situations in mind and on legal questions. It will be decided region by region, with advice from doctors and legal experts</li>
+          <li>Review by doctors of the warning signs and example questionnaires (we are asking now)</li>
+        </ul>
+      </div>
+      <div class="case">
+        <h3>Main open questions</h3>
+        <ul>
+          <li>Show, in one area, that publishing files improves guidance</li>
+          <li>Ways for booking systems and website builders to publish files automatically, so clinics need not do it by hand</li>
+          <li>How to describe reception conditions such as whether new patients are accepted, whether a referral letter is needed, or whether to phone before visiting</li>
+          <li>How to describe a doctor's absence or cover</li>
+          <li>Run the reader conformance set against real AI models and publish the results</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">AI models used for the assessment: Fable (Anthropic, claude-fable-5-2), Astra (OpenAI, gpt-6-astra) and Carbon (Google, gemini-4-carbon-high). Each was given the same materials separately (November 2026). Because this project also uses an Anthropic model (Claude) for its work, the assessment combines models from different families. Medical and legal content was outside its scope. The full list is in <a href="https://github.com/open-intake/open-intake/blob/main/SPEC.en.md#10-future-work-v06-and-later">§10 of the specification</a>.</p>
+    <div class="cta"><a class="btn ghost" href="#h-ask">How to give feedback</a><a class="btn ghost" href="https://github.com/open-intake/open-intake/blob/main/SPEC.en.md#10-future-work-v06-and-later">Specification §10</a></div>
   </section>
 
   <section class="block" id="policy" aria-labelledby="h-policy">
@@ -693,7 +719,7 @@ footer.foot dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
     <div class="ask">
       <h2 id="h-ask">A request to people working in healthcare</h2>
       <p>This format was drafted by an author who is not a healthcare professional. The author takes responsibility for the format itself (file structure and safety mechanisms). <strong>We want the medical content, such as warning signs and questionnaires, to be decided by people working in healthcare.</strong></p>
-      <p>Even a short comment such as "this item is unnecessary" or "this question is missing" helps a lot.</p>
+      <p>Even a short comment such as "this item is unnecessary" or "this question is missing" helps a lot. We also welcome views on <a href="#h-next">what is still to be decided</a>, such as whether warning signs should be copied into each file.</p>
       <div class="cta"><a class="btn" href="https://github.com/open-intake/open-intake/blob/main/CONTRIBUTING.md">How to give feedback</a><a class="btn ghost" href="https://github.com/open-intake/open-intake/blob/main/REVIEW.md" hreflang="ja">Questions for clinicians (Japanese)</a><a class="btn ghost" href="https://docs.google.com/forms/d/e/1FAIpQLSetqBo2x7iXx2i4x5BtX3FWzrv1TK9qPO15DaznR1dPdNGfkg/viewform" hreflang="ja">Feedback form (Japanese)</a></div>
     </div>
   </section>

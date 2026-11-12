@@ -760,6 +760,8 @@ Left undecided:
 
 Points not adopted in v0.5, grouped by topic. Sources: the assessment of position (three AI models), the v0.4 design reviews (Astra, Carbon and others) and the survey abroad (40 clinics in 8 countries). All are undecided; whether to adopt them depends on real use and expert advice. The full answers are kept by the author.
 
+Models used (2026-11-12): Fable (Anthropic, `claude-fable-5-2`, through Claude Code), Astra (OpenAI, `gpt-6-astra`, Codex CLI) and Carbon (Google, `gemini-4-carbon-high`, Antigravity CLI). Each was given the same materials separately and did not see the others' answers. This specification is also written with an Anthropic model (Claude), so Fable comes from the same family as the writer. Models from other families were added to reduce that bias. Medical and legal content was outside the scope; review by doctors and legal experts is still needed.
+
 **1. Showing it works and spreading it**
 - Measure, in one area (a medical association or local government with 5 to 10 clinics, starting with on-call clinics), that publishing files improves guidance (all three models)
 - Run the reader conformance set against real AI models and publish the results. Decide whether to automate the judging
