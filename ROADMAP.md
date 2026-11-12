@@ -2,7 +2,7 @@
 
 [English below](#english)
 
-2026年11月13日の作成。作者の方針を書いたもので、日付の約束はしません。**次の版（v0.6）は急ぎません。**
+2026年11月13日の作成（v0.6）。作者の方針を書いたもので、日付の約束はしません。**v0.6 は企画の版で、ファイルの形式は 0.5 のまま**です（医療機関がファイルを直す必要はありません）。次の形式の版は急ぎません。
 
 ## 方針: 小さいモデルの発展に合わせて、企画を広げていく
 
@@ -17,9 +17,9 @@
 
 | 項目 | 今 |
 |---|---|
-| ファイルの形式 | v0.5（公開済み）。v0.6 で足す候補は [SPEC.md](SPEC.md) §10 にまとめてある |
+| ファイルの形式 | `specVersion` 0.5（企画の版 v0.6 でも変えていない）。次の形式の版で足す候補は [SPEC.md](SPEC.md) §10 にまとめてある |
 | 読む側の標準のやり方 | 段階2: ファイル ＋ 決まりの要点（[`rules-short.ja.txt`](conformance/rules-short.ja.txt)）＋ 今の状況のまとめ（[`src/brief.js`](src/brief.js)）。作り方は SPEC §8 |
-| V1 案内（区分 A） | 20問では、小さいモデル3系統が3回とも基準を満たした（9回目・10回目）。まとめを直すときに見ていない12問（未見の問）では、3回とも満たしたのは Haiku だけだった。**まだ「使ってよい」とは書かない**（[結果](conformance/results-2026-11.md)） |
+| V1 案内（区分 A） | 20問では、小さいモデル3系統が3回とも基準を満たした（9回目・10回目）。まとめを直すときに見ていない12問（未見の問）では、1組目で3回とも満たしたのは Haiku だけ、まとめを直したあとの2組目では、どのモデルも満たさなかった（11回目・holdout2）。**まだ「使ってよい」とは書かない**（[結果](conformance/results-2026-11.md)） |
 | V2・V3（区分 B〜D） | 予約の入口を代わりに使う・問診票を一緒に作る・候補を事実で並べる。問がまだないので**使わない** |
 | 医療者の確認 | [REVIEW.md](REVIEW.md) でお願いしている。**まだ返事はない** |
 | 言語 | まとめの言い方の型と決まりの要点は日本語だけ |
@@ -35,7 +35,7 @@
 
 | レベル | 規格の範囲 | 対応する問題集 | ほかに要ること | 今 |
 |---|---|---|---|---|
-| **V1 案内** | 形式 0.5 以上。診療時間・受付・対象を絞った時間・臨時の情報・閉院や移転・当番・名簿との食い違い・情報の古さ、救急の目安があれば 119番を先に（§5 の決まり。区分 A） | `cases.json`（C01〜C20）＋ 未見の問 | — | 20問では3系統が満たした。未見の問（holdout1）では Haiku だけ。まとめの誤りを直した（2026-11-13）ので、20問と新しい未見の問（holdout2）で確かめ直す。**まだ「使ってよい」とは書かない** |
+| **V1 案内** | 形式 0.5 以上。診療時間・受付・対象を絞った時間・臨時の情報・閉院や移転・当番・名簿との食い違い・情報の古さ、救急の目安があれば 119番を先に（§5 の決まり。区分 A） | `cases.json`（C01〜C20）＋ 未見の問 | — | 20問では3系統が満たした（11回目まで）。未見の問では、1組目（holdout1）は Haiku だけ、2組目（holdout2）はどのモデルも満たさなかった。2組目で見つかったまとめの誤り（全体の臨時の変更がある日の、対象を絞った時間）を直したので、次の未見の問（holdout3）で確かめ直す。**まだ「使ってよい」とは書かない** |
 | **V2 手続き** | V1 ＋ 予約の入口を代わりに使う（`booking.platform`・`endpoints`。区分 B）、問診票を一緒に作る（`questionnaires`。区分 C） | B・C の問（まだない。C は C19 だけ）＋ 未見の問 | B は予約システムの側の確かめ。C は医療者による問診票と救急の目安の確認（[REVIEW.md](REVIEW.md)） | 問がないので**使わない** |
 | **V3 選ぶ手伝い** | V2 ＋ 地域の一覧から候補を事実で並べる（区分 D）、ほかの言語・ほかの地域プロファイル | D の問、各言語・地域の問 ＋ 未見の問 | 地域プロファイルを育てる人、その言語のまとめと決まりの要点 | 問がないので**使わない** |
 
@@ -78,7 +78,7 @@
 
 ## English
 
-Written on 13 November 2026. This is the author's policy, not a promise of dates. **The next version (v0.6) is not urgent.**
+Written on 13 November 2026 (v0.6). This is the author's policy, not a promise of dates. **v0.6 is a project version; the file format stays at 0.5** (clinics do not need to change their files). The next format version is not urgent.
 
 ### Policy: grow the project as small models improve
 
@@ -93,9 +93,9 @@ Written on 13 November 2026. This is the author's policy, not a promise of dates
 
 | Item | Now |
 |---|---|
-| File format | v0.5 (published). Candidates for v0.6 are listed in [SPEC.en.md](SPEC.en.md) §10 |
+| File format | `specVersion` 0.5 (unchanged in project version v0.6). Candidates for the next format version are listed in [SPEC.en.md](SPEC.en.md) §10 |
 | Standard reader approach | Level 2: the files + the key rules ([`rules-short.ja.txt`](conformance/rules-short.ja.txt)) + the current-situation summary ([`src/brief.js`](src/brief.js)). How it is made: SPEC §8 |
-| V1 Guidance (group A) | On the 20 cases, small models from three families met the criteria in all 3 runs (rounds 9 and 10). On 12 cases not seen while changing the summary (unseen cases), only Haiku met them in all 3 runs. **Not yet described as "may be used"** ([results](conformance/results-2026-11.md)) |
+| V1 Guidance (group A) | On the 20 cases, small models from three families met the criteria in all 3 runs (rounds 9 and 10). On cases not seen while changing the summary (unseen cases), only Haiku met them in all 3 runs on the first set, and no model met them on the second set, after the summary was fixed (round 11, holdout2). **Not yet described as "may be used"** ([results](conformance/results-2026-11.md)) |
 | V2 and V3 (groups B to D) | Using a booking endpoint on the patient's behalf, filling a questionnaire together, listing candidates by facts. No questions yet, so **not used** |
 | Review by medical professionals | Requested in [REVIEW.md](REVIEW.md). **No reply yet** |
 | Language | The wording patterns and the key rules are in Japanese only |
@@ -111,7 +111,7 @@ What readers may use from the spec is shown as **conformance levels** (V1, V2, V
 
 | Level | Part of the spec | Conformance cases | Also needed | Now |
 |---|---|---|---|---|
-| **V1 Guidance** | Format 0.5 or later. Hours, reception, narrowed hours, temporary notices, closed or moved, on-call duty, mismatches with the register, age of information, and 119 first when warning signs appear (the §5 rules; group A) | `cases.json` (C01–C20) + unseen cases | — | Three families met the criteria on the 20 cases. On the unseen cases (holdout1), only Haiku did. The summary errors were fixed (13 November 2026), so it will be checked again on the 20 cases and new unseen cases (holdout2). **Not yet described as "may be used"** |
+| **V1 Guidance** | Format 0.5 or later. Hours, reception, narrowed hours, temporary notices, closed or moved, on-call duty, mismatches with the register, age of information, and 119 first when warning signs appear (the §5 rules; group A) | `cases.json` (C01–C20) + unseen cases | — | Three families met the criteria on the 20 cases (up to round 11). On the unseen cases, only Haiku did on the first set (holdout1), and no model did on the second set (holdout2). The summary error found in the second set (narrowed hours on a day with a whole-day temporary change) was fixed, so it will be checked again on the next unseen cases (holdout3). **Not yet described as "may be used"** |
 | **V2 Actions** | V1 + using a booking endpoint on the patient's behalf (`booking.platform`, `endpoints`; group B) and filling a questionnaire together (`questionnaires`; group C) | Cases for B and C (none yet; C has only C19) + unseen cases | For B, a check from the booking-system side. For C, review of the questionnaires and emergency signs by medical professionals ([REVIEW.md](REVIEW.md)) | No cases yet, so **not used** |
 | **V3 Helping to choose** | V2 + listing candidates from a regional list by facts (group D), other languages and other regional profiles | Cases for D and for each language or region + unseen cases | People to grow regional profiles; a summary and key rules in that language | No cases yet, so **not used** |
 

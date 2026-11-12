@@ -225,6 +225,10 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   ok(brief(two, "2026-12-31T08:20:00+09:00").includes("2026年12月29日〜2027年1月3日"), "臨時の休診の期間をまとめに書く");
   ok(brief(two, "2027-01-11T14:35:00+09:00").includes("closedNote"), "祝日の行がないとき、休診の説明（closedNote）を渡す");
   ok(brief(one, "2026-11-21T08:40:00+09:00").includes("早めに受付を終えることがあります"), "行の注（土曜は早めに受付を終えることがある）を渡す");
+  // 未見の問（holdout2）で見つかった誤りを直したこと: 全体の臨時の変更は、その日の対象を絞った行も置き換える（§6b）
+  const d26 = brief(two, "2026-12-26T13:40:00+09:00"), d12 = brief(two, "2026-12-12T13:40:00+09:00");
+  ok(!d26.includes("- 今日の対象を絞った時間:") && d26.includes("置き換わっていて、ない"), "全体の臨時の変更がある日は、対象を絞った時間を今日の時間として渡さない");
+  ok(d12.includes("- 今日の対象を絞った時間: 14:00〜16:00"), "臨時の変更がない第2土曜は、対象を絞った時間を渡す");
   const ep = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/endpoints.json", "utf8")) };
   ok(brief(ep, "2026-11-30T09:25:00+09:00").includes("送る項目は、入口の手順を読むまで分からない"), "予約の入口で送る項目がまだ分からないことを渡す");
 }

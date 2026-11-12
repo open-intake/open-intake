@@ -17,14 +17,16 @@
 | `round5/`〜`round9/` | 5〜9回目 | F を3回ずつ。回ごとにまとめを直した |
 | `round10-pre/` | 10回目の前の試し | まとめを直したところに関わる問だけを先に解かせた |
 | `round10/` | 10回目 | 20問すべてを3回ずつ |
-| `holdout1/` | 未見の問 | まとめを直すときに見ていない12問（[`cases-holdout.json`](../../conformance/cases-holdout.json)）。1回だけ使った |
+| `holdout1/` | 未見の問 | まとめを直すときに見ていない12問（[`cases-holdout.json`](../../conformance/cases-holdout.json) の H01〜H12）。1回だけ使った |
+| `round11/` | 11回目 | holdout1 で見つかったまとめの誤りを直して、20問すべてを3回ずつ |
+| `holdout2/` | 未見の問の2組目 | 11回目のまとめで、見ていない12問（H13〜H24）。1回だけ使った。Flash の3回目の H20・H21・H24 は、道具のエラーで答えがない（空のファイル）。Luna は2つ目の判定役が使えず、`judge2/` にない |
 
 各回のフォルダの中:
 
 - `kit*/` … AI に渡した文（問ごとに1つ。ここに書いてあることが、AI が見たもののすべて）
 - `out-<モデル>-<形><回>/` … 答え（問ごとに `<id>.md`）
 - `judge/` … Claude の判定。`judge2/` … 答えたモデルと別の系統の AI の判定。`in-*.md` は判定役に渡した資料（1回目は `judge/` にまとめて置いた）
-- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定
+- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`-` は答えなし）
 
 入れていないもの: 道具が出した生の記録（実行のログ・エラーの出力）。答えと判定の中身は、上のファイルにすべてあります。
 
@@ -58,14 +60,16 @@ Published from 13 November 2026. Until then the results said "the full answers a
 | `round5/` to `round9/` | Rounds 5 to 9 | F, 3 runs each. The summary was revised each round |
 | `round10-pre/` | Pre-test for round 10 | Only the cases affected by the summary change |
 | `round10/` | Round 10 | All 20 cases, 3 runs each |
-| `holdout1/` | Unseen cases | 12 cases not seen while tuning the summary ([`cases-holdout.json`](../../conformance/cases-holdout.json)). Used once |
+| `holdout1/` | Unseen cases | 12 cases not seen while tuning the summary ([`cases-holdout.json`](../../conformance/cases-holdout.json), H01–H12). Used once |
+| `round11/` | Round 11 | All 20 cases, 3 runs each, after fixing the summary errors found in holdout1 |
+| `holdout2/` | Second set of unseen cases | 12 cases not seen (H13–H24), with the round 11 summary. Used once. For Flash run 3, H20, H21 and H24 have no answer because of a tool error (empty files). Luna has no `judge2/` files because its second judge could not be used |
 
 In each round folder:
 
 - `kit*/` … the prompts given to the AI (one per case; this is everything the AI saw)
 - `out-<model>-<form><run>/` … the answers (`<id>.md` per case)
 - `judge/` … judgments by Claude. `judge2/` … judgments by an AI from a family other than the answering model. `in-*.md` are the documents given to the judges (round 1 keeps both in `judge/`)
-- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed
+- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json` keeps the stricter verdict, because no reading would change any result; `-` means no answer)
 
 Not included: raw tool output (run logs, error output). The answers and judgments themselves are all in the files above.
 

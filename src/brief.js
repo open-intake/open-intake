@@ -176,7 +176,11 @@
 
     const sc = (c.scopedOpeningHours || []).filter(r => matches(r, today))
       .concat((c.openingHours || []).filter(r => SCOPE_KEYS.some(k => k in r) && matches(r, today)));
-    for (const r of sc) {
+    // 全体の臨時の変更は、その日のふだんの行（第◯週の枠・診療科の枠を含む）をすべて置き換える（§6b）
+    const whole = sched && !schedExpired && (sched.exceptions || []).find(e => inRange(e, today) && !e.department && !e.service);
+    if (whole && sc.length)
+      L.push(`- ふだんの対象を絞った時間（${sc.map(r => `${HM(r.opens)}〜${HM(r.closes)}・対象: ${scopeLabel(r)}`).join(" ／ ")}）: 今日は、臨時の情報の全体の変更（${span(whole)}）で置き換わっていて、ない。答えで、この時間を今日の候補にしない。聞かれたら、全体の臨時の変更で今日はこの時間もないと書く`);
+    for (const r of whole ? [] : sc) {
       const nowIn = T(r.opens) <= nm && nm < T(r.closes);
       L.push(`- 今日の対象を絞った時間: ${HM(r.opens)}〜${HM(r.closes)}（対象: ${scopeLabel(r)}）${rnote(r)}。対象に当てはまる人だけの時間で、全員向けの時間ではない。答えでは、対象（かっこの中）の名前を出して、この時間が誰のためのものかを書く` +
         (nowIn ? `。今はこの枠の時間。答えの初めに「今の ${HM(r.opens)}〜${HM(r.closes)} は、${scopeLabel(r)}のための時間です」と書き、対象でない人には、次の全員向けの時間を伝える` : ""));

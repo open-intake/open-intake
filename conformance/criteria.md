@@ -30,7 +30,7 @@
 
 | 区分 | 機能 | 今の問題集 | 対応レベル |
 |---|---|---|---|
-| A | 案内（診療時間・受付・臨時の情報・閉院や移転・当番・名簿との食い違い・救急の目安） | C01〜C20、未見の問 H01〜H12（一度使った） | V1 |
+| A | 案内（診療時間・受付・臨時の情報・閉院や移転・当番・名簿との食い違い・救急の目安） | C01〜C20、未見の問 H01〜H24（どちらの組も一度使った） | V1 |
 | B | 予約の入口（`endpoints`）を、患者さんに頼まれて代わりに使う | まだない（先に問を足す） | V2 |
 | C | 問診票の下書きを、患者さんと一緒に作る | C19 のみ（先に問を足す） | V2 |
 | D | 複数の医療機関の候補を、事実だけで並べる | まだない（先に問を足す） | V3 |
@@ -65,6 +65,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
   - **Luna（OpenAI）は、× は 0 だが、○ が 5回目 14〜16・6回目 17・7回目 19・17・19・8回目 17・20・20 で、3回とも 3 を満たすには届かなかった。まとめに言い方の型を足した9回目に、初めて3回とも満たした（20・20・20）**
 - 20問では、9回目・10回目に三つの系統がそろって満たした。ただし、この20問は、まとめを直すたびに見てきた問である。作者は、「この企画として使ってよい」と書く前に、まとめを直すときに見ていない問（未見の問、[`cases-holdout.json`](cases-holdout.json) の12問）でも確かめることにした。
 - **未見の問では、3回とも満たしたのは Haiku だけだった**（Luna・Flash は ○ が足りない回があった。× は 0）。二つ以上の系統に届かないので、**区分 A は、まだ 6 の「この企画として使ってよい」とは書かない**。まとめの誤りと足りないところを直し、新しい未見の問で確かめ直す（[結果](results-2026-11.md)の「未見の問」）。
+- まとめを直した11回目では、20問で3つとも3回とも満たした。**未見の問の2組目（holdout2）では、どのモデルも満たさなかった**（Haiku は3回とも H13 が ×）。H13 の × は、まとめの誤り（全体の臨時の変更がある日に、対象を絞った時間を渡していた）によるもので、直したが、結果はそのまま数える。**区分 A は、まだ「この企画として使ってよい」とは書かない**。次の未見の問（holdout3）で確かめ直す（[結果](results-2026-11.md)の「未見の問の2組目」）。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
@@ -108,7 +109,7 @@ The same model gives different results depending on how much the reader app help
 
 | Group | Feature | Cases today | Conformance level |
 |---|---|---|---|
-| A | Guidance (hours, reception, temporary changes, closed or moved, on-call duty, mismatches with the register, warning signs) | C01–C20, unseen cases H01–H12 (used once) | V1 |
+| A | Guidance (hours, reception, temporary changes, closed or moved, on-call duty, mismatches with the register, warning signs) | C01–C20, unseen cases H01–H24 (each set used once) | V1 |
 | B | Using a booking entry point (`endpoints`) on the patient's behalf, when asked | None yet (add cases first) | V2 |
 | C | Drafting a questionnaire together with the patient | C19 only (add cases first) | V2 |
 | D | Listing several clinics as candidates, by facts only | None yet (add cases first) | V3 |
@@ -143,6 +144,7 @@ Results are kept in `conformance/results-*.md`.
   - **Luna (OpenAI) had no ×, but 14–16 ○ in round 5, 17 in round 6, 19, 17, 19 in round 7 and 17, 20, 20 in round 8, so it did not meet 3 in all 3 runs. In round 9, after more wording patterns were added to the summary, it met 3 in all 3 runs for the first time (20, 20, 20)**
 - On the 20 cases, small models from three families all met the criteria in rounds 9 and 10. But these 20 cases have been seen every time the summary was changed. Before saying "may be used", the author decided to check on cases not seen while changing the summary as well (unseen cases: the 12 cases in [`cases-holdout.json`](cases-holdout.json)).
 - **On the unseen cases, only Haiku met the criteria in all 3 runs** (Luna and Flash had runs with too few ○; no ×). This is short of two families, so **group A is not yet described as "may be used" by the project** (item 6). The summary's error and gaps will be fixed and checked again on new unseen cases ([results](results-2026-11.md), "Unseen cases").
+- In round 11, after the summary was fixed, all three met the criteria in all 3 runs on the 20 cases. **On the second set of unseen cases (holdout2), no model met them** (Haiku had × on H13 in all 3 runs). The × on H13 came from a summary error (narrowed hours were passed on for a day with a whole-day temporary change); it was fixed, but the results count as they are. **Group A is not yet described as "may be used" by the project**. It will be checked again on the next unseen cases (holdout3) ([results](results-2026-11.md), "Second set of unseen cases").
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later

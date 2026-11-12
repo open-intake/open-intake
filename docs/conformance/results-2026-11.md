@@ -301,6 +301,50 @@ F は Fable、A は Astra、C は Carbon。
 - 判定役の2つは、未見の問で割れることが多かった（Astra は must の中の語を一つずつ求め、Claude は中身で見た）。割れた所は上の決め方で読んだ
 - H01〜H12 は、これで「見た問」になった。まとめを直したら、次の未見の問（holdout2）で確かめ直す
 
+## 11回目: 未見の問で見つかったまとめの誤りを直して、20問すべてで（2026-11-13）
+
+holdout1 で見つかったまとめの誤り（受付が終わったあとの「◯曜の午後は休診」）を直し、`closedNote`・臨時の休診の期間・行の注・予約の入口で送る項目がまだ分からないことを渡すようにした（[CHANGELOG](../CHANGELOG.md)）。このまとめで、20問すべてを3回ずつ解かせた。
+
+- 条件・判定の組み合わせは10回目と同じ
+- 一致したのは 180 のうち 179。食い違った1問（Flash の3回目の C07。Claude が ×、Astra が ○）は、作者側で答えを読み、○ とした。冒頭で「今日の午前は診療を行っています」と書くが、同じ答えで「11月10日更新の臨時の情報には、本日の休診についての記載はありません」「状況が変化している可能性もあります」と書き、電話で確かめるよう勧めていて、「必ず」「確実に」とは言っていない（Luna の1回目の C11 で、冒頭は「はい」だが古いかもしれないと伝えた答えを ○ にしたのと同じ扱い）
+- Flash の3回目の C06 は △（予防接種の予約を止めていることは伝えたが、健診はふだんどおりと書いていない。判定役は2つとも △）
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | 満たす |
+
+### 11回目で分かったこと
+
+- まとめを直しても、20問では3つのモデルとも3回とも基準を満たした（直したことで、ほかの問が崩れていない）
+- この20問は見てきた問なので、続けて新しい未見の問（holdout2）で確かめた
+
+## 未見の問の2組目（holdout2）: 11回目のまとめで、見ていない12問（2026-11-13）
+
+- 問: [`cases-holdout.json`](cases-holdout.json) の H13〜H24。holdout1 と同じく、別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らして直した（H16 の must を仕様書 §5 の決まり9の範囲に、H22 に確かめる勧めを足し、H24 の must を患者向けの言い方にした）。まとめ（11回目と同じ `src/brief.js`）は、この問を見ずに作ったもの
+- 条件は11回目と同じ（段階2・3回ずつ・問ごとに新しい会話）。基準も holdout1 と同じ（× がなく、12問中11問以上が ○ を3回とも）
+- **道具のエラー**: Flash の3回目の H20・H21・H24 は、Flash を動かす道具（agy）がサービスからエラーを受けて、答えがない。解かせ直さず「答えなし（道具のエラー）」として残した。この回は答えがそろわないので、合否を出さない
+- **判定役**: Haiku・Flash は Claude と Astra。Luna の2つ目の判定役（Carbon）は、同じ道具（agy）で動かすため使えなかった。**Luna は Claude の判定だけ**（作者が決めた）
+- **決め方**: どの回も、どちらの判定役の判定でも基準を満たさず、判定が割れた問をどう読んでも合否は変わらない。そのため割れた問は読み合わせず、厳しいほうの判定を下の表に残した
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 7 | 4 | 1 | 8 | 3 | 1 | 9 | 2 | 1 | 満たさない（3回とも） |
+| Luna（Claude だけ） | 6 | 5 | 1 | 6 | 6 | 0 | 7 | 4 | 1 | 満たさない（3回とも） |
+| Flash | 4 | 8 | 0 | 5 | 6 | 1 | 4 | 4 | 1 | 満たさない（1回目・2回目）。3回目は答えが3つなく、合否なし |
+
+Claude の判定だけで数えると、Haiku は 10・10・10 ○（3回とも H13 が ×）、Flash は 8・7・7 ○。判定役の一致は、2つの判定役がそろった 72 のうち 52（Flash の3回目の答えがない3問を含む）。
+
+### 未見の問の2組目で分かったこと
+
+- **どのモデルも基準を満たさなかった。V1（区分 A）は、まだ「この企画として使ってよい」とは書かない**
+- **まとめの誤り（H13）**: 12月26日（第4土曜）は、臨時の情報の全体の変更（診療 9:00〜12:00・受付 11:00 まで）がある日だった。仕様書 §6b では、全体の臨時の変更は、その日のふだんの行（第◯週の枠・診療科の枠を含む）をすべて置き換える。ところがまとめは、「今日の対象を絞った時間: 14:00〜16:00（内科・再診の方・第2・第4週）」を渡していた。Haiku は3回とも、この枠を今日の候補として案内した（×）。Luna・Flash も、この枠が置き換わることを書かなかった。基準を満たさなかった理由の大きな部分は、この誤りである。まとめを直し（全体の臨時の変更がある日は、対象を絞った時間を渡さず、置き換わっていることを渡す）、テストを足した。**holdout2 の結果は、直す前のまとめでの結果として、そのまま数える**
+- **救急（H14）と、電話番号の食い違い（H22）は、3つのモデルとも3回とも ○**
+- △ が多かった問: 受付の締め切りと診療の終わりを分け、今の順番の確かめ先を示す（H15）、予約の入口に送るのは必要な項目だけで、送る前に見せる（H20）、「力を入れている」は医療機関の自己申告として伝える（H21）、`profile` の日付は医療機関の情報を確かめた日ではない（H23）。どれも、まとめが今は渡していないこと、または渡し方が弱いこと
+- Luna は holdout1 より ○ が少なかった（6〜7）。Flash も、Astra の判定では 4〜5 だった
+- H13〜H24 は、これで「見た問」になった。まとめを直したら、次の未見の問（holdout3）で確かめ直す
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
@@ -309,7 +353,8 @@ F は Fable、A は Astra、C は Carbon。
 - まとめの C15 の書き方を直し、F を3回ずつ解かせた（上の5回目）。Haiku と Flash は基準を満たし、Luna は ○ が足りなかった
 - まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。電話の一文を条件なしにし、受付が終わったときの書き方を足した7回目では、Luna は 19・17・19 になった。対象を絞った時間の言い方の型などを足した8回目では、Luna は 17・20・20 になった。「◯曜の午後は休診」・当番の食い違い・Web 予約の URL の型を足した9回目では、3つのモデルとも3回とも基準を満たした（Haiku 20・20・20、Luna 20・20・20、Flash 20・20・19）。1年を過ぎた情報と臨時の情報の時間の型を足した10回目では、3つとも 20・20・20 だった
 - まとめを直すときに見ていない12問（未見の問）で確かめた（上の holdout1）。Haiku だけが基準を満たし、区分 A はまだ「この企画として使ってよい」とは書かない
-- 未見の問で見つかったまとめの誤り（受付が終わったあとの「◯曜の午後は休診」）を直し、`closedNote`・休診の期間・送る項目がまだ分からないことを渡すようにする。直したら、20問と新しい未見の問（holdout2）で解かせ直す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
+- 未見の問で見つかったまとめの誤り（受付が終わったあとの「◯曜の午後は休診」）を直し、`closedNote`・休診の期間・送る項目がまだ分からないことを渡すようにした。20問（上の11回目）では3つとも基準を満たし、新しい未見の問（上の holdout2）では、どれも満たさなかった。holdout2 で見つかった誤り（全体の臨時の変更がある日に、対象を絞った時間を渡していた）も直した
+- 次は、まとめが渡していないこと（H15・H20・H21・H23 の △）を足すかを考え、20問と新しい未見の問（holdout3）で確かめ直す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
@@ -619,6 +664,50 @@ The judges agreed on 90 of 108.
 - The two judges disagreed more often on the unseen cases (Astra asked for each word in the must item; Claude judged the content). The disagreements were read as decided above
 - H01 to H12 now count as seen. After the summary is changed, it will be checked again on new unseen cases (holdout2)
 
+### Round 11: the summary errors found on unseen cases fixed, on all 20 cases (13 November 2026)
+
+The summary error found in holdout1 ("(day) afternoon is closed" after reception has ended) was fixed, and the summary now passes on the `closedNote`, temporary closure periods, row notes, and that the booking endpoint's steps do not yet show which items to send ([CHANGELOG](../CHANGELOG.md)). All 20 cases were run 3 times each with this summary.
+
+- Same conditions and pairs of judges as round 10
+- The judges agreed on 179 of 180. The one disagreement (Flash run 3, C07: Claude ×, Astra ○) was read by the author's side and marked ○. The answer opens with "the clinic is seeing patients this morning", but the same answer says the temporary notice updated on 10 November mentions no closure today and that "the situation may have changed", and recommends phoning; it never says "certainly" or "definitely". This is the same treatment as Luna run 1, C11, where an answer opening with "yes" but saying the information may be old was marked ○
+- Flash run 3, C06 is △ (it said vaccination bookings are paused but not that checkups run as usual; both judges gave △)
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | Met |
+
+#### Findings in round 11
+
+- After the fixes, all three models still met the criteria in all 3 runs on the 20 cases (the fixes did not break other cases)
+- These 20 cases have been seen, so the summary was then checked on a new set of unseen cases (holdout2)
+
+### Second set of unseen cases (holdout2): 12 cases not seen, with the round 11 summary (13 November 2026)
+
+- Cases: H13 to H24 in [`cases-holdout.json`](cases-holdout.json). As in holdout1, drafted by another AI family (Astra) and checked by the author's side against the files and the spec (H16's must was kept within rule 9 of spec §5, H22 gained a recommendation to check, and H24's must was reworded for patients). The summary (the same `src/brief.js` as in round 11) was made without seeing these cases
+- Same conditions as round 11 (level 2, 3 runs each, a new conversation per case). Same criteria as holdout1 (no ×, and at least 11 of 12 ○ in all 3 runs)
+- **Tool error**: for Flash run 3, H20, H21 and H24 have no answer, because the tool that runs Flash (agy) got an error from the service. They were not run again and are kept as "no answer (tool error)". That run is incomplete, so no pass or fail is given for it
+- **Judges**: Claude and Astra for Haiku and Flash. Luna's second judge (Carbon) runs on the same tool (agy) and could not be used. **Luna was judged by Claude only** (decided by the author)
+- **How it was decided**: no run met the criteria under either judge, so no reading of the split cases would change any result. The split cases were therefore not read one by one; the table keeps the stricter verdict
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 7 | 4 | 1 | 8 | 3 | 1 | 9 | 2 | 1 | Not met (all 3 runs) |
+| Luna (Claude only) | 6 | 5 | 1 | 6 | 6 | 0 | 7 | 4 | 1 | Not met (all 3 runs) |
+| Flash | 4 | 8 | 0 | 5 | 6 | 1 | 4 | 4 | 1 | Not met (runs 1, 2). Run 3 is missing 3 answers, no result |
+
+Counted with Claude's verdicts only, Haiku had 10, 10 and 10 ○ (H13 was × in all 3 runs) and Flash had 8, 7 and 7 ○. Where both judges were used, they agreed on 52 of 72 (including the 3 missing answers in Flash run 3).
+
+#### Findings on the second set of unseen cases
+
+- **No model met the criteria. V1 (group A) is not yet described as "may be used" by the project**
+- **An error in the summary (H13)**: 26 December (a fourth Saturday) had a whole-day temporary change (hours 9:00–12:00, reception until 11:00). In spec §6b, a whole-day temporary change replaces all of that day's usual rows, including rows for given weeks or departments. But the summary still passed on "today's narrowed hours: 14:00–16:00 (internal medicine, return visits, 2nd and 4th weeks)". Haiku offered this slot as a choice for today in all 3 runs (×), and Luna and Flash did not say it was replaced. This error is a large part of why the criteria were not met. The summary was fixed (on a day with a whole-day temporary change, it no longer passes on the narrowed hours and says they are replaced), and tests were added. **The holdout2 results count as they are, as results with the summary before the fix**
+- **Emergencies (H14) and the phone number mismatch (H22) were ○ for all three models in all 3 runs**
+- Cases with many △: telling the reception deadline apart from the end of hours and pointing to where to check the queue (H15); sending only the needed items to a booking endpoint and showing them first (H20); giving "focuses on hypertension" as the clinic's own claim (H21); and that the `profile` date is not the date the clinic's information was checked (H23). Each is something the summary does not pass on yet, or passes on weakly
+- Luna had fewer ○ than in holdout1 (6 to 7). Flash also had 4 to 5 under Astra's verdicts
+- H13 to H24 now count as seen. After the summary is changed, it will be checked again on new unseen cases (holdout3)
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
@@ -627,7 +716,8 @@ The judges agreed on 90 of 108.
 - The summary's C15 line was fixed and F was run 3 times each (round 5 above). Haiku and Flash met the criteria; Luna had too few ○
 - "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. In round 7 the phone sentence was made unconditional and a line for closed reception was added; Luna got 19, 17 and 19. In round 8 a wording pattern for narrowed hours and other changes were added; Luna got 17, 20 and 20. In round 9 patterns for "Thursday afternoon is closed", on-call conflicts and the online booking URL were added, and all three models met the criteria in all 3 runs (Haiku 20, 20, 20; Luna 20, 20, 20; Flash 20, 20, 19). In round 10, with patterns for information more than a year old and for hours set by a temporary notice, all three got 20, 20, 20
 - It was checked on 12 cases not seen while changing the summary (unseen cases; holdout1 above). Only Haiku met the criteria, so group A is not yet described as "may be used" by the project
-- Fix the summary error found on the unseen cases ("(day) afternoon is closed" after reception has ended), and pass on the `closedNote`, closure periods and that the items to send are not known yet. Then run the 20 cases and new unseen cases (holdout2) again. New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
+- The summary error found on the unseen cases ("(day) afternoon is closed" after reception has ended) was fixed, and the `closedNote`, closure periods and that the items to send are not known yet are now passed on. On the 20 cases (round 11 above) all three met the criteria; on new unseen cases (holdout2 above) none did. The error found in holdout2 (narrowed hours passed on for a day with a whole-day temporary change) was also fixed
+- Next, consider passing on what the summary leaves out (the △ on H15, H20, H21 and H23), then check again on the 20 cases and new unseen cases (holdout3). New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
