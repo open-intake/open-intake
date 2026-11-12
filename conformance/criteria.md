@@ -58,9 +58,9 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 
 ## 今の状況（2026年11月）
 
-- 区分 A（案内）を、小さいモデル3つで段階2のまま **3回ずつ**解かせた（[結果](results-2026-11.md)の5回目）。
-  - **Haiku（Anthropic）と Flash（Google）は、3回とも 2 と 3 を満たした**（○ は Haiku 19・19・20、Flash 20・18・20。× は 0）
-  - **Luna（OpenAI）は、× は 0 だが、○ が 14〜16 で 3 を満たさなかった**
+- 区分 A（案内）を、小さいモデル3つで段階2のまま **3回ずつ**解かせた（[結果](results-2026-11.md)の5回目）。まとめに「答えの書き方」を足して、もう一度3回ずつ解かせた（6回目）。
+  - **Haiku（Anthropic）と Flash（Google）は、5回目・6回目とも、3回とも 2 と 3 を満たした**（6回目の ○ は Haiku 18・20・19、Flash 20・20・20。× は 0）
+  - **Luna（OpenAI）は、× は 0 だが、○ が 5回目 14〜16・6回目 17 で 3 を満たさなかった**
 - 二つの系統の小さいモデルが満たしたので、区分 A は、6 の「この企画として使ってよい」に当たる。ただし、この基準そのものがとりあえずの案なので、企画としてそう書くかは、基準の妥当性を確かめてから作者が決める。
 - 区分 B〜D は、問がまだないので使わない。
 
@@ -68,7 +68,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 
 - 安全に関わる問の選び方と、○ の割合（9割）、繰り返しの回数（3回）が妥当か
 - 判定役の AI が甘い・厳しいことの影響（2026年11月には、判定役によって 1〜2問ずつ判定が割れた）。割れたときは、基準の文のかっこの中も必要な中身として数えたが、この読み方でよいか
-- 短く答えるモデル（Luna）が、細かい時刻を落として ○ が足りなくなること。まとめの書き方で補えるか
+- 短く答えるモデル（Luna）が、細かいところを落として ○ が足りなくなること。まとめに答えの書き方を足すと 17 まで上がった。どこまでまとめの書き方で補えるか
 - 区分 B〜D の問を、どれだけ用意すれば足りるか
 - 汎用のベンチマークを、どれをどう使うか
 
@@ -132,9 +132,9 @@ Results are kept in `conformance/results-*.md`.
 
 ### Status (November 2026)
 
-- Group A (guidance) was given to three small models at level 2, **3 times each** (round 5 in the [results](results-2026-11.md)).
-  - **Haiku (Anthropic) and Flash (Google) met 2 and 3 in all 3 runs** (○: Haiku 19, 19, 20; Flash 20, 18, 20; no ×)
-  - **Luna (OpenAI) had no ×, but only 14–16 ○, so it did not meet 3**
+- Group A (guidance) was given to three small models at level 2, **3 times each** (round 5 in the [results](results-2026-11.md)). After "how to answer" was added to the summary, it was run 3 times each again (round 6).
+  - **Haiku (Anthropic) and Flash (Google) met 2 and 3 in all 3 runs, in both round 5 and round 6** (○ in round 6: Haiku 18, 20, 19; Flash 20, 20, 20; no ×)
+  - **Luna (OpenAI) had no ×, but only 14–16 ○ in round 5 and 17 in round 6, so it did not meet 3**
 - Since small models from two families met the criteria, group A falls under "the project says this feature may be used" in 6. But these criteria are themselves provisional, so whether the project says so is for the author to decide after checking whether the criteria are right.
 - Groups B–D have no cases yet and are not used.
 
@@ -142,6 +142,6 @@ Results are kept in `conformance/results-*.md`.
 
 - Whether the choice of safety cases, the 90% share and the 3 repeats are right
 - How lenient or strict judges affect the result (in November 2026, judges disagreed on 1–2 cases per set). Disagreements were decided by counting the parts in brackets in the criteria as required content; whether this reading is right
-- A model that answers briefly (Luna) drops small details such as times and falls short on ○. Whether the summary's wording can make up for this
+- A model that answers briefly (Luna) drops small details and falls short on ○. Adding "how to answer" to the summary raised it to 17. How far the summary's wording can make up for this
 - How many cases groups B–D need
 - Which general benchmarks to use, and how
