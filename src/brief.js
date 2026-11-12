@@ -159,6 +159,14 @@
       if (src.startsWith("臨時の情報（")) {
         L.push("- 今日の全員向けの時間（臨時の情報による。ふだんの時間ではない）: " + parts.join(" ／ "));
         L.push(`- 臨時の情報の文（医療機関の言葉。答えにそのまま写さない）: ${src.slice(6, -1)}`);
+        // 全体の臨時の変更は、その日のふだんの行を置き換える（§6b）。なくなったふだんの時間を、はっきり渡す
+        const usual = allRows().filter(r => !scoped(r) && matches(r, today));
+        const gone = usual.filter(u => !rows.some(r => T(r.opens) < T(u.closes) && T(u.opens) < T(r.closes)));
+        if (gone.length) {
+          const pmGone = gone.every(u => T(u.opens) >= T("12:00")) && rows.every(r => T(r.opens) < T("12:00"));
+          const g = gone.map(u => `${HM(u.opens)}〜${HM(u.closes)}`).join("・");
+          L.push(`- ふだんの時間との違い: ふだんの ${g} の診療は、今日は臨時の情報で置き換わっていて、ない。答えで「` + (pmGone ? "今日の午後は休診です" : `今日は ${g} の診療はありません`) + "」と書く");
+        }
         if (stillOpen) L.push("- 答えの初めに「今日の" + jday(today) + "は、臨時の情報では、" + rows.map(hoursSay).join("、") + "です」と書く。この時間を「ふだんの診療」とは書かない");
         else L.push("- この時間は臨時の情報によるもの。答えで「ふだんの診療」とは書かない");
       } else {
@@ -173,13 +181,13 @@
         else {
           const last = rows.slice().sort((a, b) => T(a.closes) - T(b.closes)).pop(), lrc = rec(last)[1];
           const going = nm < T(last.closes);
-          if (!lrc) L.push(`- 今日 ${jday(today)} このあとの全員向けの時間: なし。答えの初めに「今日の全員向けの診療は ${HM(last.closes)} で終わりました」と書く。受付の締め切りの時刻は書かれていないので、書かない。今日を「休診」とは書かない`);
-          else L.push(`- 今日 ${jday(today)} このあとの全員向けの受付: なし。答えの初めに「今日の全員向けの受付は ${HM(lrc)} で締め切りました` + (going ? `（診療は ${HM(last.closes)} まで続いています）` : "") + "」と書く。今日を「休診」とは書かない" +
+          if (!lrc) L.push(`- 今日 ${jday(today)} このあとの全員向けの時間: なし。答えの初めに「今日の全員向けの診療は ${HM(last.closes)} で終わりました」と書く。受付の締め切りの時刻は書かれていないので、書かない。今日一日を「休診」とは書かない`);
+          else L.push(`- 今日 ${jday(today)} このあとの全員向けの受付: なし。答えの初めに「今日の全員向けの受付は ${HM(lrc)} で締め切りました` + (going ? `（診療は ${HM(last.closes)} まで続いています）` : "") + "」と書く。今日一日を「休診」とは書かない" +
             (going ? "。すでに受付を済ませた人の扱いは、医療機関に電話で確かめるよう勧める" : ""));
         }
       }
       if (!parts.some(x => x.includes("受付中") || x.includes("診療中")) && parts.some(x => x.includes("締め切った") || x.includes("終わった")))
-        L.push("- 受付が終わったとき: 答えでは、次に受けられる診療と受付の時間と、急ぐとき・悪くなるときは電話や救急相談（#7119 など）を使えることを、両方書く。受付が終わったことを、受診を延ばしてよい理由にしない");
+        L.push("- 受付が終わったとき: 答えでは、次に受けられる診療と受付の時間と、急ぐとき・悪くなるときは電話や救急相談（#7119 など）を使えることと、当番やほかの医療機関に相談できることを書く。受付が終わったことを、受診を延ばしてよい理由にしない");
     } else {
       L.push(`- 今日の全員向けの時間: なし（${src}）`);
     }

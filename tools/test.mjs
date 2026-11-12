@@ -216,6 +216,16 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   ok(brief(one, "2026-11-23T10:00:00+09:00").includes("11月23日（月・祝）"), "まとめの日付に、曜日と祝日が付く");
   ok(brief(one, "2027-01-11T10:00:00+09:00").includes("1月11日（月・祝）"), "成人の日を祝日として扱う");
   ok(brief(one, "2026-11-23T10:00:00+09:00", { holidays: [] }).includes("11月23日（月）"), "祝日の一覧はアプリが渡せる");
+  // 未見の問（holdout3）で見つかった足りないところ: 全体の臨時の変更でなくなったふだんの時間（§6b）と、受付が終わったあとの当番・ほかの医療機関（§5 の決まり17 (c)）
+  {
+    const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
+    const d18 = brief(two, "2026-12-18T08:52:00+09:00"), d26 = brief(two, "2026-12-26T10:00:00+09:00"), d18b = brief(two, "2026-12-18T13:00:00+09:00");
+    ok(d18.includes("ふだんの 15:00〜18:30 の診療は、今日は臨時の情報で置き換わっていて、ない") && d18.includes("今日の午後は休診です"), "全体の臨時の変更でなくなったふだんの午後を、休診と渡す");
+    ok(!d26.includes("ふだんの時間との違い"), "臨時の時間がふだんの時間と重なるときは、なくなった時間を渡さない");
+    ok(d18b.includes("今日一日を「休診」とは書かない"), "午後の休診と、今日一日の休診を分ける");
+    const fri = brief(one, "2026-11-27T18:01:00+09:00");
+    ok(fri.includes("当番やほかの医療機関に相談できること"), "受付が終わったとき、当番やほかの医療機関も渡す");
+  }
   // 未見の問（holdout1）で見つかった誤りを直したこと
   const fri = brief(one, "2026-11-27T18:01:00+09:00"), fri2 = brief(one, "2026-11-27T19:00:00+09:00"), thu = brief(one, "2026-11-26T16:10:00+09:00");
   ok(!fri.includes("金曜の午後は") && fri.includes("受付は 18:00 で締め切りました") && fri.includes("受付を済ませた人"), "午後の診療がある日に受付が終わっても「午後は休診」と書かせない");
