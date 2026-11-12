@@ -11,7 +11,7 @@ var LOCALE = {
   extraTemplates: [],
   exampleDoc(x) {
     return {
-      spec: "open-intake", specVersion: "0.3", updated: x.today(), profile: x.profileRef("jp"),
+      spec: "open-intake", specVersion: "0.5", updated: x.today(), profile: x.profileRef("jp"),
       files: [{ role: "schedule", url: "/clinic-schedule.json", note: "臨時の休診・担当医・当番・お知らせ" }],
       clinic: {
         name: "みどり台内科クリニック（架空の例）", url: "https://example.com/", identifiers: [{ system: "jp-medical-institution-code", value: "1310000000" }], telephone: "03-0000-0000",
@@ -41,7 +41,7 @@ var LOCALE = {
   },
   exampleSchedule(x) {
     const t = x.today(), d = x.addDays;
-    return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
+    return { spec: "open-intake-schedule", specVersion: "0.5", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
       exceptions: [
         { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日です。当院の診療は午前のみ。午後は内科だけ、地域の休日当番医として受け付けます" },
         { from: d(t, 30), to: d(t, 31), status: "closed", note: "院内研修のため休診" }],

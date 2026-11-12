@@ -1,0 +1,56 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "us",
+  "url": "https://open-intake.github.io/open-intake/profiles/us.json",
+  "title": "United States (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "US"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region. Reference not quoted (reproduction not permitted): American College of Emergency Physicians, \"When Your Child Has an Emergency\" (2002), https://www.acep.org/siteassets/uploads/uploaded-files/acep/clinical-and-practice-management/resources/pediatrics/whenyourchildhasanemergency.pdf",
+  "emergency": {
+    "message": "If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.",
+    "numbers": [
+      {
+        "number": "911",
+        "label": "Emergency services (ambulance, fire, police)"
+      },
+      {
+        "number": "988",
+        "label": "Suicide & Crisis Lifeline (call or text)"
+      }
+    ]
+  },
+  "redFlags": [
+    "Stroke: Sudden trouble walking, dizziness, loss of balance, or lack of coordination.",
+    "Stroke: Sudden trouble seeing.",
+    "Stroke: Sudden numbness or weakness in the face, arm, or leg, especially on one side of the body.",
+    "Stroke: Sudden confusion, trouble speaking, or difficulty understanding speech.",
+    "Stroke: Sudden severe headache with no known cause.",
+    "Heart attack: Chest pain or discomfort. Most heart attacks involve discomfort in the center or left side of the chest that lasts for more than a few minutes or that goes away and comes back. The discomfort can feel like uncomfortable pressure, squeezing, fullness, or pain.",
+    "Heart attack: Feeling weak, light-headed, or faint. You may also break into a cold sweat.",
+    "Heart attack: Pain or discomfort in the jaw, neck, or back.",
+    "Heart attack: Pain or discomfort in one or both arms or shoulders.",
+    "Heart attack: Shortness of breath. This often comes along with chest discomfort, but shortness of breath also can happen before chest discomfort."
+  ],
+  "redFlagsSource": {
+    "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+    "title": "Signs and Symptoms of Stroke (May 19, 2026); About Heart Attack Symptoms, Risk, and Recovery (Oct. 24, 2024)",
+    "url": "https://www.cdc.gov/stroke/signs-symptoms/index.html",
+    "pages": "also https://www.cdc.gov/heart-disease/about/heart-attack.html",
+    "note": "Source: Centers for Disease Control and Prevention (CDC). Materials developed by CDC. This material is available free of charge on the CDC website at https://www.cdc.gov/stroke/signs-symptoms/index.html and https://www.cdc.gov/heart-disease/about/heart-attack.html. Use of this material does not imply endorsement by CDC, HHS, or the United States Government of Open Intake or any of its products or services. The wording of each item is unchanged; the condition name (Stroke / Heart attack) is prefixed. These cover stroke and heart attack only, not a general list of emergencies. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."
+  },
+  "identifierSystems": [
+    {
+      "system": "http://hl7.org/fhir/sid/us-npi",
+      "label": "National Provider Identifier (NPI)",
+      "pattern": "^\\d{10}$"
+    }
+  ],
+  "questionnaires": []
+}

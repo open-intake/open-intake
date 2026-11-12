@@ -1,0 +1,45 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "ca-bc",
+  "url": "https://open-intake.github.io/open-intake/profiles/ca-bc.json",
+  "title": "British Columbia, Canada (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "CA",
+    "addressRegion": "BC"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile for British Columbia. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce the official source is granted; see references. To be discussed and maintained by a community in this region.",
+  "emergency": {
+    "message": "If you think you may need emergency care, call 9-1-1 now. If you are not sure whether it is an emergency, call 8-1-1 (HealthLink BC) for advice.",
+    "numbers": [
+      {
+        "number": "911",
+        "label": "Emergency services"
+      },
+      {
+        "number": "811",
+        "label": "HealthLink BC (health advice; 7-1-1 for the deaf and hard of hearing)"
+      },
+      {
+        "number": "988",
+        "label": "Suicide Crisis Helpline (call or text)"
+      }
+    ]
+  },
+  "redFlags": [],
+  "references": [
+    {
+      "publisher": "HealthLink BC (Government of British Columbia)",
+      "title": "When to visit the emergency room",
+      "url": "https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room",
+      "note": "Official list of potentially life-threatening symptoms. Not quoted until permission is granted (Province of British Columbia copyright)."
+    }
+  ],
+  "identifierSystems": [],
+  "questionnaires": []
+}

@@ -24,6 +24,39 @@
       "type": "string",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
     },
+    "verified": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "中身が今も正しいと最後に確かめた日（v0.5 から。SPEC §3）"
+    },
+    "status": {
+      "description": "閉院・移転・ファイルでの案内の終了（v0.5 から。SPEC §3d）",
+      "type": "object",
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "closed",
+            "moved",
+            "withdrawn"
+          ]
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "movedTo": {
+          "type": "string",
+          "pattern": "^\\S+$"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 200
+        }
+      }
+    },
     "clinic": {
       "$ref": "#/$defs/clinic"
     },
@@ -104,6 +137,15 @@
             },
             "url": {
               "type": "string"
+            },
+            "updated": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+              "description": "使ったプロファイルの更新日（v0.5 から）"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
             }
           }
         }
@@ -188,7 +230,7 @@
         },
         "openingHours": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 0,
           "items": {
             "type": "object",
             "required": [
@@ -256,7 +298,81 @@
                 }
               }
             }
-          }
+          },
+          "description": "全員向けの診療時間。scopedOpeningHours に1つ以上あるとき、または status があるときは空でもよい（v0.5 から。それ以外は1つ以上。検査器 E5）"
+        },
+        "scopedOpeningHours": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "required": [
+              "days",
+              "opens",
+              "closes"
+            ],
+            "properties": {
+              "days": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "Mo",
+                    "Tu",
+                    "We",
+                    "Th",
+                    "Fr",
+                    "Sa",
+                    "Su",
+                    "PH"
+                  ]
+                }
+              },
+              "opens": {
+                "$ref": "#/$defs/time"
+              },
+              "closes": {
+                "$ref": "#/$defs/time"
+              },
+              "note": {
+                "type": "string"
+              },
+              "reception": {
+                "$ref": "#/$defs/reception"
+              },
+              "department": {
+                "type": "string",
+                "minLength": 1,
+                "description": "この時間が当てはまる診療科（v0.4 から）"
+              },
+              "service": {
+                "$ref": "#/$defs/service"
+              },
+              "visitType": {
+                "$ref": "#/$defs/visitType"
+              },
+              "entry": {
+                "$ref": "#/$defs/entry"
+              },
+              "mayEndEarly": {
+                "type": "boolean",
+                "description": "混雑などで、締め切りより早く受付を終えることがある（v0.4 から）"
+              },
+              "weeksOfMonth": {
+                "type": "array",
+                "description": "第何週の曜日だけに当てはまるか（v0.4 から）",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                }
+              }
+            }
+          },
+          "description": "対象を絞った診療時間（v0.5 から。SPEC §4）。1件の形は openingHours と同じ"
         },
         "closedNote": {
           "type": "string"
@@ -273,7 +389,7 @@
         },
         "booking": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 0,
           "items": {
             "type": "object",
             "required": [
@@ -353,6 +469,49 @@
                 "type": "string",
                 "pattern": "^https?://",
                 "description": "今の順番や空きを確かめられるページ（v0.4 から）"
+              },
+              "platform": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string",
+                    "pattern": "^https?://"
+                  }
+                },
+                "description": "予約の基盤（v0.5 から）"
+              },
+              "endpoints": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "url"
+                  ],
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "mcp",
+                        "api",
+                        "other"
+                      ]
+                    },
+                    "url": {
+                      "type": "string",
+                      "pattern": "^https://\\S+$"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "機械が予約の基盤とやりとりする入口（v0.5 から）"
               }
             },
             "allOf": [
@@ -385,7 +544,8 @@
                 }
               }
             ]
-          }
+          },
+          "description": "予約・受診の方法。status があるときは空でもよい（v0.5 から。それ以外は1つ以上。検査器 E6）"
         },
         "bring": {
           "$ref": "#/$defs/strList"

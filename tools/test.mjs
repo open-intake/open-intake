@@ -90,6 +90,8 @@ for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r 
   d.policy = { summary: "x" }; ok(codes(validate(d)).includes("E14"), "policy に url がなければ E14"); }
 
 // v0.3: 地域プロファイル・地域の一覧・識別番号
+// 版ごとの写し（v0.5）: 今の中身と同じ写しが profiles/archive/<id>-<updated>.json にある
+for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { const d = JSON.parse(fs.readFileSync("profiles/" + f, "utf8")), a = `profiles/archive/${d.id}-${d.updated}.json`; ok(fs.existsSync(a) && fs.readFileSync(a, "utf8") === fs.readFileSync("profiles/" + f, "utf8"), `profiles/${f} の版ごとの写し（${a}）が今の中身と同じ`); }
 for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { const r = validate(JSON.parse(fs.readFileSync("profiles/" + f, "utf8"))); ok(r.E.length === 0, `profiles/${f} がエラーなしで通る`, JSON.stringify(r.E)); }
 { const d = JSON.parse(fs.readFileSync("examples/v0.3/clinic-intake.json", "utf8"));
   d.clinic.identifiers[0].value = "123"; ok(codes(validate(d)).includes("E15"), "医療機関コードが10桁でなければ E15");
@@ -140,6 +142,40 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
 { const s4 = () => JSON.parse(fs.readFileSync("examples/v0.4/clinic-schedule.json", "utf8"));
   let d = s4(); const x = d.exceptions.find(e => e.entry === "none"); x.entry = "stop"; ok(codes(validate(d)).includes("S4"), "臨時の変更の受け付け方が決まっていない値なら S4");
   d = s4(); d.exceptions.find(e => e.status === "closed").entry = "none"; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W22"), "休診に受け付け方を書くと注意（W22）"); }
+
+// v0.5: 対象を絞った行の置き場所・確かめた日・閉院・予約の基盤の入口・地域の一覧の発行者
+{ const v5 = () => JSON.parse(fs.readFileSync("examples/v0.5/clinic-intake.json", "utf8"));
+  const wc = x => validate(x).W.map(w => w.code);
+  const today = new Date().toISOString().slice(0, 10), daysAgo = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+  let d = v5(); ok(d.clinic.scopedOpeningHours.length > 0 && !wc(d).includes("W23"), "v0.5 の例は絞った行を scopedOpeningHours に置き、W23 が出ない");
+  d = v5(); d.clinic.openingHours.push(d.clinic.scopedOpeningHours[0]); ok(validate(d).E.length === 0 && wc(d).includes("W23"), "0.5 で絞った行を openingHours に置くと注意（W23）");
+  d = v5(); d.clinic.openingHours.push({ days: ["Mo"], opens: "15:00", closes: "18:00", entry: "none" }); ok(wc(d).includes("W23"), "0.5 で新しい受付をしない行を openingHours に置くと W23");
+  d = v5(); d.clinic.openingHours.push({ days: ["Mo"], opens: "15:00", closes: "18:00", entry: "appointment" }); ok(!wc(d).includes("W23"), "予約の人だけの行は openingHours に置いてよい");
+  d = JSON.parse(fs.readFileSync("examples/v0.4/clinic-intake.json", "utf8")); ok(!wc(d).includes("W23"), "0.4 のファイルの絞った行は W23 にならない（今も有効）");
+  d = v5(); d.clinic.openingHours = []; ok(validate(d).E.length === 0, "scopedOpeningHours があれば openingHours は空でもよい");
+  d = v5(); d.clinic.openingHours = []; d.clinic.scopedOpeningHours = []; ok(codes(validate(d)).includes("E5"), "どちらも空なら E5");
+  d = v5(); d.clinic.scopedOpeningHours[0].opens = "16:00"; ok(codes(validate(d)).includes("E5"), "scopedOpeningHours の時刻の前後が逆なら E5");
+  d = v5(); d.verified = "2026/11/12"; ok(codes(validate(d)).includes("E18"), "verified の形が違えば E18");
+  d = v5(); d.verified = "2000-01-01"; ok(codes(validate(d)).includes("E18"), "verified が updated より前なら E18");
+  d = v5(); d.verified = "2999-01-01"; ok(codes(validate(d)).includes("E18"), "verified が今日より後なら E18");
+  d = v5(); d.updated = daysAgo(400); d.verified = today; ok(!wc(d).includes("W2"), "updated が古くても verified が新しければ W2 は出ない");
+  d = v5(); d.updated = daysAgo(200); delete d.verified; ok(wc(d).includes("W2"), "確かめた日から180日を過ぎれば W2");
+  d = v5(); d.status = { state: "gone" }; ok(codes(validate(d)).includes("E19"), "決まっていない status は E19");
+  d = v5(); d.status = { state: "moved", movedTo: "https://example.com/new clinic" }; ok(codes(validate(d)).includes("E19"), "movedTo に空白があれば E19");
+  d = v5(); d.status = { state: "closed" }; ok(validate(d).E.length === 0 && wc(d).includes("W26"), "閉院なのに診療時間が残っていれば W26");
+  d = JSON.parse(fs.readFileSync("examples/v0.5/clinic-intake-closed.json", "utf8")); ok(validate(d).E.length === 0 && !wc(d).includes("W26"), "閉院の例は診療時間と予約が空でも通る");
+  d = v5(); d.profile.sha256 = "ABC"; ok(codes(validate(d)).includes("E20"), "profile.sha256 の形が違えば E20");
+  d = v5(); d.clinic.handles = Array.from({ length: 16 }, (_, i) => "症状" + i); ok(wc(d).includes("W24"), "handles が15個を超えれば W24");
+  d = v5(); d.clinic.booking[0].endpoints = [{ type: "mcp", url: "http://example.com/mcp" }]; ok(codes(validate(d)).includes("E6"), "予約の入口が https でなければ E6");
+  d = v5(); d.clinic.booking[0].endpoints = [{ type: "graphql", url: "https://example.com/x" }]; ok(codes(validate(d)).includes("E6"), "決まっていない入口の種類は E6");
+  d = v5(); d.clinic.booking[0].platform = { name: "例の予約", id: "123", url: "https://example.net/" }; d.clinic.booking[0].endpoints = [{ type: "mcp", url: "https://example.net/mcp" }]; ok(validate(d).E.length === 0, "予約の基盤と入口を書ける"); }
+{ const s5 = () => JSON.parse(fs.readFileSync("examples/v0.5/clinic-schedule.json", "utf8"));
+  const wc = x => validate(x).W.map(w => w.code);
+  let d = s5(); ok(d.scopedExceptions.length > 0 && !wc(d).includes("W23"), "v0.5 の臨時の例は絞った変更を scopedExceptions に置く");
+  d = s5(); d.exceptions.push(d.scopedExceptions[0]); ok(wc(d).includes("W23"), "0.5 で絞った臨時の変更を exceptions に置くと W23");
+  d = s5(); d.scopedExceptions[0].status = "pause"; ok(codes(validate(d)).includes("S4"), "scopedExceptions も S4 で検査する");
+  d = s5(); delete d.scopedExceptions[0].department; delete d.scopedExceptions[0].service; ok(wc(d).includes("W23"), "絞っていない変更を scopedExceptions に置くと W23"); }
+{ const d = JSON.parse(fs.readFileSync("examples/v0.5/clinic-directory.json", "utf8")); delete d.publisher.url; ok(validate(d).W.some(w => w.code === "W25"), "地域の一覧に発行者のサイトがなければ W25"); }
 
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);

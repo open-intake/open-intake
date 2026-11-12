@@ -1,0 +1,49 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "gb",
+  "url": "https://open-intake.github.io/open-intake/profiles/gb.json",
+  "title": "United Kingdom (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "GB"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce an official NHS source is granted; see references. To be discussed and maintained by a community in this region.",
+  "emergency": {
+    "message": "If someone is seriously ill or injured and their life may be at risk, call 999 now. If you need urgent medical help but are not sure whether it is an emergency, use NHS 111 (online, by phone or in the NHS App).",
+    "numbers": [
+      {
+        "number": "999",
+        "label": "Emergency services"
+      },
+      {
+        "number": "112",
+        "label": "Emergency services (also works)"
+      },
+      {
+        "number": "111",
+        "label": "NHS 111 (urgent but not life-threatening)"
+      }
+    ]
+  },
+  "redFlags": [],
+  "references": [
+    {
+      "publisher": "London Ambulance Service NHS Trust",
+      "title": "When to call 999",
+      "url": "https://www.londonambulance.nhs.uk/our-services/emergency-care/calling-999/",
+      "note": "Examples of when to call 999. Not quoted until permission is granted by the Trust."
+    },
+    {
+      "publisher": "NHS",
+      "title": "When to call 999",
+      "url": "https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-call-999/"
+    }
+  ],
+  "identifierSystems": [],
+  "questionnaires": []
+}

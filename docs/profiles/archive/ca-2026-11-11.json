@@ -1,0 +1,36 @@
+{
+  "spec": "open-intake-profile",
+  "specVersion": "0.3",
+  "id": "ca",
+  "url": "https://open-intake.github.io/open-intake/profiles/ca.json",
+  "title": "Canada (starter profile)",
+  "updated": "2026-11-11",
+  "area": {
+    "addressCountry": "CA"
+  },
+  "languages": [
+    "en"
+  ],
+  "status": "draft",
+  "note": "Starter profile for Canada as a whole. Emergency numbers are filled in. Health services are organised by province, so warning signs are kept in provincial profiles (for example ca-bc).",
+  "emergency": {
+    "message": "In a life-threatening emergency, call 911 now. In many provinces you can call 811 for health advice from a nurse when it is not an emergency.",
+    "numbers": [
+      {
+        "number": "911",
+        "label": "Emergency services"
+      },
+      {
+        "number": "811",
+        "label": "Health advice line (available in many provinces)"
+      },
+      {
+        "number": "988",
+        "label": "Suicide Crisis Helpline (call or text)"
+      }
+    ]
+  },
+  "redFlags": [],
+  "identifierSystems": [],
+  "questionnaires": []
+}

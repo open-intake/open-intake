@@ -5,6 +5,7 @@
 // 写すもの: schema/ と examples/（サイトから URL で引けるように）
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 
 const check = process.argv.includes("--check");
 const read = f => fs.readFileSync(f, "utf8");
@@ -25,6 +26,15 @@ const PROFILE_ORDER = ["jp", "us", "gb", "au", "ca", "ca-bc"];
 const profileFiles = fs.readdirSync("profiles").filter(f => f.endsWith(".json"));
 const profiles = profileFiles.map(f => JSON.parse(read("profiles/" + f)))
   .sort((a, b) => (PROFILE_ORDER.indexOf(a.id) + 1 || 99) - (PROFILE_ORDER.indexOf(b.id) + 1 || 99));
+// 版ごとの写し（profiles/archive/<id>-<updated>.json。SPEC §4d・v0.5）。無ければ作り、あれば消さない・書き換えない
+// 中身を変えたのに updated が同じなら止める（写しと食い違うので）
+fs.mkdirSync("profiles/archive", { recursive: true });
+for (const p of profiles) {
+  const f = `profiles/archive/${p.id}-${p.updated}.json`, cur = read(`profiles/${profileFiles.find(x => JSON.parse(read("profiles/" + x)).id === p.id)}`);
+  if (!fs.existsSync(f)) { if (check) throw new Error(`${f} がありません（node tools/build.mjs で作ってください）`); fs.writeFileSync(f, cur); console.log("wrote", f); }
+  else if (read(f) !== cur) throw new Error(`profiles/${p.id}.json の中身が ${f} と違います。中身を変えたら updated を新しい日付にしてください`);
+  p._archive = { url: p.url.replace(/profiles\/[^/]+\.json$/, `profiles/archive/${p.id}-${p.updated}.json`), sha256: crypto.createHash("sha256").update(fs.readFileSync(f)).digest("hex") };
+}
 const profilesJs = JSON.stringify(profiles).replace(/</g, "\\u003c");
 
 // 英語版: 対訳表（src/i18n/en.tsv）で、日本語の画面の文を置き換える

@@ -173,6 +173,10 @@ pre.json .s { color: var(--code-str); }
 .view .tag.alert { color: var(--req); border-color: currentColor; }
 .view .tag.good { color: var(--ok); border-color: currentColor; }
 .view .sub { color: var(--muted); font-size: 12.5px; }
+.view .wk { overflow-x: auto; }
+.view table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.view th, .view td { border: 1px solid var(--rule); padding: 3px 6px; text-align: left; vertical-align: top; }
+.view th { color: var(--muted); font-weight: normal; }
 .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
 .issues li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 4px; }
 .issues li.e { background: var(--req-soft); }
@@ -194,7 +198,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow"><a href="../">← About Open Intake</a> · clinic-intake.json · clinic-schedule.json · v0.3 draft · <a href="../../maker/" hreflang="ja" lang="ja">&#26085;&#26412;&#35486;</a></div>
+    <div class="eyebrow"><a href="../">← About Open Intake</a> · clinic-intake.json · clinic-schedule.json · v0.5 draft · <a href="../en/maker/" hreflang="en" lang="en">English</a></div>
     <h1>Open Intake Maker</h1>
     <p>Enter your clinic's information and questionnaires to create <code>clinic-intake.json</code>, readable by patients' AI assistants. Nothing is sent to any server; your input stays in this browser.</p>
   </header>
@@ -487,6 +491,7 @@ Now start by asking whether this is "A. Create it for the first time" or "B. Upd
         <button class="tab" role="tab" id="tab-json" aria-selected="true" aria-controls="panel-json" type="button">JSON</button>
         <button class="tab" role="tab" id="tab-view" aria-selected="false" aria-controls="panel-view" type="button">View</button>
         <button class="tab" role="tab" id="tab-issues" aria-selected="false" aria-controls="panel-issues" type="button">Check</button>
+        <button class="tab" role="tab" id="tab-web" aria-selected="false" aria-controls="panel-web" type="button">For your website</button>
         <button class="tab" role="tab" id="tab-load" aria-selected="false" aria-controls="panel-load" type="button">Paste and check</button>
       </div>
       <div class="panel" id="panel-json" role="tabpanel">
@@ -504,6 +509,16 @@ Now start by asking whether this is "A. Create it for the first time" or "B. Upd
       </div>
       <div class="panel" id="panel-issues" role="tabpanel" hidden>
         <ul class="issues" id="issues"></ul>
+      </div>
+      <div class="panel" id="panel-web" role="tabpanel" hidden>
+        <p class="small">The same content, in forms you can paste into the clinic's website: structured data for search engines (JSON-LD) and HTML you can paste into a page as is. Both are made from clinic-intake.json, so paste them again after you change the file. clinic-intake.json remains the authoritative source.</p>
+        <h4 class="small" style="margin:8px 0 4px">Structured data (JSON-LD, schema.org MedicalClinic)</h4>
+        <div class="actions"><button class="btn" type="button" id="copyLd">Copy JSON-LD</button><span class="toast" id="ldToast" role="status"></span></div>
+        <pre class="json" id="ldOut" tabindex="0"></pre>
+        <p class="small">Paste it into the page's &lt;head&gt; or &lt;body&gt;. Narrowed hours (by department, service, first or return visit, or week of the month) and hours with no new patients are left out, so they are not mistaken for hours open to everyone.</p>
+        <h4 class="small" style="margin:8px 0 4px">HTML for the page</h4>
+        <div class="actions"><button class="btn" type="button" id="copyHtml">Copy HTML</button><span class="toast" id="htmlToast" role="status"></span></div>
+        <pre class="json" id="htmlOut" tabindex="0"></pre>
       </div>
       <div class="panel" id="panel-load" role="tabpanel" hidden>
         <p class="small">Paste JSON made by an AI, or the content of a published file, to check it. The check results and a readable view appear below.</p>
@@ -525,7 +540,7 @@ Now start by asking whether this is "A. Create it for the first time" or "B. Upd
   </div>
 
   <footer class="foot">
-    <div>Specification: Open Intake v0.3 draft · Specification CC BY 4.0, this tool Apache-2.0</div>
+    <div>Specification: Open Intake v0.5 draft · Specification CC BY 4.0, this tool Apache-2.0</div>
     <div>This tool does not diagnose. Always have a doctor review questionnaires and emergency warning signs before publishing.</div>
   </footer>
 </div>
@@ -533,7 +548,13 @@ Now start by asking whether this is "A. Create it for the first time" or "B. Upd
 <script>
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4", "0.5"];
+
+const atLeast = (v, want) => { if (typeof v !== "string") return false; const a = v.split(".").map(Number), b = want.split(".").map(Number); return a[0] !== b[0] ? a[0] > b[0] : (a[1] || 0) >= (b[1] || 0); };
+
+const isNarrowed = h => !!h && typeof h === "object" && (h.department !== undefined || (Array.isArray(h.service) && !(h.service.length === 1 && h.service[0] === "general")) || h.visitType === "first" || h.visitType === "return" || h.weeksOfMonth !== undefined || h.entry === "none");
+const STATUS_STATES = ["closed","moved","withdrawn"];
+const ENDPOINT_TYPES = ["mcp","api","other"];
 const KNOWN_ROLES = ["schedule"];
 
 const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
@@ -589,7 +610,27 @@ function validateIntake(o) {
   else if (!/^\d+\.\d+$/.test(o.specVersion)) err("E1", "specVersion must look like \"0.1\".", "specVersion");
   else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker (supports ${SUPPORTED_VERSIONS.join(", ")}). Unknown keys were ignored.`, "specVersion");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(o.updated || "")) err("E2", "updated must be a date in the form YYYY-MM-DD.", "updated");
-  else { const age = (Date.now() - new Date(o.updated + "T00:00:00").getTime()) / 864e5; if (age > 365) warn("W2", "The date last checked (updated) is more than a year ago. Check the content and update the date.", "updated"); }
+  else {
+    let last = o.updated;
+    if (o.verified !== undefined) {
+      if (!(typeof o.verified === "string" && DATE.test(o.verified))) err("E18", "verified (date last confirmed) must be a date in the form YYYY-MM-DD.", "verified");
+      else if (o.verified < o.updated) err("E18", "The date last confirmed (verified) is before the date the content was changed (updated).", "verified");
+      else if (o.verified > todayStr()) err("E18", "The date last confirmed (verified) is later than today.", "verified");
+      else last = o.verified;
+    }
+    const age = (Date.now() - new Date(last + "T00:00:00").getTime()) / 864e5;
+    if (age > 180) warn("W2", "More than 180 days have passed since the content was last confirmed (the later of updated and verified). Check the content and, if nothing has changed, set verified to today.", o.verified !== undefined ? "verified" : "updated");
+  }
+  const hasStatus = o.status !== undefined;
+  if (hasStatus) {
+    const st = o.status;
+    if (!isObj(st) || !STATUS_STATES.includes(st.state)) err("E19", "status must be an object with state (closed, moved or withdrawn = stopped publishing by file).", "status");
+    else {
+      if (st.date !== undefined && !(typeof st.date === "string" && DATE.test(st.date))) err("E19", "status.date must be in the form YYYY-MM-DD.", "status.date");
+      if (st.movedTo !== undefined && (typeof st.movedTo !== "string" || !st.movedTo.trim() || /\s/.test(st.movedTo))) err("E19", "status.movedTo must be a URL without spaces.", "status.movedTo");
+      if (typeof st.note === "string" && st.note.length > 200) warn("W5", `The status note is too long (${st.note.length} characters; up to 200).`, "status.note");
+    }
+  }
   const c = o.clinic;
   if (!isObj(c)) err("E3", "clinic (clinic information) is missing.", "clinic");
   else {
@@ -627,23 +668,33 @@ function validateIntake(o) {
       const nAreas = Array.isArray(c.focus) ? c.focus.reduce((n, f) => n + (isObj(f) && Array.isArray(f.areas) ? f.areas.length : 0), 0) : 0;
       if (nAreas > 10) warn("W17", `There are ${nAreas} areas of focus. Listing many makes them useless as hints; keep to a few main ones.`, "clinic.focus");
     }
+    if (Array.isArray(c.handles) && c.handles.length > 15) warn("W24", `There are ${c.handles.length} symptoms in handles. A long list is no help; keep to the main ones (up to 15).`, "clinic.handles");
     if (Array.isArray(c.notHandled)) c.notHandled.forEach((x, i) => {
       if (isStr(x) && /(\u98f2\u3093\u3067|\u670d\u7528|\u6301\u75c5|\u65e2\u5f80|\u6cbb\u7642\u4e2d|\u901a\u9662\u4e2d|taking|medication|condition)/i.test(x)) warn("W18", `Not provided ${i+1}: "${x}" looks like it describes patients' conditions or medicines. List only services, procedures or age groups not provided (so that it does not read as a refusal).`, `clinic.notHandled[${i}]`);
     });
-    if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
-    else c.openingHours.forEach((h, i) => {
-      const w = `clinic.openingHours[${i}]`;
-      if (!Array.isArray(h.days) || !h.days.length) err("E5", `Opening hours row ${i+1}: choose the days.`, w + ".days");
-      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `Opening hours row ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
-      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `Opening hours row ${i+1}: enter times in the form 09:00.`, w);
-      else if (h.opens >= h.closes) err("E5", `Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).`, w);
-      checkReception(h, w, `Opening hours row ${i+1}`, "E5", err, warn, c.departments);
-      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `Opening hours row ${i+1}: mayEndEarly must be true or false.`, w + ".mayEndEarly");
+    const scoped = c.scopedOpeningHours;
+    if (scoped !== undefined && !Array.isArray(scoped)) err("E5", "scopedOpeningHours (narrowed hours) must be an array ([ ]).", "clinic.scopedOpeningHours");
+    const nScoped = Array.isArray(scoped) ? scoped.length : 0;
+    const v05 = atLeast(o.specVersion, "0.5");
+    if (!Array.isArray(c.openingHours) || (!c.openingHours.length && !nScoped && !hasStatus)) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
+    const rows = [];
+    if (Array.isArray(c.openingHours)) c.openingHours.forEach((h, i) => rows.push([h, `clinic.openingHours[${i}]`, `Opening hours row ${i+1}`, false]));
+    if (Array.isArray(scoped)) scoped.forEach((h, i) => rows.push([h, `clinic.scopedOpeningHours[${i}]`, `Narrowed hours row ${i+1}`, true]));
+    rows.forEach(([h, w, label, inScoped]) => {
+      if (!isObj(h)) { err("E5", `${label}: not in the right form.`, w); return; }
+      if (!inScoped && v05 && isNarrowed(h)) warn("W23", `${label}: this entry is narrowed by department, service, first or return visit or week of the month, or takes no new check-ins. From 0.5, put it in scopedOpeningHours (so that AI that does not know 0.4 does not read it as hours for everyone).`, w);
+      if (!Array.isArray(h.days) || !h.days.length) err("E5", `${label}: choose the days.`, w + ".days");
+      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `${label}: only Mo–Su and PH can be used as days.`, w + ".days");
+      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `${label}: enter times in the form 09:00.`, w);
+      else if (h.opens >= h.closes) err("E5", `${label}: the start (${h.opens}) is after the end (${h.closes}).`, w);
+      checkReception(h, w, label, "E5", err, warn, c.departments);
+      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `${label}: mayEndEarly must be true or false.`, w + ".mayEndEarly");
       if (h.weeksOfMonth !== undefined && (!Array.isArray(h.weeksOfMonth) || !h.weeksOfMonth.length || h.weeksOfMonth.some(n => !Number.isInteger(n) || n < 1 || n > 5) || new Set(h.weeksOfMonth).size !== h.weeksOfMonth.length))
-        err("E5", `Opening hours row ${i+1}: weeksOfMonth must list numbers 1–5 without repeats.`, w + ".weeksOfMonth");
+        err("E5", `${label}: weeksOfMonth must list numbers 1–5 without repeats.`, w + ".weeksOfMonth");
     });
     if (c.appointmentRequired !== undefined && typeof c.appointmentRequired !== "boolean") err("E17", "appointmentRequired must be true or false. Leave it out if you are not sure.", "clinic.appointmentRequired");
-    if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
+    if (!Array.isArray(c.booking) || (!c.booking.length && !hasStatus)) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
+    if (hasStatus && ((Array.isArray(c.openingHours) && c.openingHours.length) || nScoped || (Array.isArray(c.booking) && c.booking.length))) warn("W26", "status (closed, moved, etc.) is set but hours or booking details remain. AI that does not know 0.5 would see the old hours, so emptying them is recommended.", "status");
     else c.booking.forEach((b, i) => {
       const w = `clinic.booking[${i}]`;
       if (!["web","phone","walk-in","other"].includes(b.method)) err("E6", `Booking method ${i+1}: method is not one of web / phone / walk-in / other.`, w + ".method");
@@ -661,11 +712,23 @@ function validateIntake(o) {
       }
       if (b.mode !== undefined && !BOOKING_MODES.includes(b.mode)) err("E6", `Booking method ${i+1}: mode must be time-slot (a time slot), queue (a place in today's queue) or request (apply and wait for a reply).`, w + ".mode");
       if (b.visitType !== undefined && !VISIT_TYPES.includes(b.visitType)) err("E6", `Booking method ${i+1}: visitType must be all, first (first visit) or return (follow-up).`, w + ".visitType");
+      if (b.platform !== undefined && !(isObj(b.platform) && (isStr(b.platform.name) || isStr(b.platform.url)))) err("E6", `Booking method ${i+1}: platform must be an object with name or url.`, w + ".platform");
+      if (b.endpoints !== undefined) {
+        if (!Array.isArray(b.endpoints)) err("E6", `Booking method ${i+1}: endpoints must be an array ([ ]).`, w + ".endpoints");
+        else b.endpoints.forEach((x, k) => {
+          if (!isObj(x) || !ENDPOINT_TYPES.includes(x.type)) err("E6", `Booking method ${i+1}, entry point ${k+1}: type must be mcp, api or other.`, `${w}.endpoints[${k}].type`);
+          if (!isObj(x) || typeof x.url !== "string" || !/^https:\/\/\S+$/.test(x.url)) err("E6", `Booking method ${i+1}, entry point ${k+1}: enter url starting with https://.`, `${w}.endpoints[${k}].url`);
+        });
+      }
       if (b.statusUrl !== undefined) { if (!isStr(b.statusUrl) || /\s/.test(b.statusUrl)) err("E6", `Booking method ${i+1}: the URL of the queue or availability page (statusUrl) is not valid.`, w + ".statusUrl"); else if (!/^https:\/\//.test(b.statusUrl)) warn("W1", `Booking method ${i+1}: the URL of the queue or availability page does not start with https.`, w + ".statusUrl"); }
     });
   }
   if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy must be an object ({ }) with url (where the policy is).", "policy");
   if (o.profile !== undefined && !(isStr(o.profile) || (isObj(o.profile) && isStr(o.profile.id)))) err("E16", "profile (regional profile) must be an object with id (e.g. {\"id\": \"jp\", \"url\": \"…\"}).", "profile");
+  if (isObj(o.profile)) {
+    if (o.profile.updated !== undefined && !(typeof o.profile.updated === "string" && DATE.test(o.profile.updated))) err("E20", "profile.updated (date of the profile used) must be in the form YYYY-MM-DD.", "profile.updated");
+    if (o.profile.sha256 !== undefined && !(typeof o.profile.sha256 === "string" && /^[0-9a-f]{64}$/.test(o.profile.sha256))) err("E20", "profile.sha256 must be 64 lower-case hex characters.", "profile.sha256");
+  }
   if (o.files !== undefined) {
     if (!Array.isArray(o.files)) err("E12", "files (official files) must be an array ([ ]).", "files");
     else {
@@ -767,8 +830,11 @@ function validateSchedule(o) {
     if (!overnightOk && opens >= closes) err("S4", `${label}: the start (${opens}) is after the end (${closes}).`, where);
   };
   const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} must be an array ([ ]).`, k); return []; } return o[k]; };
-  list("exceptions").forEach((x, i) => {
-    const w = `exceptions[${i}]`, label = `Temporary closure or change ${i+1}`;
+  const sv05 = atLeast(o.specVersion, "0.5");
+  const exRows = [];
+  list("exceptions").forEach((x, i) => exRows.push([x, `exceptions[${i}]`, `Temporary closure or change ${i+1}`, false]));
+  list("scopedExceptions").forEach((x, i) => exRows.push([x, `scopedExceptions[${i}]`, `Narrowed temporary change ${i+1}`, true]));
+  exRows.forEach(([x, w, label, inScoped]) => {
     if (!isObj(x)) { err("S4", `${label}: not in the right form.`, w); return; }
     if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: enter the period (from, to) in the form YYYY-MM-DD.`, w);
     else { if (x.from > x.to) err("S4", `${label}: the start date is after the end date.`, w); old(x.to, w, label); }
@@ -778,6 +844,8 @@ function validateSchedule(o) {
       else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label}, hours ${k+1}`, false));
     }
     checkReception(x, w, label, "S4", err, warn, null);
+    if (!inScoped && sv05 && (x.department !== undefined || x.service !== undefined)) warn("W23", `${label}: this temporary change is narrowed by department or service. From 0.5, put it in scopedExceptions (so that AI that does not know 0.4 does not read it as a change for the whole clinic).`, w);
+    if (inScoped && x.department === undefined && x.service === undefined) warn("W23", `${label}: no department or service is given. Put changes for the whole clinic in exceptions.`, w);
     if (x.status === "closed" && (x.reception !== undefined || x.entry !== undefined)) warn("W22", `${label}: the status is closed but reception hours or an entry rule are given. To change reception only, use changed.`, w);
   });
   list("doctorSchedule").forEach((x, i) => {
@@ -808,7 +876,7 @@ function validateSchedule(o) {
     if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: the start date is after the end date.`, w);
     old(x.to, w, label);
   });
-  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+  if (!list("exceptions").length && !list("scopedExceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
     warn("W10", "There is no temporary information. Even with nothing scheduled, publishing this file tells AI, with the update date, that no temporary arrangements are listed. Add sudden closures on the same day.", "$");
   return { E, W };
 }
@@ -825,6 +893,7 @@ function validateDirectory(o) {
   else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker.`, "specVersion");
   if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("D2", "updated must be in the form YYYY-MM-DD.", "updated");
   if (!isObj(o.publisher) || !isStr(o.publisher.name)) err("D3", "Enter publisher.name (the organisation that compiled this list).", "publisher");
+  else if (typeof o.publisher.url !== "string" || !/^https:\/\/\S+$/.test(o.publisher.url)) warn("W25", "Enter publisher.url (the organisation's official website) starting with https://. Reading AI checks the publisher by whether the directory's domain matches this website.", "publisher.url");
   if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("D3", "Enter area.addressCountry (country, e.g. JP).", "area");
   if (!Array.isArray(o.entries) || !o.entries.length) err("D4", "Enter at least one entry (clinic).", "entries");
   else {
@@ -957,7 +1026,7 @@ function validatePersonal(o) {
 
 function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : s === "open-intake-personal" ? "personal" : "intake"; }
 function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : k === "personal" ? validatePersonal(o) : validateIntake(o); }
-return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, isNarrowed, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
 </script>
@@ -992,7 +1061,7 @@ var LOCALE = {
   }],
   exampleDoc(x) {
     return {
-      spec: "open-intake", specVersion: "0.3", updated: x.today(), profile: x.profileRef("us"),
+      spec: "open-intake", specVersion: "0.5", updated: x.today(), profile: x.profileRef("us"),
       files: [{ role: "schedule", url: "/clinic-schedule.json", note: "Temporary closures, doctors, on-call duty and notices" }],
       clinic: {
         name: "Greenfield Family Practice (fictional example)", url: "https://example.com/", telephone: "(503) 000-0000",
@@ -1023,7 +1092,7 @@ var LOCALE = {
   },
   exampleSchedule(x) {
     const t = x.today(), d = x.addDays;
-    return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
+    return { spec: "open-intake-schedule", specVersion: "0.5", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
       exceptions: [
         { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "Public holiday: open in the morning only" },
         { from: d(t, 30), to: d(t, 31), status: "closed", note: "Closed for staff training" }],
@@ -1047,16 +1116,19 @@ const METHODS = [["web","Online booking"],["phone","Phone"],["walk-in","Walk-in 
 const ENTRY_OPTS = [["","Not stated"],["walk-in","Walk-ins accepted"],["appointment","Appointments only"],["none","No new patients (not closed)"]];
 const VISIT_OPTS = [["","New and returning"],["first","New patients only"],["return","Returning patients only"]];
 const SERVICE_OPTS = [["general","General outpatient"],["checkup","Health checkups"],["vaccination","Vaccinations"],["procedure","Surgery and tests"],["rehabilitation","Rehabilitation"],["other","Other"]];
+const STATE_OPTS = [["","Operating as usual (leave unselected)"],["closed","Closed permanently"],["moved","Moved"],["withdrawn","No longer publishing information in this file"]];
+const EP_OPTS = [["mcp","MCP"],["api","API"],["other","Other"]];
 const MODE_OPTS = [["","Not stated"],["time-slot","Book a time slot"],["queue","Take a place in today's queue"],["request","Request, confirmed by reply"]];
 const APPT_OPTS = [["","Not stated (unknown)"],["true","Yes (appointments only)"],["false","No"]];
 const TYPES = [["boolean","Yes / no"],["choice","Choose"],["open-choice","Choose or write"],["string","Short text"],["text","Long text"],["integer","Whole number"],["decimal","Decimal number"],["date","Date"],["display","Note (no answer)"]];
 const TYPE_KEYS = ["group", ...TYPES.map(t => t[0])];
 const CHOICE = new Set(["choice","open-choice"]);
-const PROFILES = [{"spec":"open-intake-profile","specVersion":"0.3","id":"jp","url":"https://open-intake.github.io/open-intake/profiles/jp.json","title":"日本の地域プロファイル","updated":"2026-11-11","area":{"addressCountry":"JP"},"languages":["ja"],"status":"draft","note":"日本の医療機関が使う基本（救急の番号・救急の目安・識別番号の体系・問診票の基本形）。医師の確認はまだ済んでいない。","emergency":{"message":"命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。","numbers":[{"number":"119","label":"救急車・消防"},{"number":"#7119","label":"救急安心センター（救急車を呼ぶか迷うときの相談。地域による）"},{"number":"#8000","label":"子ども医療電話相談（主に休日・夜間）"}]},"redFlags":["顔: 顔半分が動きにくい、または、しびれる","顔: ニッコリ笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくく、うまく話せない","顔: 見える範囲が狭くなる","顔: 突然、周りが二重に見える","顔: 顔色が明らかに悪い","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 支えなしで立てないぐらい急にふらつく","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 激しい腹痛が持続する","おなか: 血を吐く","おなか: 便に血が混ざる、または、真っ黒い便が出る","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","意識の障害: ぐったりしている","吐き気: 冷や汗を伴うような強い吐き気","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","その他: いつもと違う場合、様子がおかしい場合"],"redFlagsByAge":{"older":{"label":"高齢者","items":["顔: 顔半分が動きにくい、しびれる","顔: 笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくい","顔: 見える範囲が狭くなる","顔: 周りが二重に見える","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 急にふらつき、立っていられない","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 旅行などの後に痛み出した","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 血を吐く","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","吐き気: 冷や汗を伴うような強い吐き気","けいれん: けいれんが止まらない","飲み込み: 物をのどにつまらせた","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故や転落、転倒で強い衝撃を受けた","その他: いつもと違う場合、様子がおかしい場合"],"note":"高齢者は自覚症状が出にくい場合もあるので注意する。"},"child":{"label":"こども（15歳以下）","items":["顔: くちびるの色が紫色","顔: 顔色が明らかに悪い","頭: 頭を痛がって、けいれんがある","頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある","胸: 激しい咳やゼーゼーして呼吸が苦しそう","胸: 呼吸が弱い","手・足: 手足が硬直している","おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない","おなか: 激しいおなかの痛みで苦しがる","おなか: 嘔吐が止まらない","おなか: 便に血がまじった","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった","やけど: 痛みのひどいやけど","やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","生まれて3カ月未満の乳児: 乳児の様子がおかしい","その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"],"note":"判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}},"redFlagsSource":{"publisher":"消防庁","title":"救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜","edition":"令和7年12月発行","url":"https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf","pages":"おとな p.3・高齢者 p.2・こども p.4","note":"出典：「救急車を上手に使いましょう～救急車 必要なのはどんなとき?～」（消防庁）（https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf）（公共データ利用規約 第1.0版）を加工して作成（オープン受診案内）。「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"},"identifierSystems":[{"system":"jp-medical-institution-code","label":"医療機関コード（保険医療機関の番号・10桁）","pattern":"^\\d{10}$"}],"questionnaires":[{"resourceType":"Questionnaire","id":"jp-fever","status":"draft","title":"発熱・せきの問診票（基本形）","purpose":"発熱・せき・のどの痛みで受診する方","item":[{"linkId":"q1","text":"いつから症状がありますか","type":"choice","required":true,"answerOption":[{"valueString":"今日"},{"valueString":"1〜2日前"},{"valueString":"3〜6日前"},{"valueString":"1週間以上前"}]},{"linkId":"q2","text":"いまの体温（℃）","type":"decimal"},{"linkId":"q3","text":"当てはまる症状をすべて選んでください","type":"open-choice","repeats":true,"answerOption":[{"valueString":"せき"},{"valueString":"のどの痛み"},{"valueString":"鼻水"},{"valueString":"頭痛"},{"valueString":"体のだるさ"},{"valueString":"吐き気・おう吐"},{"valueString":"下痢"},{"valueString":"味やにおいがわからない"}]},{"linkId":"q4","text":"家族や周りに同じ症状の人はいますか","type":"boolean"},{"linkId":"q5","text":"持病はありますか","type":"boolean","required":true},{"linkId":"q6","text":"持病の名前","type":"string","enableWhen":[{"question":"q5","operator":"=","answerBoolean":true}]},{"linkId":"q7","text":"いま飲んでいる薬はありますか","type":"boolean","required":true},{"linkId":"q8","text":"薬の名前（わからなければ、お薬手帳を持ってきてください）","type":"text","enableWhen":[{"question":"q7","operator":"=","answerBoolean":true}]},{"linkId":"q9","text":"薬や食べ物のアレルギーはありますか","type":"boolean","required":true},{"linkId":"q10","text":"アレルギーの内容","type":"string","enableWhen":[{"question":"q9","operator":"=","answerBoolean":true}]},{"linkId":"q11","text":"妊娠している、またはその可能性がありますか","type":"choice","answerOption":[{"valueString":"はい"},{"valueString":"いいえ"},{"valueString":"あてはまらない"}]},{"linkId":"q12","text":"そのほか、医師に伝えたいこと","type":"text"}],"url":"https://open-intake.github.io/open-intake/profiles/jp.json#jp-fever"}]},{"spec":"open-intake-profile","specVersion":"0.3","id":"us","url":"https://open-intake.github.io/open-intake/profiles/us.json","title":"United States (starter profile)","updated":"2026-11-11","area":{"addressCountry":"US"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region. Reference not quoted (reproduction not permitted): American College of Emergency Physicians, \"When Your Child Has an Emergency\" (2002), https://www.acep.org/siteassets/uploads/uploaded-files/acep/clinical-and-practice-management/resources/pediatrics/whenyourchildhasanemergency.pdf","emergency":{"message":"If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.","numbers":[{"number":"911","label":"Emergency services (ambulance, fire, police)"},{"number":"988","label":"Suicide & Crisis Lifeline (call or text)"}]},"redFlags":["Stroke: Sudden trouble walking, dizziness, loss of balance, or lack of coordination.","Stroke: Sudden trouble seeing.","Stroke: Sudden numbness or weakness in the face, arm, or leg, especially on one side of the body.","Stroke: Sudden confusion, trouble speaking, or difficulty understanding speech.","Stroke: Sudden severe headache with no known cause.","Heart attack: Chest pain or discomfort. Most heart attacks involve discomfort in the center or left side of the chest that lasts for more than a few minutes or that goes away and comes back. The discomfort can feel like uncomfortable pressure, squeezing, fullness, or pain.","Heart attack: Feeling weak, light-headed, or faint. You may also break into a cold sweat.","Heart attack: Pain or discomfort in the jaw, neck, or back.","Heart attack: Pain or discomfort in one or both arms or shoulders.","Heart attack: Shortness of breath. This often comes along with chest discomfort, but shortness of breath also can happen before chest discomfort."],"redFlagsSource":{"publisher":"U.S. Centers for Disease Control and Prevention (CDC)","title":"Signs and Symptoms of Stroke (May 19, 2026); About Heart Attack Symptoms, Risk, and Recovery (Oct. 24, 2024)","url":"https://www.cdc.gov/stroke/signs-symptoms/index.html","pages":"also https://www.cdc.gov/heart-disease/about/heart-attack.html","note":"Source: Centers for Disease Control and Prevention (CDC). Materials developed by CDC. This material is available free of charge on the CDC website at https://www.cdc.gov/stroke/signs-symptoms/index.html and https://www.cdc.gov/heart-disease/about/heart-attack.html. Use of this material does not imply endorsement by CDC, HHS, or the United States Government of Open Intake or any of its products or services. The wording of each item is unchanged; the condition name (Stroke / Heart attack) is prefixed. These cover stroke and heart attack only, not a general list of emergencies. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[{"system":"http://hl7.org/fhir/sid/us-npi","label":"National Provider Identifier (NPI)","pattern":"^\\d{10}$"}],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"gb","url":"https://open-intake.github.io/open-intake/profiles/gb.json","title":"United Kingdom (starter profile)","updated":"2026-11-11","area":{"addressCountry":"GB"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce an official NHS source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If someone is seriously ill or injured and their life may be at risk, call 999 now. If you need urgent medical help but are not sure whether it is an emergency, use NHS 111 (online, by phone or in the NHS App).","numbers":[{"number":"999","label":"Emergency services"},{"number":"112","label":"Emergency services (also works)"},{"number":"111","label":"NHS 111 (urgent but not life-threatening)"}]},"redFlags":[],"references":[{"publisher":"London Ambulance Service NHS Trust","title":"When to call 999","url":"https://www.londonambulance.nhs.uk/our-services/emergency-care/calling-999/","note":"Examples of when to call 999. Not quoted until permission is granted by the Trust."},{"publisher":"NHS","title":"When to call 999","url":"https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-call-999/"}],"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"au","url":"https://open-intake.github.io/open-intake/profiles/au.json","title":"Australia (starter profile)","updated":"2026-11-11","area":{"addressCountry":"AU"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs are not quoted because the official source (healthdirect) does not permit reproduction without written permission; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"In a life-threatening emergency, call Triple Zero (000) now. If you are not sure whether to seek care, you can call the healthdirect helpline on 1800 022 222.","numbers":[{"number":"000","label":"Triple Zero (ambulance, fire, police)"},{"number":"112","label":"Emergency number from mobile phones"},{"number":"1800 022 222","label":"healthdirect helpline (health advice)"}]},"redFlags":[],"references":[{"publisher":"healthdirect Australia","title":"Calling triple zero (000)","url":"https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero","note":"Official list of when to call for an ambulance. Not quoted here: healthdirect's terms require prior written permission for reproduction."}],"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca","url":"https://open-intake.github.io/open-intake/profiles/ca.json","title":"Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA"},"languages":["en"],"status":"draft","note":"Starter profile for Canada as a whole. Emergency numbers are filled in. Health services are organised by province, so warning signs are kept in provincial profiles (for example ca-bc).","emergency":{"message":"In a life-threatening emergency, call 911 now. In many provinces you can call 811 for health advice from a nurse when it is not an emergency.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"Health advice line (available in many provinces)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca-bc","url":"https://open-intake.github.io/open-intake/profiles/ca-bc.json","title":"British Columbia, Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA","addressRegion":"BC"},"languages":["en"],"status":"draft","note":"Starter profile for British Columbia. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce the official source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If you think you may need emergency care, call 9-1-1 now. If you are not sure whether it is an emergency, call 8-1-1 (HealthLink BC) for advice.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"HealthLink BC (health advice; 7-1-1 for the deaf and hard of hearing)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"references":[{"publisher":"HealthLink BC (Government of British Columbia)","title":"When to visit the emergency room","url":"https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room","note":"Official list of potentially life-threatening symptoms. Not quoted until permission is granted (Province of British Columbia copyright)."}],"identifierSystems":[],"questionnaires":[]}];
+const PROFILES = [{"spec":"open-intake-profile","specVersion":"0.3","id":"jp","url":"https://open-intake.github.io/open-intake/profiles/jp.json","title":"日本の地域プロファイル","updated":"2026-11-11","area":{"addressCountry":"JP"},"languages":["ja"],"status":"draft","note":"日本の医療機関が使う基本（救急の番号・救急の目安・識別番号の体系・問診票の基本形）。医師の確認はまだ済んでいない。","emergency":{"message":"命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。","numbers":[{"number":"119","label":"救急車・消防"},{"number":"#7119","label":"救急安心センター（救急車を呼ぶか迷うときの相談。地域による）"},{"number":"#8000","label":"子ども医療電話相談（主に休日・夜間）"}]},"redFlags":["顔: 顔半分が動きにくい、または、しびれる","顔: ニッコリ笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくく、うまく話せない","顔: 見える範囲が狭くなる","顔: 突然、周りが二重に見える","顔: 顔色が明らかに悪い","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 支えなしで立てないぐらい急にふらつく","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 激しい腹痛が持続する","おなか: 血を吐く","おなか: 便に血が混ざる、または、真っ黒い便が出る","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","意識の障害: ぐったりしている","吐き気: 冷や汗を伴うような強い吐き気","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","その他: いつもと違う場合、様子がおかしい場合"],"redFlagsByAge":{"older":{"label":"高齢者","items":["顔: 顔半分が動きにくい、しびれる","顔: 笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくい","顔: 見える範囲が狭くなる","顔: 周りが二重に見える","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 急にふらつき、立っていられない","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 旅行などの後に痛み出した","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 血を吐く","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","吐き気: 冷や汗を伴うような強い吐き気","けいれん: けいれんが止まらない","飲み込み: 物をのどにつまらせた","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故や転落、転倒で強い衝撃を受けた","その他: いつもと違う場合、様子がおかしい場合"],"note":"高齢者は自覚症状が出にくい場合もあるので注意する。"},"child":{"label":"こども（15歳以下）","items":["顔: くちびるの色が紫色","顔: 顔色が明らかに悪い","頭: 頭を痛がって、けいれんがある","頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある","胸: 激しい咳やゼーゼーして呼吸が苦しそう","胸: 呼吸が弱い","手・足: 手足が硬直している","おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない","おなか: 激しいおなかの痛みで苦しがる","おなか: 嘔吐が止まらない","おなか: 便に血がまじった","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった","やけど: 痛みのひどいやけど","やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","生まれて3カ月未満の乳児: 乳児の様子がおかしい","その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"],"note":"判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}},"redFlagsSource":{"publisher":"消防庁","title":"救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜","edition":"令和7年12月発行","url":"https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf","pages":"おとな p.3・高齢者 p.2・こども p.4","note":"出典：「救急車を上手に使いましょう～救急車 必要なのはどんなとき?～」（消防庁）（https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf）（公共データ利用規約 第1.0版）を加工して作成（オープン受診案内）。「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"},"identifierSystems":[{"system":"jp-medical-institution-code","label":"医療機関コード（保険医療機関の番号・10桁）","pattern":"^\\d{10}$"}],"questionnaires":[{"resourceType":"Questionnaire","id":"jp-fever","status":"draft","title":"発熱・せきの問診票（基本形）","purpose":"発熱・せき・のどの痛みで受診する方","item":[{"linkId":"q1","text":"いつから症状がありますか","type":"choice","required":true,"answerOption":[{"valueString":"今日"},{"valueString":"1〜2日前"},{"valueString":"3〜6日前"},{"valueString":"1週間以上前"}]},{"linkId":"q2","text":"いまの体温（℃）","type":"decimal"},{"linkId":"q3","text":"当てはまる症状をすべて選んでください","type":"open-choice","repeats":true,"answerOption":[{"valueString":"せき"},{"valueString":"のどの痛み"},{"valueString":"鼻水"},{"valueString":"頭痛"},{"valueString":"体のだるさ"},{"valueString":"吐き気・おう吐"},{"valueString":"下痢"},{"valueString":"味やにおいがわからない"}]},{"linkId":"q4","text":"家族や周りに同じ症状の人はいますか","type":"boolean"},{"linkId":"q5","text":"持病はありますか","type":"boolean","required":true},{"linkId":"q6","text":"持病の名前","type":"string","enableWhen":[{"question":"q5","operator":"=","answerBoolean":true}]},{"linkId":"q7","text":"いま飲んでいる薬はありますか","type":"boolean","required":true},{"linkId":"q8","text":"薬の名前（わからなければ、お薬手帳を持ってきてください）","type":"text","enableWhen":[{"question":"q7","operator":"=","answerBoolean":true}]},{"linkId":"q9","text":"薬や食べ物のアレルギーはありますか","type":"boolean","required":true},{"linkId":"q10","text":"アレルギーの内容","type":"string","enableWhen":[{"question":"q9","operator":"=","answerBoolean":true}]},{"linkId":"q11","text":"妊娠している、またはその可能性がありますか","type":"choice","answerOption":[{"valueString":"はい"},{"valueString":"いいえ"},{"valueString":"あてはまらない"}]},{"linkId":"q12","text":"そのほか、医師に伝えたいこと","type":"text"}],"url":"https://open-intake.github.io/open-intake/profiles/jp.json#jp-fever"}],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/jp-2026-11-11.json","sha256":"5bfa815bdebd494aeea6b1a8395767280001c0b1138047539cdc86faef3e54c3"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"us","url":"https://open-intake.github.io/open-intake/profiles/us.json","title":"United States (starter profile)","updated":"2026-11-11","area":{"addressCountry":"US"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region. Reference not quoted (reproduction not permitted): American College of Emergency Physicians, \"When Your Child Has an Emergency\" (2002), https://www.acep.org/siteassets/uploads/uploaded-files/acep/clinical-and-practice-management/resources/pediatrics/whenyourchildhasanemergency.pdf","emergency":{"message":"If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.","numbers":[{"number":"911","label":"Emergency services (ambulance, fire, police)"},{"number":"988","label":"Suicide & Crisis Lifeline (call or text)"}]},"redFlags":["Stroke: Sudden trouble walking, dizziness, loss of balance, or lack of coordination.","Stroke: Sudden trouble seeing.","Stroke: Sudden numbness or weakness in the face, arm, or leg, especially on one side of the body.","Stroke: Sudden confusion, trouble speaking, or difficulty understanding speech.","Stroke: Sudden severe headache with no known cause.","Heart attack: Chest pain or discomfort. Most heart attacks involve discomfort in the center or left side of the chest that lasts for more than a few minutes or that goes away and comes back. The discomfort can feel like uncomfortable pressure, squeezing, fullness, or pain.","Heart attack: Feeling weak, light-headed, or faint. You may also break into a cold sweat.","Heart attack: Pain or discomfort in the jaw, neck, or back.","Heart attack: Pain or discomfort in one or both arms or shoulders.","Heart attack: Shortness of breath. This often comes along with chest discomfort, but shortness of breath also can happen before chest discomfort."],"redFlagsSource":{"publisher":"U.S. Centers for Disease Control and Prevention (CDC)","title":"Signs and Symptoms of Stroke (May 19, 2026); About Heart Attack Symptoms, Risk, and Recovery (Oct. 24, 2024)","url":"https://www.cdc.gov/stroke/signs-symptoms/index.html","pages":"also https://www.cdc.gov/heart-disease/about/heart-attack.html","note":"Source: Centers for Disease Control and Prevention (CDC). Materials developed by CDC. This material is available free of charge on the CDC website at https://www.cdc.gov/stroke/signs-symptoms/index.html and https://www.cdc.gov/heart-disease/about/heart-attack.html. Use of this material does not imply endorsement by CDC, HHS, or the United States Government of Open Intake or any of its products or services. The wording of each item is unchanged; the condition name (Stroke / Heart attack) is prefixed. These cover stroke and heart attack only, not a general list of emergencies. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[{"system":"http://hl7.org/fhir/sid/us-npi","label":"National Provider Identifier (NPI)","pattern":"^\\d{10}$"}],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/us-2026-11-11.json","sha256":"c8033d97de758241e9abfeb93b270dcdeb19af6217c195a6d082c71fad1a18e0"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"gb","url":"https://open-intake.github.io/open-intake/profiles/gb.json","title":"United Kingdom (starter profile)","updated":"2026-11-11","area":{"addressCountry":"GB"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce an official NHS source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If someone is seriously ill or injured and their life may be at risk, call 999 now. If you need urgent medical help but are not sure whether it is an emergency, use NHS 111 (online, by phone or in the NHS App).","numbers":[{"number":"999","label":"Emergency services"},{"number":"112","label":"Emergency services (also works)"},{"number":"111","label":"NHS 111 (urgent but not life-threatening)"}]},"redFlags":[],"references":[{"publisher":"London Ambulance Service NHS Trust","title":"When to call 999","url":"https://www.londonambulance.nhs.uk/our-services/emergency-care/calling-999/","note":"Examples of when to call 999. Not quoted until permission is granted by the Trust."},{"publisher":"NHS","title":"When to call 999","url":"https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-call-999/"}],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/gb-2026-11-11.json","sha256":"13c94a1b37e4b48e15d103d5f34ac9dcc2d957b2c0f8902ea0818849f0fa8eea"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"au","url":"https://open-intake.github.io/open-intake/profiles/au.json","title":"Australia (starter profile)","updated":"2026-11-11","area":{"addressCountry":"AU"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs are not quoted because the official source (healthdirect) does not permit reproduction without written permission; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"In a life-threatening emergency, call Triple Zero (000) now. If you are not sure whether to seek care, you can call the healthdirect helpline on 1800 022 222.","numbers":[{"number":"000","label":"Triple Zero (ambulance, fire, police)"},{"number":"112","label":"Emergency number from mobile phones"},{"number":"1800 022 222","label":"healthdirect helpline (health advice)"}]},"redFlags":[],"references":[{"publisher":"healthdirect Australia","title":"Calling triple zero (000)","url":"https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero","note":"Official list of when to call for an ambulance. Not quoted here: healthdirect's terms require prior written permission for reproduction."}],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/au-2026-11-11.json","sha256":"1648f0d9ff1bb034bc7f8c3a1c1aa97da3d7502602ce8a64a409b6a5eae351f2"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca","url":"https://open-intake.github.io/open-intake/profiles/ca.json","title":"Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA"},"languages":["en"],"status":"draft","note":"Starter profile for Canada as a whole. Emergency numbers are filled in. Health services are organised by province, so warning signs are kept in provincial profiles (for example ca-bc).","emergency":{"message":"In a life-threatening emergency, call 911 now. In many provinces you can call 811 for health advice from a nurse when it is not an emergency.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"Health advice line (available in many provinces)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/ca-2026-11-11.json","sha256":"3ceaa51aec0e2258bd252c4faa34f6e5d4865d4e49e98a2f50152ce786b36511"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca-bc","url":"https://open-intake.github.io/open-intake/profiles/ca-bc.json","title":"British Columbia, Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA","addressRegion":"BC"},"languages":["en"],"status":"draft","note":"Starter profile for British Columbia. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce the official source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If you think you may need emergency care, call 9-1-1 now. If you are not sure whether it is an emergency, call 8-1-1 (HealthLink BC) for advice.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"HealthLink BC (health advice; 7-1-1 for the deaf and hard of hearing)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"references":[{"publisher":"HealthLink BC (Government of British Columbia)","title":"When to visit the emergency room","url":"https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room","note":"Official list of potentially life-threatening symptoms. Not quoted until permission is granted (Province of British Columbia copyright)."}],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/ca-bc-2026-11-11.json","sha256":"a891e1d705c4d1b8154e060a115dc78c94eb6b610ad29aab5e6e6c1063b1a991"}}];
 const profileById = id => PROFILES.find(p => p.id === id);
 const currentProfile = () => profileById(S && S.profile && (S.profile.id || S.profile)) || profileById(LOCALE.defaultProfile) || PROFILES[0];
 const profileName = p => (LOCALE.profileNames && LOCALE.profileNames[p.id]) || p.title;
-const profileRef = id => { const p = profileById(id); return p ? { id: p.id, url: p.url } : { id }; };
+
+const profileRef = id => { const p = profileById(id); if (!p) return { id }; const r = { id: p.id, url: p._archive ? p._archive.url : p.url }; if (p.updated) r.updated = p.updated; if (p._archive) r.sha256 = p._archive.sha256; return r; };
 const POLICY_URL = LOCALE.policy;
 const STORE_KEY = "open-intake-draft-v1";
 const STORE_KEY_S = "open-intake-schedule-draft-v1";
@@ -1084,7 +1156,7 @@ const X = { today: () => today(), addDays: (d, n) => addDays(d, n), profileRef, 
 function exampleDoc() { return LOCALE.exampleDoc(X); }
 function blankDoc() {
   return {
-    spec: "open-intake", specVersion: "0.4", updated: today(), profile: profileRef(LOCALE.defaultProfile), files: [],
+    spec: "open-intake", specVersion: "0.5", updated: today(), profile: profileRef(LOCALE.defaultProfile), files: [],
     clinic: { name: "", url: "", identifiers: [], telephone: "", address: { addressCountry: (profileById(LOCALE.defaultProfile)?.area?.addressCountry) || "", postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" }, geo: null, access: [],
       departments: [], openingHours: [{ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "12:00" }], closedNote: "",
       handles: [], notHandled: [], booking: [{ method: "phone", telephone: "" }], bring: [], languages: [LOCALE.lang], accessibility: [] },
@@ -1102,6 +1174,9 @@ function normalize(doc) {
   d.spec = "open-intake"; d.specVersion = typeof d.specVersion === "string" ? d.specVersion : "0.1";
   if (d.profile === undefined) d.profile = profileRef(LOCALE.defaultProfile);
   if (typeof d.updated !== "string") d.updated = today();
+  if (typeof d.verified !== "string") delete d.verified;
+  if (d.status && typeof d.status === "object" && typeof d.status.state === "string") { const st = d.status; for (const k of ["date","movedTo","note"]) if (typeof st[k] !== "string") delete st[k]; }
+  else delete d.status;
   d.files = Array.isArray(d.files) ? d.files.filter(f => f && typeof f === "object").map(f => ({ ...f, role: String(f.role ?? ""), url: String(f.url ?? "") })) : [];
   const c = d.clinic = (d.clinic && typeof d.clinic === "object") ? d.clinic : {};
   for (const k of ["name","url","telephone","closedNote"]) if (typeof c[k] !== "string") c[k] = "";
@@ -1114,6 +1189,8 @@ function normalize(doc) {
   for (const k of ["departments","handles","notHandled","bring","languages","accessibility"]) c[k] = Array.isArray(c[k]) ? c[k].filter(x => typeof x === "string") : [];
   c.focus = Array.isArray(c.focus) ? c.focus.filter(f => f && typeof f === "object").map(f => ({ ...f, department: typeof f.department === "string" ? f.department : "", areas: Array.isArray(f.areas) ? f.areas.filter(x => typeof x === "string") : [], note: typeof f.note === "string" ? f.note : "" })) : [];
   
+  
+  c.openingHours = [...arr(c.openingHours), ...arr(c.scopedOpeningHours)]; delete c.scopedOpeningHours;
   c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.filter(h => h && typeof h === "object").map(h => ({ ...h, days: Array.isArray(h.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h.opens || "", closes: h.closes || "" })) : [];
   c.booking = Array.isArray(c.booking) ? c.booking.filter(b => b && typeof b === "object").map(b => ({ ...b, method: b.method || "other", url: b.url || "", telephone: b.telephone || "", note: b.note || "", hours: Array.isArray(b.hours) ? b.hours.filter(x => x && typeof x === "object").map(x => ({ ...x, days: Array.isArray(x.days) ? x.days.filter(k => DAY_KEYS.includes(k)) : [] })) : [] })) : [];
   if (typeof c.appointmentRequired !== "boolean") delete c.appointmentRequired;
@@ -1167,7 +1244,11 @@ function hoursOut(h) {
   return keepUnknown(h, o, HOURS_KEYS);
 }
 function build(d) {
-  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.4", updated: d.updated, policy: POLICY_URL };
+  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.5", updated: d.updated };
+  if (d.verified && d.verified >= d.updated) out.verified = d.verified;
+  const st = d.status && STATE_OPTS.some(o => o[0] && o[0] === d.status.state) ? d.status : null;
+  if (st) { const so = { state: st.state }; if (clean(st.date)) so.date = clean(st.date); if (st.state === "moved" && clean(st.movedTo)) so.movedTo = clean(st.movedTo); if (clean(st.note)) so.note = clean(st.note); out.status = keepUnknown(st, so, ["state","date","movedTo","note"]); }
+  out.policy = POLICY_URL;
   if (d.profile) out.profile = d.profile;
   const files = (d.files || []).map(f => { const o = { ...f, role: clean(f.role), url: clean(f.url) }; if (!clean(o.note)) delete o.note; return o; }).filter(f => f.role || f.url);
   if (files.length) out.files = files;
@@ -1181,20 +1262,23 @@ function build(d) {
   if (c.geo) clinic.geo = { latitude: c.geo.latitude, longitude: c.geo.longitude };
   { const v = cleanList(c.access); if (v.length) clinic.access = v; }
   clinic.departments = cleanList(c.departments);
-  clinic.openingHours = c.openingHours.map(hoursOut);
+  
+  { const rows = st ? [] : c.openingHours.map(hoursOut); clinic.openingHours = rows.filter(x => !isNarrowed(x)); const sc = rows.filter(isNarrowed); if (sc.length) clinic.scopedOpeningHours = sc; }
   if (clean(c.closedNote)) clinic.closedNote = clean(c.closedNote);
   if (typeof c.appointmentRequired === "boolean") clinic.appointmentRequired = c.appointmentRequired;
   { const fo = c.focus.map(f => { const o = {}; if (clean(f.department)) o.department = clean(f.department); o.areas = cleanList(f.areas); if (clean(f.note)) o.note = clean(f.note); return o; }).filter(f => f.areas.length || f.department); if (fo.length) clinic.focus = fo; }
   for (const k of ["handles","notHandled"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
-  clinic.booking = c.booking.map(b => {
+  clinic.booking = st ? [] : c.booking.map(b => {
     const o = { method: b.method }; if (b.method === "web" || (b.method === "other" && clean(b.url))) o.url = clean(b.url); if (b.method === "phone" || (b.method === "other" && clean(b.telephone))) o.telephone = clean(b.telephone);
     const hrs = arr(b.hours).filter(x => arr(x.days).length || x.opens || x.closes).map(x => ({ ...x, days: DAY_KEYS.filter(k => arr(x.days).includes(k)), opens: x.opens || "", closes: x.closes || "" }));
     if (hrs.length) o.hours = hrs;
     if (b.mode) o.mode = b.mode;
     if (b.visitType === "first" || b.visitType === "return") o.visitType = b.visitType;
     if (clean(b.statusUrl)) o.statusUrl = clean(b.statusUrl);
+    if (b.platform && (clean(b.platform.name) || clean(b.platform.url))) { const p = {}; if (clean(b.platform.name)) p.name = clean(b.platform.name); if (clean(b.platform.url)) p.url = clean(b.platform.url); o.platform = keepUnknown(b.platform, p, ["name","url"]); }
+    { const ep = arr(b.endpoints).filter(x => x && clean(x.url)).map(x => keepUnknown(x, { type: x.type || "other", url: clean(x.url) }, ["type","url"])); if (ep.length) o.endpoints = ep; }
     if (clean(b.note)) o.note = clean(b.note);
-    return keepUnknown(b, o, ["method","url","telephone","hours","mode","visitType","statusUrl","note"]);
+    return keepUnknown(b, o, ["method","url","telephone","hours","mode","visitType","statusUrl","platform","endpoints","note"]);
   });
   for (const k of ["bring","languages","accessibility"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
   out.clinic = clinic;
@@ -1220,7 +1304,7 @@ function build(d) {
   return out;
 }
 
-const { validate } = OpenIntakeValidate;
+const { validate, isNarrowed } = OpenIntakeValidate;
 
 
 function h(tag, props, ...kids) {
@@ -1364,7 +1448,8 @@ function renderHours() {
     h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.openingHours.push({ days: [], opens: "15:00", closes: "18:00" }); renderHours(); changed(); } }, "+ Add row")),
     field("f-closed", "Closures note", "closedNote", text("f-closed", () => c.closedNote, v => c.closedNote = v, { placeholder: "Closed Sundays and public holidays" })),
     field("f-appt", "Appointments only?", "appointmentRequired", pick("f-appt", APPT_OPTS, () => typeof c.appointmentRequired === "boolean" ? String(c.appointmentRequired) : "", v => setOrDrop(c, "appointmentRequired", v === "" ? undefined : v === "true"), "Appointments only?"),
-      { hint: "Choose only when this is clearly the rule. Differences by time slot go in each row's “How patients are taken”." }));
+      { hint: "Choose only when this is clearly the rule. Differences by time slot go in each row's “How patients are taken”." }),
+    h("p", { class: "small", text: "Rows narrowed by department, service, first or return visit, or week of the month, and rows with no new patients, are written out separately as scopedOpeningHours (so AI that only knows 0.4 does not read them as hours for everyone). Here you can keep editing them as one table. Use the day-by-day table in the Preview tab to check that it reads as you intended." }));
 }
 
 function renderBooking() {
@@ -1379,7 +1464,7 @@ function renderBooking() {
         (b.method === "web" || b.method === "other") && field(fid("bk", i, "u"), "Booking page URL", "url", text(fid("bk", i, "u"), () => b.url, v => b.url = v, { type: "url", placeholder: "https://" }), { req: b.method === "web" }),
         (b.method === "phone" || b.method === "other") && field(fid("bk", i, "t"), "Booking phone number", "telephone", text(fid("bk", i, "t"), () => b.telephone, v => b.telephone = v, { type: "tel", placeholder: "(503) 000-0000" }), { req: b.method === "phone" }),
         field(fid("bk", i, "n"), "Note", "note", text(fid("bk", i, "n"), () => b.note, v => b.note = v, { placeholder: "e.g. new patients by phone only" }))),
-      h("details", { class: "more", open: !!(b.mode || b.visitType || b.statusUrl || arr(b.hours).length) }, h("summary", { text: "How booking works and booking hours (optional)" }),
+      h("details", { class: "more", open: !!(b.mode || b.visitType || b.statusUrl || arr(b.hours).length || b.platform || arr(b.endpoints).length) }, h("summary", { text: "How booking works and booking hours (optional)" }),
         h("div", { class: "grid" },
           field(fid("bk", i, "md"), "How booking works", "mode", pick(fid("bk", i, "md"), MODE_OPTS, () => b.mode, v => setOrDrop(b, "mode", v), "How booking works")),
           field(fid("bk", i, "vt"), "New / returning", "visitType", pick(fid("bk", i, "vt"), VISIT_OPTS, () => b.visitType, v => setOrDrop(b, "visitType", v), "New / returning")),
@@ -1390,7 +1475,17 @@ function renderBooking() {
             h("input", { type: "checkbox", checked: arr(x.days).includes(dk), "aria-label": n, onchange: e => { x.days = e.target.checked ? DAY_KEYS.filter(y => y === dk || arr(x.days).includes(y)) : arr(x.days).filter(y => y !== dk); changed(); } }), h("span", { text: n })))),
           timeIn(fid("bk", i, "ho", k), () => x.opens, v => x.opens = v, "Start"), h("span", { text: "–" }), timeIn(fid("bk", i, "hc", k), () => x.closes, v => x.closes = v, "End"),
           delBtn(b.hours, k, renderBooking, "Remove these hours")))),
-        addBtn("+ Add booking hours", () => { b.hours = arr(b.hours); b.hours.push({ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "17:00" }); renderBooking(); }))))),
+        addBtn("+ Add booking hours", () => { b.hours = arr(b.hours); b.hours.push({ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "17:00" }); renderBooking(); }),
+        h("div", { class: "small", text: "When an outside company runs your booking system (optional)" }),
+        h("div", { class: "grid" },
+          field(fid("bk", i, "pn"), "Booking platform name", "platform.name", text(fid("bk", i, "pn"), () => b.platform?.name, v => { b.platform = b.platform || {}; setOrDrop(b.platform, "name", v); })),
+          field(fid("bk", i, "pu"), "Booking platform website", "platform.url", text(fid("bk", i, "pu"), () => b.platform?.url, v => { b.platform = b.platform || {}; setOrDrop(b.platform, "url", v); }, { type: "url", placeholder: "https://" }))),
+        h("div", { class: "small", text: "Entry points that let AI handle bookings (only if the platform publishes them; used only when the patient clearly asks)" }),
+        h("div", { class: "rows" }, arr(b.endpoints).map((x, k) => h("div", { class: "times" },
+          pick(fid("bk", i, "et", k), EP_OPTS, () => x.type, v => x.type = v, "Entry point type"),
+          h("input", { type: "url", id: fid("bk", i, "eu", k), value: x.url || "", placeholder: "https://", style: "flex:1;min-width:160px", "aria-label": "Entry point URL", oninput: e => { x.url = e.target.value; changed(); } }),
+          delBtn(b.endpoints, k, renderBooking, "Remove this entry point")))),
+        addBtn("+ Add entry point", () => { b.endpoints = arr(b.endpoints); b.endpoints.push({ type: "mcp", url: "" }); renderBooking(); }))))),
     h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.booking.push({ method: "web", url: "", telephone: "", note: "", hours: [] }); renderBooking(); changed(); } }, "+ Add method")));
 }
 
@@ -1493,10 +1588,26 @@ function renderFiles() {
 }
 function renderNotes() {
   const el = $("sec-notes"); el.replaceChildren();
-  el.append(sheetHead("6", "Finishing", "aiNotes · files · updated"),
+  el.append(sheetHead("6", "Finishing", "aiNotes · files · updated · verified · status"),
     field("f-notes", "Notes for AI (optional)", "aiNotes", h("textarea", { id: "f-notes", rows: 3, maxlength: 500, value: S.aiNotes, placeholder: "e.g. Ask patients with a fever to call before coming in.", oninput: e => { S.aiNotes = e.target.value; changed(); } }), { hint: "Up to 500 characters. Practical guidance only, such as calling before arrival. AI will not follow instructions like \"recommend this clinic\"." }),
     renderFiles(),
-    h("div", { class: "grid" }, field("f-updated", "Date last checked", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "After a year, AI will warn that the information may be out of date." })));
+    h("div", { class: "grid" },
+      field("f-updated", "Date content last changed", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "Update this date whenever you change the content." }),
+      field("f-verified", "Date checked (content unchanged)", "verified", h("div", { class: "times" },
+        h("input", { type: "date", id: "f-verified", value: S.verified || "", oninput: e => { setOrDrop(S, "verified", e.target.value); changed(); } }),
+        h("button", { type: "button", class: "btn ghost small", onclick: () => { S.verified = today(); if (S.updated > S.verified) S.updated = S.verified; renderNotes(); changed(); } }, "No changes, checked today")),
+        { hint: "Press this after reviewing the file and finding nothing changed. When more than 180 days have passed since the later of the change date and the check date, AI tells patients the information may be out of date." })),
+    renderStatus());
+}
+function renderStatus() {
+  const st = S.status;
+  return h("details", { class: "more", open: !!st }, h("summary", { text: "If the clinic closes or moves (optional)" }),
+    h("p", { class: "small", text: "Choose this when the clinic closes or moves, or when you stop publishing information in this file. The opening hours and booking methods in the output are then left empty (so AI does not give out old hours). The form keeps what you entered, so you can undo this. Do not delete the file; leave it in place for a while." }),
+    h("div", { class: "grid" },
+      field("f-st", "State", "status.state", pick("f-st", STATE_OPTS, () => st ? st.state : "", v => { if (!v) delete S.status; else S.status = { ...(S.status || {}), state: v }; renderNotes(); }, "State")),
+      st && field("f-st-d", "Date", "status.date", h("input", { type: "date", id: "f-st-d", value: st.date || "", oninput: e => { setOrDrop(st, "date", e.target.value); changed(); } })),
+      st && st.state === "moved" && field("f-st-m", "Where the clinic moved to (URL)", "status.movedTo", text("f-st-m", () => st.movedTo || "", v => setOrDrop(st, "movedTo", v), { type: "url", placeholder: "https://" })),
+      st && field("f-st-n", "Note", "status.note", text("f-st-n", () => st.note || "", v => setOrDrop(st, "note", v), { maxlength: 200, placeholder: "e.g. From April 2027, ○○ Clinic takes over" }))));
 }
 
 function renderAll() { renderClinic(); renderFocus(); renderHours(); renderBooking(); renderSafety(); renderQuestionnaires(); renderNotes(); renderNotice(); changed(true); }
@@ -1506,10 +1617,11 @@ let SC, originS = "";
 const EXC_STATUS = [["closed","Closed"],["open","Extra opening"],["changed","Changed hours"]];
 const ONCALL_KIND = [["holiday","Holiday duty"],["night","Night duty"],["other","Other"]];
 function exampleSchedule() { return LOCALE.exampleSchedule(X); }
-function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.4", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
+function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.5", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
 function normalizeSchedule(o) {
   const d = (o && typeof o === "object") ? JSON.parse(JSON.stringify(o)) : {};
-  d.spec = "open-intake-schedule"; d.specVersion = "0.4";
+  d.spec = "open-intake-schedule"; d.specVersion = "0.5";
+  d.exceptions = [...arr(d.exceptions), ...arr(d.scopedExceptions)]; delete d.scopedExceptions;
   for (const k of ["updated","validUntil","main"]) if (typeof d[k] !== "string") d[k] = k === "updated" ? today() : k === "validUntil" ? addDays(today(), 30) : "";
   for (const k of ["exceptions","doctorSchedule","onCall","notices"]) d[k] = Array.isArray(d[k]) ? d[k].filter(x => x && typeof x === "object") : [];
   for (const x of d.exceptions) { x.hours = Array.isArray(x.hours) ? x.hours : []; for (const k of ["from","to","note"]) x[k] = x[k] || ""; if (!x.status) x.status = "closed"; }
@@ -1520,13 +1632,17 @@ function normalizeSchedule(o) {
 }
 function buildSchedule(d) {
   const keep = (o, keys) => { const r = {}; for (const k of keys) { const v = clean(o[k]); if (v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)) r[k] = v; } return r; };
-  const out = { spec: "open-intake-schedule", specVersion: "0.4", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
+  const out = { spec: "open-intake-schedule", specVersion: "0.5", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
   if (clean(d.main)) out.main = clean(d.main);
-  if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]);
+  const exAll = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]);
     if (x.status !== "closed") { r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes }));
       if (clean(x.department)) r.department = clean(x.department); if (Array.isArray(x.service) && x.service.length) r.service = x.service.slice();
       const rc = receptionOut(x.reception); if (rc) r.reception = rc; if (x.entry) r.entry = x.entry; }
     if (clean(x.note)) r.note = clean(x.note); return keepUnknown(x, r, ["from","to","status","hours","department","service","reception","entry","note"]); });
+  
+  const exScoped = x => x.department !== undefined || x.service !== undefined;
+  if (exAll.some(x => !exScoped(x))) out.exceptions = exAll.filter(x => !exScoped(x));
+  if (exAll.some(exScoped)) out.scopedExceptions = exAll.filter(exScoped);
   if (d.doctorSchedule.length) out.doctorSchedule = d.doctorSchedule.map(x => { const r = keep(x, ["department","name"]); if (x._byDate) r.date = x.date; else r.days = DAY_KEYS.filter(k => x.days.includes(k)); r.opens = x.opens; r.closes = x.closes; if (clean(x.note)) r.note = clean(x.note); return r; });
   if (d.onCall.length) out.onCall = d.onCall.map(x => ({ ...keep(x, ["date","kind","opens","closes","department","note"]) }));
   if (d.notices.length) out.notices = d.notices.map(x => keep(x, ["text","from","to"]));
@@ -1659,20 +1775,42 @@ const hm = (o, c) => (c && o && c <= o) ? `${o}–${c} (next day)` : `${o || "?"
 function dl(rows) { return h("dl", {}, rows.filter(r => r && r[1] !== "" && r[1] != null && !(Array.isArray(r[1]) && !r[1].length)).map(([k, v]) => [h("dt", { text: k }), h("dd", {}, Array.isArray(v) ? v.join(", ") : v)])); }
 function block(title, ...kids) { const c = kids.flat().filter(Boolean); return c.length ? h("section", {}, h("h4", { text: title }), c) : null; }
 function list(items, tag = "ul") { const it = items.filter(Boolean); return it.length ? h(tag, {}, it.map(x => h("li", {}, x))) : null; }
+const STATE_JA = Object.fromEntries(STATE_OPTS.filter(o => o[0]));
+
+function weekTable(c) {
+  const rows = [...arr(c.openingHours).map(x => [x, false]), ...arr(c.scopedOpeningHours).map(x => [x, true])].filter(([x]) => x && typeof x === "object");
+  if (!rows.length) return null;
+  const who = x => [arr(x.weeksOfMonth).length && arr(x.weeksOfMonth).map(n => `week ${n}`).join(", ") + " only", x.department && str(x.department), arr(x.service).length && !(arr(x.service).length === 1 && x.service[0] === "general") && arr(x.service).map(k => SERVICE_JA[k] || str(k)).join(", "), VISIT_JA[x.visitType]].filter(Boolean).join(", ") || "Everyone";
+  const rec = x => { const r = x.reception && typeof x.reception === "object" ? x.reception : null; return [r && (r.opens || r.closes) && `${r.opens || "?"}–${r.closes || "?"}`, r && r.note && str(r.note)].filter(Boolean).join("  ") || "Not stated"; };
+  const how = x => [x.entry ? ENTRY_JA[x.entry] : "Not stated", x.mayEndEarly === true && "May close early"].filter(Boolean).join(", ");
+  const body = DAYS.map(([k, n]) => {
+    const hit = rows.filter(([x]) => arr(x.days).includes(k)).sort((a, b) => str(a[0].opens).localeCompare(str(b[0].opens)));
+    if (!hit.length) return [h("tr", {}, h("th", { text: n }), h("td", { colspan: 4, class: "sub", text: "No hours given (closed, or unknown)" }))];
+    return hit.map(([x], j) => h("tr", {}, j === 0 && h("th", { rowspan: hit.length, text: n }), h("td", { text: hm(x.opens, x.closes) }), h("td", { text: who(x) }), h("td", { text: rec(x) }), h("td", { text: how(x) })));
+  }).flat();
+  return block("Day-by-day check table", h("p", { class: "sub", style: "margin:0 0 4px", text: "Regular hours and narrowed hours, rearranged by day. A row whose “For whom” is not “Everyone” applies only to those people. One-off closures and changes are not included." }),
+    h("div", { class: "wk" }, h("table", {}, h("thead", {}, h("tr", {}, ["Day","Hours","For whom","Reception hours","How patients are taken"].map(s => h("th", { text: s })))), h("tbody", {}, body))));
+}
 function viewIntake(o) {
   const c = o.clinic || {}, a = c.address || {}, s = o.safety || {};
   const qs = arr(o.questionnaires);
   return [
     h("h3", { text: str(c.name) || "(Name is empty)" }),
-    dl([["Phone", str(c.telephone)], ["Address", [a.addressCountry, a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["Getting there", arr(c.access)], ["Location", c.geo ? `${c.geo.latitude}, ${c.geo.longitude}` : ""], ["Identifiers", arr(c.identifiers).map(x => { const sys = PROFILES.flatMap(p => p.identifierSystems || []).find(y => y.system === x.system); return `${sys ? sys.label : str(x.system)} ${str(x.value)}`; })], ["Website", str(c.url)], ["Departments", arr(c.departments)], ["Regional profile", o.profile ? str(o.profile.id || o.profile) : ""], ["Date last checked", str(o.updated)]]),
+    dl([["Phone", str(c.telephone)], ["Address", [a.addressCountry, a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["Getting there", arr(c.access)], ["Location", c.geo ? `${c.geo.latitude}, ${c.geo.longitude}` : ""], ["Identifiers", arr(c.identifiers).map(x => { const sys = PROFILES.flatMap(p => p.identifierSystems || []).find(y => y.system === x.system); return `${sys ? sys.label : str(x.system)} ${str(x.value)}`; })], ["Website", str(c.url)], ["Departments", arr(c.departments)], ["Regional profile", o.profile ? str(o.profile.id || o.profile) + (o.profile.updated ? ` (version ${str(o.profile.updated)})` : "") : ""], ["Content last changed", str(o.updated)], ["Last checked", str(o.verified)]]),
+    o.status && typeof o.status === "object" && block("Closed or moved", h("div", {}, h("span", { class: "tag alert", text: STATE_JA[o.status.state] || str(o.status.state) }), o.status.date && h("span", { text: "  " + str(o.status.date) }), o.status.movedTo && h("div", { class: "sub", text: "Moved to: " + str(o.status.movedTo) }), o.status.note && h("div", { class: "sub", text: str(o.status.note) }), h("div", { class: "sub", text: "Reading AI does not give out the hours or booking methods written here." }))),
     block("Regular hours", list(arr(c.openingHours).map(x => h("span", {}, `${arr(x.weeksOfMonth).length ? "Weeks " + arr(x.weeksOfMonth).join(", ") + ": " : ""}${days(x.days)}　${hm(x.opens, x.closes)}`,
         hoursExtra(x).length > 0 && h("span", { class: "sub", text: "  " + hoursExtra(x).join(" / ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" })))),
       c.closedNote && h("div", { class: "sub", text: c.closedNote }),
       typeof c.appointmentRequired === "boolean" && h("div", { class: "sub", text: c.appointmentRequired ? "Appointments only" : "Not appointments only" })),
+    block("Narrowed opening hours (scopedOpeningHours)", list(arr(c.scopedOpeningHours).map(x => h("span", {}, `${arr(x.weeksOfMonth).length ? "Weeks " + arr(x.weeksOfMonth).join(", ") + ": " : ""}${days(x.days)}　${hm(x.opens, x.closes)}`,
+        hoursExtra(x).length > 0 && h("span", { class: "sub", text: "  " + hoursExtra(x).join(" / ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }))))),
+    weekTable(c),
     block("Booking and visiting", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "  " + b.url }), b.telephone && h("span", { text: "  " + b.telephone }),
       (b.mode || b.visitType) && h("span", { class: "sub", text: "  " + [MODE_JA[b.mode], VISIT_JA[b.visitType]].filter(Boolean).join(" / ") }),
       arr(b.hours).length > 0 && h("div", { class: "sub", text: "Booking hours: " + arr(b.hours).map(x => `${days(x.days)} ${hm(x.opens, x.closes)}`).join(", ") }),
       b.statusUrl && h("div", { class: "sub", text: "Current queue / availability: " + b.statusUrl }),
+      b.platform && typeof b.platform === "object" && h("div", { class: "sub", text: "Booking platform: " + [str(b.platform.name), str(b.platform.url)].filter(Boolean).join("  ") }),
+      arr(b.endpoints).length > 0 && h("div", { class: "sub", text: "Entry points for AI (only when the patient asks): " + arr(b.endpoints).map(x => `${str(x.type)} ${str(x.url)}`).join(", ") }),
       b.note && h("span", { class: "sub", text: " (" + b.note + ")" }))))),
     block("Areas of focus (the clinic's own statement)", list(arr(c.focus).map(f => h("span", {}, f.department && h("strong", { text: str(f.department) + "  " }), arr(f.areas).join(", "), f.note && h("span", { class: "sub", text: " (" + f.note + ")" }))))),
     block("Symptoms and concerns usually seen", list(arr(c.handles))),
@@ -1704,17 +1842,70 @@ function viewSchedule(o) {
     h("h3", { text: "Temporary information" }),
     h("div", {}, expired ? h("span", { class: "tag alert", text: `Expired (${o.validUntil}): AI will not use this file` }) : h("span", { class: "tag good", text: `Valid until ${str(o.validUntil)}` })),
     dl([["Updated", str(o.updated)], ["Main file", str(o.main)]]),
-    block("Temporary closures and changed hours", list(arr(o.exceptions).map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "  " + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "  " + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join(", ") }), hoursExtra(x).length > 0 && h("span", { class: "sub", text: "  " + hoursExtra(x).join(" / ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.to))))),
+    block("Temporary closures and changed hours", list([...arr(o.exceptions), ...arr(o.scopedExceptions)].map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "  " + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "  " + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join(", ") }), hoursExtra(x).length > 0 && h("span", { class: "sub", text: "  " + hoursExtra(x).join(" / ") }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.to))))),
     block("Doctors' schedule", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("  ") }), "  " + (x.date ? x.date : "Weekly " + days(x.days)) + "  " + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date || x.to))))),
     block("On-call duty", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "  " + (KIND_JA[x.kind] || str(x.kind)) + "  " + hm(x.opens, x.closes), x.department && h("span", { text: "  " + x.department }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date))))),
     block("Notices", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), past(x.to))))),
-    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "No temporary arrangements are listed." })
+    !arr(o.exceptions).length && !arr(o.scopedExceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "No temporary arrangements are listed." })
   ];
 }
 function renderView(el, o) {
   el.replaceChildren();
   try { el.append(...(OpenIntakeValidate.kindOf(o) === "schedule" ? viewSchedule(o) : viewIntake(o)).filter(Boolean)); }
   catch (e) { el.append(h("p", { class: "sub", text: "This JSON could not be displayed: " + e.message })); }
+}
+
+
+const SCHEMA_DAY = { Mo: "Monday", Tu: "Tuesday", We: "Wednesday", Th: "Thursday", Fr: "Friday", Sa: "Saturday", Su: "Sunday" };
+function jsonLd(o, sch) {
+  const c = o.clinic || {}, a = c.address || {};
+  const ld = { "@context": "https://schema.org", "@type": "MedicalClinic", name: str(c.name) };
+  if (c.url) ld.url = c.url;
+  if (c.telephone) ld.telephone = c.telephone;
+  const ad = { "@type": "PostalAddress" }; for (const [k, v] of [["addressCountry", a.addressCountry], ["postalCode", a.postalCode], ["addressRegion", a.addressRegion], ["addressLocality", a.addressLocality], ["streetAddress", a.streetAddress]]) if (str(v)) ad[k] = str(v);
+  if (Object.keys(ad).length > 1) ld.address = ad;
+  if (c.geo) ld.geo = { "@type": "GeoCoordinates", latitude: c.geo.latitude, longitude: c.geo.longitude };
+  if (o.status) return ld;
+  const spec = arr(c.openingHours).filter(x => !isNarrowed(x)).map(x => ({ "@type": "OpeningHoursSpecification", dayOfWeek: arr(x.days).filter(k => SCHEMA_DAY[k]).map(k => "https://schema.org/" + SCHEMA_DAY[k]), opens: x.opens, closes: x.closes })).filter(x => x.dayOfWeek.length);
+  if (spec.length) ld.openingHoursSpecification = spec;
+  if (sch) {
+    const sp = [];
+    for (const x of arr(sch.exceptions)) {
+      if (x.department !== undefined || x.service !== undefined) continue;
+      const base = { "@type": "OpeningHoursSpecification", validFrom: x.from, validThrough: x.to || x.from };
+      if (x.status === "closed") sp.push({ ...base, opens: "00:00", closes: "00:00" });
+      else for (const hh of arr(x.hours)) sp.push({ ...base, opens: hh.opens, closes: hh.closes });
+    }
+    if (sp.length) ld.specialOpeningHoursSpecification = sp;
+  }
+  return ld;
+}
+const escHtml = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function siteHtml(o) {
+  const c = o.clinic || {}, a = c.address || {}, L = [];
+  L.push(`<section class="open-intake" lang="${escHtml(LOCALE.lang)}">`, `  <h2>${escHtml(str(c.name))}</h2>`);
+  if (o.status) {
+    L.push(`  <p><strong>${escHtml(STATE_JA[o.status.state] || str(o.status.state))}</strong>${o.status.date ? " " + escHtml(o.status.date) : ""}</p>`);
+    if (o.status.note) L.push(`  <p>${escHtml(o.status.note)}</p>`);
+    if (o.status.movedTo) L.push(`  <p><a href="${escHtml(o.status.movedTo)}">${escHtml("Where we moved")}</a></p>`);
+  } else {
+    const row = x => `${arr(x.weeksOfMonth).length ? "Weeks " + arr(x.weeksOfMonth).join(", ") + ": " : ""}${days(x.days)} ${hm(x.opens, x.closes)}${hoursExtra(x).length ? " (" + hoursExtra(x).join(" / ") + ")" : ""}${x.note ? " " + x.note : ""}`;
+    L.push(`  <h3>${escHtml("Opening hours")}</h3>`, "  <ul>", ...arr(c.openingHours).map(x => `    <li>${escHtml(row(x))}</li>`), "  </ul>");
+    if (arr(c.scopedOpeningHours).length) L.push(`  <h3>${escHtml("Narrowed opening hours")}</h3>`, "  <ul>", ...arr(c.scopedOpeningHours).map(x => `    <li>${escHtml(row(x))}</li>`), "  </ul>");
+    if (c.closedNote) L.push(`  <p>${escHtml(c.closedNote)}</p>`);
+    L.push(`  <h3>${escHtml("How to book or visit")}</h3>`, "  <ul>", ...arr(c.booking).map(b => `    <li>${escHtml(METHOD_JA[b.method] || str(b.method))}${b.url ? ` <a href="${escHtml(b.url)}">${escHtml(b.url)}</a>` : ""}${b.telephone ? " " + escHtml(b.telephone) : ""}${b.note ? " (" + escHtml(b.note) + ")" : ""}</li>`), "  </ul>");
+  }
+  L.push("  <dl>");
+  if (c.telephone) L.push(`    <dt>${escHtml("Phone")}</dt><dd>${escHtml(c.telephone)}</dd>`);
+  const adr = [a.postalCode && a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ");
+  if (adr) L.push(`    <dt>${escHtml("Address")}</dt><dd>${escHtml(adr)}</dd>`);
+  L.push("  </dl>", `  <p><small>${escHtml("This information matches the AI-readable file")} <a href="/clinic-intake.json">clinic-intake.json</a> ${escHtml("(content last changed:")} ${escHtml(str(o.updated))}${o.verified ? escHtml(", last checked: " + o.verified) : ""}${escHtml(").")}</small></p>`, "</section>");
+  return L.join("\n");
+}
+function renderWeb(o) {
+  const sch = S.files.some(f => f.role === "schedule") && SC ? buildSchedule(SC) : null;
+  const ld = '<' + 'script type="application/ld+json">\n' + JSON.stringify(jsonLd(o, sch), null, 2).replace(/</g, "\\u003c") + '\n</' + 'script>';
+  $("ldOut").textContent = ld; $("htmlOut").textContent = siteHtml(o);
 }
 
 
@@ -1742,6 +1933,7 @@ function changed(immediate) {
   $("json").innerHTML = highlight(json);
   const res = validate(lastOut);
   statusOf(res); renderIssues($("issues"), res); renderView($("view"), lastOut);
+  try { renderWeb(mode === "schedule" ? build(S) : lastOut); } catch (_) {}
   $("tab-issues").textContent = `Check (${res.E.length + res.W.length})`;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); localStorage.setItem(STORE_KEY_S, JSON.stringify(SC)); } catch (_) {} }, immediate ? 0 : 400);
@@ -1749,9 +1941,9 @@ function changed(immediate) {
 
 
 function selectTab(name) {
-  for (const t of ["json","view","issues","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
+  for (const t of ["json","view","issues","web","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
 }
-for (const t of ["json","view","issues","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
+for (const t of ["json","view","issues","web","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
 $("status").addEventListener("click", () => selectTab("issues"));
 
 function copyText(textValue, toastEl, fallbackEl) {
@@ -1759,6 +1951,8 @@ function copyText(textValue, toastEl, fallbackEl) {
   const fallback = () => { const r = document.createRange(); r.selectNodeContents(fallbackEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("Selected. Press Ctrl+C (⌘+C) to copy."); };
   try { navigator.clipboard.writeText(textValue).then(() => done("Copied."), fallback); } catch (_) { fallback(); }
 }
+$("copyLd").addEventListener("click", () => copyText($("ldOut").textContent + "\n", $("ldToast"), $("ldOut")));
+$("copyHtml").addEventListener("click", () => copyText($("htmlOut").textContent + "\n", $("htmlToast"), $("htmlOut")));
 $("copyJson").addEventListener("click", () => copyText(JSON.stringify(lastOut, null, 2) + "\n", $("jsonToast"), $("json")));
 $("copyPrompt").addEventListener("click", () => copyText($("aiPrompt").textContent.trim() + "\n", $("promptToast"), $("aiPrompt")));
 $("copyPromptS").addEventListener("click", () => copyText($("aiPromptS").textContent.trim() + "\n", $("promptToastS"), $("aiPromptS")));
@@ -1809,7 +2003,7 @@ if (draft) { S = normalize(draft).doc; origin = "draft"; } else { S = normalize(
 if (draftS) { SC = normalizeSchedule(draftS); originS = "draft"; } else { SC = normalizeSchedule(exampleSchedule()); originS = "example"; }
 renderAll(); renderScheduleMeta(); renderExceptions(); renderDoctors(); renderOnCall(); renderNotices();
 setMode("intake");
-window.OpenIntake = { validate, build, normalize, buildSchedule, normalizeSchedule, setMode };
+window.OpenIntake = { validate, build, normalize, buildSchedule, normalizeSchedule, setMode, jsonLd, siteHtml };
 })();
 </script>
 

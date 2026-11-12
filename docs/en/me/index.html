@@ -395,7 +395,13 @@ Ask only for what is missing, one question at a time:
 <script>
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4", "0.5"];
+
+const atLeast = (v, want) => { if (typeof v !== "string") return false; const a = v.split(".").map(Number), b = want.split(".").map(Number); return a[0] !== b[0] ? a[0] > b[0] : (a[1] || 0) >= (b[1] || 0); };
+
+const isNarrowed = h => !!h && typeof h === "object" && (h.department !== undefined || (Array.isArray(h.service) && !(h.service.length === 1 && h.service[0] === "general")) || h.visitType === "first" || h.visitType === "return" || h.weeksOfMonth !== undefined || h.entry === "none");
+const STATUS_STATES = ["closed","moved","withdrawn"];
+const ENDPOINT_TYPES = ["mcp","api","other"];
 const KNOWN_ROLES = ["schedule"];
 
 const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
@@ -451,7 +457,27 @@ function validateIntake(o) {
   else if (!/^\d+\.\d+$/.test(o.specVersion)) err("E1", "specVersion must look like \"0.1\".", "specVersion");
   else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker (supports ${SUPPORTED_VERSIONS.join(", ")}). Unknown keys were ignored.`, "specVersion");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(o.updated || "")) err("E2", "updated must be a date in the form YYYY-MM-DD.", "updated");
-  else { const age = (Date.now() - new Date(o.updated + "T00:00:00").getTime()) / 864e5; if (age > 365) warn("W2", "The date last checked (updated) is more than a year ago. Check the content and update the date.", "updated"); }
+  else {
+    let last = o.updated;
+    if (o.verified !== undefined) {
+      if (!(typeof o.verified === "string" && DATE.test(o.verified))) err("E18", "verified (date last confirmed) must be a date in the form YYYY-MM-DD.", "verified");
+      else if (o.verified < o.updated) err("E18", "The date last confirmed (verified) is before the date the content was changed (updated).", "verified");
+      else if (o.verified > todayStr()) err("E18", "The date last confirmed (verified) is later than today.", "verified");
+      else last = o.verified;
+    }
+    const age = (Date.now() - new Date(last + "T00:00:00").getTime()) / 864e5;
+    if (age > 180) warn("W2", "More than 180 days have passed since the content was last confirmed (the later of updated and verified). Check the content and, if nothing has changed, set verified to today.", o.verified !== undefined ? "verified" : "updated");
+  }
+  const hasStatus = o.status !== undefined;
+  if (hasStatus) {
+    const st = o.status;
+    if (!isObj(st) || !STATUS_STATES.includes(st.state)) err("E19", "status must be an object with state (closed, moved or withdrawn = stopped publishing by file).", "status");
+    else {
+      if (st.date !== undefined && !(typeof st.date === "string" && DATE.test(st.date))) err("E19", "status.date must be in the form YYYY-MM-DD.", "status.date");
+      if (st.movedTo !== undefined && (typeof st.movedTo !== "string" || !st.movedTo.trim() || /\s/.test(st.movedTo))) err("E19", "status.movedTo must be a URL without spaces.", "status.movedTo");
+      if (typeof st.note === "string" && st.note.length > 200) warn("W5", `The status note is too long (${st.note.length} characters; up to 200).`, "status.note");
+    }
+  }
   const c = o.clinic;
   if (!isObj(c)) err("E3", "clinic (clinic information) is missing.", "clinic");
   else {
@@ -489,23 +515,33 @@ function validateIntake(o) {
       const nAreas = Array.isArray(c.focus) ? c.focus.reduce((n, f) => n + (isObj(f) && Array.isArray(f.areas) ? f.areas.length : 0), 0) : 0;
       if (nAreas > 10) warn("W17", `There are ${nAreas} areas of focus. Listing many makes them useless as hints; keep to a few main ones.`, "clinic.focus");
     }
+    if (Array.isArray(c.handles) && c.handles.length > 15) warn("W24", `There are ${c.handles.length} symptoms in handles. A long list is no help; keep to the main ones (up to 15).`, "clinic.handles");
     if (Array.isArray(c.notHandled)) c.notHandled.forEach((x, i) => {
       if (isStr(x) && /(\u98f2\u3093\u3067|\u670d\u7528|\u6301\u75c5|\u65e2\u5f80|\u6cbb\u7642\u4e2d|\u901a\u9662\u4e2d|taking|medication|condition)/i.test(x)) warn("W18", `Not provided ${i+1}: "${x}" looks like it describes patients' conditions or medicines. List only services, procedures or age groups not provided (so that it does not read as a refusal).`, `clinic.notHandled[${i}]`);
     });
-    if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
-    else c.openingHours.forEach((h, i) => {
-      const w = `clinic.openingHours[${i}]`;
-      if (!Array.isArray(h.days) || !h.days.length) err("E5", `Opening hours row ${i+1}: choose the days.`, w + ".days");
-      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `Opening hours row ${i+1}: only Mo–Su and PH can be used as days.`, w + ".days");
-      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `Opening hours row ${i+1}: enter times in the form 09:00.`, w);
-      else if (h.opens >= h.closes) err("E5", `Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).`, w);
-      checkReception(h, w, `Opening hours row ${i+1}`, "E5", err, warn, c.departments);
-      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `Opening hours row ${i+1}: mayEndEarly must be true or false.`, w + ".mayEndEarly");
+    const scoped = c.scopedOpeningHours;
+    if (scoped !== undefined && !Array.isArray(scoped)) err("E5", "scopedOpeningHours (narrowed hours) must be an array ([ ]).", "clinic.scopedOpeningHours");
+    const nScoped = Array.isArray(scoped) ? scoped.length : 0;
+    const v05 = atLeast(o.specVersion, "0.5");
+    if (!Array.isArray(c.openingHours) || (!c.openingHours.length && !nScoped && !hasStatus)) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
+    const rows = [];
+    if (Array.isArray(c.openingHours)) c.openingHours.forEach((h, i) => rows.push([h, `clinic.openingHours[${i}]`, `Opening hours row ${i+1}`, false]));
+    if (Array.isArray(scoped)) scoped.forEach((h, i) => rows.push([h, `clinic.scopedOpeningHours[${i}]`, `Narrowed hours row ${i+1}`, true]));
+    rows.forEach(([h, w, label, inScoped]) => {
+      if (!isObj(h)) { err("E5", `${label}: not in the right form.`, w); return; }
+      if (!inScoped && v05 && isNarrowed(h)) warn("W23", `${label}: this entry is narrowed by department, service, first or return visit or week of the month, or takes no new check-ins. From 0.5, put it in scopedOpeningHours (so that AI that does not know 0.4 does not read it as hours for everyone).`, w);
+      if (!Array.isArray(h.days) || !h.days.length) err("E5", `${label}: choose the days.`, w + ".days");
+      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `${label}: only Mo–Su and PH can be used as days.`, w + ".days");
+      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `${label}: enter times in the form 09:00.`, w);
+      else if (h.opens >= h.closes) err("E5", `${label}: the start (${h.opens}) is after the end (${h.closes}).`, w);
+      checkReception(h, w, label, "E5", err, warn, c.departments);
+      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `${label}: mayEndEarly must be true or false.`, w + ".mayEndEarly");
       if (h.weeksOfMonth !== undefined && (!Array.isArray(h.weeksOfMonth) || !h.weeksOfMonth.length || h.weeksOfMonth.some(n => !Number.isInteger(n) || n < 1 || n > 5) || new Set(h.weeksOfMonth).size !== h.weeksOfMonth.length))
-        err("E5", `Opening hours row ${i+1}: weeksOfMonth must list numbers 1–5 without repeats.`, w + ".weeksOfMonth");
+        err("E5", `${label}: weeksOfMonth must list numbers 1–5 without repeats.`, w + ".weeksOfMonth");
     });
     if (c.appointmentRequired !== undefined && typeof c.appointmentRequired !== "boolean") err("E17", "appointmentRequired must be true or false. Leave it out if you are not sure.", "clinic.appointmentRequired");
-    if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
+    if (!Array.isArray(c.booking) || (!c.booking.length && !hasStatus)) err("E6", "Enter at least one way to book or visit.", "clinic.booking");
+    if (hasStatus && ((Array.isArray(c.openingHours) && c.openingHours.length) || nScoped || (Array.isArray(c.booking) && c.booking.length))) warn("W26", "status (closed, moved, etc.) is set but hours or booking details remain. AI that does not know 0.5 would see the old hours, so emptying them is recommended.", "status");
     else c.booking.forEach((b, i) => {
       const w = `clinic.booking[${i}]`;
       if (!["web","phone","walk-in","other"].includes(b.method)) err("E6", `Booking method ${i+1}: method is not one of web / phone / walk-in / other.`, w + ".method");
@@ -523,11 +559,23 @@ function validateIntake(o) {
       }
       if (b.mode !== undefined && !BOOKING_MODES.includes(b.mode)) err("E6", `Booking method ${i+1}: mode must be time-slot (a time slot), queue (a place in today's queue) or request (apply and wait for a reply).`, w + ".mode");
       if (b.visitType !== undefined && !VISIT_TYPES.includes(b.visitType)) err("E6", `Booking method ${i+1}: visitType must be all, first (first visit) or return (follow-up).`, w + ".visitType");
+      if (b.platform !== undefined && !(isObj(b.platform) && (isStr(b.platform.name) || isStr(b.platform.url)))) err("E6", `Booking method ${i+1}: platform must be an object with name or url.`, w + ".platform");
+      if (b.endpoints !== undefined) {
+        if (!Array.isArray(b.endpoints)) err("E6", `Booking method ${i+1}: endpoints must be an array ([ ]).`, w + ".endpoints");
+        else b.endpoints.forEach((x, k) => {
+          if (!isObj(x) || !ENDPOINT_TYPES.includes(x.type)) err("E6", `Booking method ${i+1}, entry point ${k+1}: type must be mcp, api or other.`, `${w}.endpoints[${k}].type`);
+          if (!isObj(x) || typeof x.url !== "string" || !/^https:\/\/\S+$/.test(x.url)) err("E6", `Booking method ${i+1}, entry point ${k+1}: enter url starting with https://.`, `${w}.endpoints[${k}].url`);
+        });
+      }
       if (b.statusUrl !== undefined) { if (!isStr(b.statusUrl) || /\s/.test(b.statusUrl)) err("E6", `Booking method ${i+1}: the URL of the queue or availability page (statusUrl) is not valid.`, w + ".statusUrl"); else if (!/^https:\/\//.test(b.statusUrl)) warn("W1", `Booking method ${i+1}: the URL of the queue or availability page does not start with https.`, w + ".statusUrl"); }
     });
   }
   if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy must be an object ({ }) with url (where the policy is).", "policy");
   if (o.profile !== undefined && !(isStr(o.profile) || (isObj(o.profile) && isStr(o.profile.id)))) err("E16", "profile (regional profile) must be an object with id (e.g. {\"id\": \"jp\", \"url\": \"…\"}).", "profile");
+  if (isObj(o.profile)) {
+    if (o.profile.updated !== undefined && !(typeof o.profile.updated === "string" && DATE.test(o.profile.updated))) err("E20", "profile.updated (date of the profile used) must be in the form YYYY-MM-DD.", "profile.updated");
+    if (o.profile.sha256 !== undefined && !(typeof o.profile.sha256 === "string" && /^[0-9a-f]{64}$/.test(o.profile.sha256))) err("E20", "profile.sha256 must be 64 lower-case hex characters.", "profile.sha256");
+  }
   if (o.files !== undefined) {
     if (!Array.isArray(o.files)) err("E12", "files (official files) must be an array ([ ]).", "files");
     else {
@@ -629,8 +677,11 @@ function validateSchedule(o) {
     if (!overnightOk && opens >= closes) err("S4", `${label}: the start (${opens}) is after the end (${closes}).`, where);
   };
   const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} must be an array ([ ]).`, k); return []; } return o[k]; };
-  list("exceptions").forEach((x, i) => {
-    const w = `exceptions[${i}]`, label = `Temporary closure or change ${i+1}`;
+  const sv05 = atLeast(o.specVersion, "0.5");
+  const exRows = [];
+  list("exceptions").forEach((x, i) => exRows.push([x, `exceptions[${i}]`, `Temporary closure or change ${i+1}`, false]));
+  list("scopedExceptions").forEach((x, i) => exRows.push([x, `scopedExceptions[${i}]`, `Narrowed temporary change ${i+1}`, true]));
+  exRows.forEach(([x, w, label, inScoped]) => {
     if (!isObj(x)) { err("S4", `${label}: not in the right form.`, w); return; }
     if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: enter the period (from, to) in the form YYYY-MM-DD.`, w);
     else { if (x.from > x.to) err("S4", `${label}: the start date is after the end date.`, w); old(x.to, w, label); }
@@ -640,6 +691,8 @@ function validateSchedule(o) {
       else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label}, hours ${k+1}`, false));
     }
     checkReception(x, w, label, "S4", err, warn, null);
+    if (!inScoped && sv05 && (x.department !== undefined || x.service !== undefined)) warn("W23", `${label}: this temporary change is narrowed by department or service. From 0.5, put it in scopedExceptions (so that AI that does not know 0.4 does not read it as a change for the whole clinic).`, w);
+    if (inScoped && x.department === undefined && x.service === undefined) warn("W23", `${label}: no department or service is given. Put changes for the whole clinic in exceptions.`, w);
     if (x.status === "closed" && (x.reception !== undefined || x.entry !== undefined)) warn("W22", `${label}: the status is closed but reception hours or an entry rule are given. To change reception only, use changed.`, w);
   });
   list("doctorSchedule").forEach((x, i) => {
@@ -670,7 +723,7 @@ function validateSchedule(o) {
     if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: the start date is after the end date.`, w);
     old(x.to, w, label);
   });
-  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+  if (!list("exceptions").length && !list("scopedExceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
     warn("W10", "There is no temporary information. Even with nothing scheduled, publishing this file tells AI, with the update date, that no temporary arrangements are listed. Add sudden closures on the same day.", "$");
   return { E, W };
 }
@@ -687,6 +740,7 @@ function validateDirectory(o) {
   else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} is newer than this checker.`, "specVersion");
   if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("D2", "updated must be in the form YYYY-MM-DD.", "updated");
   if (!isObj(o.publisher) || !isStr(o.publisher.name)) err("D3", "Enter publisher.name (the organisation that compiled this list).", "publisher");
+  else if (typeof o.publisher.url !== "string" || !/^https:\/\/\S+$/.test(o.publisher.url)) warn("W25", "Enter publisher.url (the organisation's official website) starting with https://. Reading AI checks the publisher by whether the directory's domain matches this website.", "publisher.url");
   if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("D3", "Enter area.addressCountry (country, e.g. JP).", "area");
   if (!Array.isArray(o.entries) || !o.entries.length) err("D4", "Enter at least one entry (clinic).", "entries");
   else {
@@ -819,7 +873,7 @@ function validatePersonal(o) {
 
 function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : s === "open-intake-personal" ? "personal" : "intake"; }
 function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : k === "personal" ? validatePersonal(o) : validateIntake(o); }
-return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, isNarrowed, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
 </script>

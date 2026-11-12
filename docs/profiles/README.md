@@ -12,6 +12,12 @@
 | `ca.json` | カナダ | 出発点。緊急の番号（911・811・988）。救急の目安は州ごとのプロファイルに置く |
 | `ca-bc.json` | カナダ・ブリティッシュコロンビア州 | 出発点。緊急の番号。救急の目安は、州の転載許可が出るまで空（`references` にリンク） |
 
+## 版ごとの写し（v0.5 から）
+
+`archive/<id>-<updated>.json` に、プロファイルの版ごとの写しを置きます。組み立て（`node tools/build.mjs`）が、今の版の写しが無ければ作ります。写しは消さず、書き換えません。
+プロファイルの中身を変えたら、`updated` を新しい日付にしてください（同じ日付のまま中身が変わると、組み立てが止まります）。
+作成ツールは、医療機関のファイルの `profile` に、写しの `url`・`updated`・`sha256` を書きます（仕様書 §4d）。
+
 ## 救急の目安の決め方
 
 - **その地域の公的な資料から、出典（発行者・題名・版・ページ）を付けて書き写す**。記憶や要約で書かない
@@ -24,3 +30,4 @@
 Profiles hold region-specific basics: emergency numbers, emergency warning signs, identifier systems and base questionnaires.
 Their content is decided by communities in each region. Open an issue on GitHub to start or improve a profile.
 Warning signs must be transcribed from an official public source for the region, with the source recorded in `redFlagsSource`.
+From v0.5, versioned copies live in `archive/<id>-<updated>.json`. The build creates the copy for the current version and never changes or deletes old ones. Change `updated` whenever you change a profile.

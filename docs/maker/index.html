@@ -173,6 +173,10 @@ pre.json .s { color: var(--code-str); }
 .view .tag.alert { color: var(--req); border-color: currentColor; }
 .view .tag.good { color: var(--ok); border-color: currentColor; }
 .view .sub { color: var(--muted); font-size: 12.5px; }
+.view .wk { overflow-x: auto; }
+.view table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.view th, .view td { border: 1px solid var(--rule); padding: 3px 6px; text-align: left; vertical-align: top; }
+.view th { color: var(--muted); font-weight: normal; }
 .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
 .issues li { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 4px; }
 .issues li.e { background: var(--req-soft); }
@@ -194,7 +198,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow"><a href="../">← オープン受診案内とは</a> · clinic-intake.json · clinic-schedule.json · v0.3 草案 · <a href="../en/maker/" hreflang="en" lang="en">English</a></div>
+    <div class="eyebrow"><a href="../">← オープン受診案内とは</a> · clinic-intake.json · clinic-schedule.json · v0.5 草案 · <a href="../en/maker/" hreflang="en" lang="en">English</a></div>
     <h1>オープン受診案内メーカー</h1>
     <p>医療機関の情報と問診票を入力すると、患者さんの AI が読める <code>clinic-intake.json</code> ができます。サーバーには何も送りません。入力はこのブラウザの中だけで扱います。</p>
   </header>
@@ -505,6 +509,7 @@ JSON のあとに、次の2行を添える:
         <button class="tab" role="tab" id="tab-json" aria-selected="true" aria-controls="panel-json" type="button">JSON</button>
         <button class="tab" role="tab" id="tab-view" aria-selected="false" aria-controls="panel-view" type="button">表示</button>
         <button class="tab" role="tab" id="tab-issues" aria-selected="false" aria-controls="panel-issues" type="button">チェック</button>
+        <button class="tab" role="tab" id="tab-web" aria-selected="false" aria-controls="panel-web" type="button">サイト用</button>
         <button class="tab" role="tab" id="tab-load" aria-selected="false" aria-controls="panel-load" type="button">貼り付けて確認</button>
       </div>
       <div class="panel" id="panel-json" role="tabpanel">
@@ -522,6 +527,16 @@ JSON のあとに、次の2行を添える:
       </div>
       <div class="panel" id="panel-issues" role="tabpanel" hidden>
         <ul class="issues" id="issues"></ul>
+      </div>
+      <div class="panel" id="panel-web" role="tabpanel" hidden>
+        <p class="small">同じ内容を、医療機関のサイトに貼る形でも出します。検索エンジン向けの構造化データ（JSON-LD）と、ページにそのまま貼れる HTML です。どちらも clinic-intake.json から作るので、ファイルを直したら貼り直してください。正規の情報は clinic-intake.json です。</p>
+        <h4 class="small" style="margin:8px 0 4px">構造化データ（JSON-LD・schema.org の MedicalClinic）</h4>
+        <div class="actions"><button class="btn" type="button" id="copyLd">JSON-LD をコピー</button><span class="toast" id="ldToast" role="status"></span></div>
+        <pre class="json" id="ldOut" tabindex="0"></pre>
+        <p class="small">ページの &lt;head&gt; か &lt;body&gt; に貼ります。対象を絞った時間（診療科・用途・初診か再診か・第何週）と、新しい受付をしない時間は、全員向けの時間と取り違えないよう、ここには入れていません。</p>
+        <h4 class="small" style="margin:8px 0 4px">ページに貼る HTML</h4>
+        <div class="actions"><button class="btn" type="button" id="copyHtml">HTML をコピー</button><span class="toast" id="htmlToast" role="status"></span></div>
+        <pre class="json" id="htmlOut" tabindex="0"></pre>
       </div>
       <div class="panel" id="panel-load" role="tabpanel" hidden>
         <p class="small">AI が作った JSON や、公開中のファイルの中身を貼り付けて確かめます。チェックの結果と、読みやすく表示した内容が下に出ます。</p>
@@ -543,7 +558,7 @@ JSON のあとに、次の2行を添える:
   </div>
 
   <footer class="foot">
-    <div>仕様: オープン受診案内（Open Intake）v0.3 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0</div>
+    <div>仕様: オープン受診案内（Open Intake）v0.5 草案 ・ 仕様書は CC BY 4.0、このツールは Apache-2.0</div>
     <div>このツールは診断をしません。問診票と救急の目安は、公開の前に必ず医師に確認してもらってください。</div>
   </footer>
 </div>
@@ -556,7 +571,13 @@ JSON のあとに、次の2行を添える:
  */
 var OpenIntakeValidate = (function () {
 "use strict";
-const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4"];
+const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "0.4", "0.5"];
+// 版が 0.5 以上か（"0.10" のような番号も正しく比べる）
+const atLeast = (v, want) => { if (typeof v !== "string") return false; const a = v.split(".").map(Number), b = want.split(".").map(Number); return a[0] !== b[0] ? a[0] > b[0] : (a[1] || 0) >= (b[1] || 0); };
+// 対象を絞った行か（v0.5 から scopedOpeningHours・scopedExceptions に置く。SPEC §4）
+const isNarrowed = h => !!h && typeof h === "object" && (h.department !== undefined || (Array.isArray(h.service) && !(h.service.length === 1 && h.service[0] === "general")) || h.visitType === "first" || h.visitType === "return" || h.weeksOfMonth !== undefined || h.entry === "none");
+const STATUS_STATES = ["closed","moved","withdrawn"];
+const ENDPOINT_TYPES = ["mcp","api","other"];
 const KNOWN_ROLES = ["schedule"];
 // 識別番号の体系（SPEC §4c）。URI か、この表にある名前を使う
 const KNOWN_ID_SYSTEMS = { "jp-medical-institution-code": /^\d{10}$/ };
@@ -612,7 +633,27 @@ function validateIntake(o) {
   else if (!/^\d+\.\d+$/.test(o.specVersion)) err("E1", "specVersion は \"0.1\" のような形にしてください。", "specVersion");
   else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器（${SUPPORTED_VERSIONS.join("・")} に対応）より新しい版です。知らないキーは無視して検査しました。`, "specVersion");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(o.updated || "")) err("E2", "updated は YYYY-MM-DD の形の日付にしてください。", "updated");
-  else { const age = (Date.now() - new Date(o.updated + "T00:00:00").getTime()) / 864e5; if (age > 365) warn("W2", "最後に確かめた日（updated）が1年以上前です。内容を確かめて日付を新しくしてください。", "updated"); }
+  else {
+    let last = o.updated;
+    if (o.verified !== undefined) {
+      if (!(typeof o.verified === "string" && DATE.test(o.verified))) err("E18", "verified（確かめた日）は YYYY-MM-DD の形にしてください。", "verified");
+      else if (o.verified < o.updated) err("E18", "確かめた日（verified）が、中身を直した日（updated）より前になっています。", "verified");
+      else if (o.verified > todayStr()) err("E18", "確かめた日（verified）が、今日より後になっています。", "verified");
+      else last = o.verified;
+    }
+    const age = (Date.now() - new Date(last + "T00:00:00").getTime()) / 864e5;
+    if (age > 180) warn("W2", "最後に確かめた日（updated・verified の新しいほう）から180日を過ぎています。内容を確かめて、変わっていなければ verified を今日にしてください。", o.verified !== undefined ? "verified" : "updated");
+  }
+  const hasStatus = o.status !== undefined;
+  if (hasStatus) {
+    const st = o.status;
+    if (!isObj(st) || !STATUS_STATES.includes(st.state)) err("E19", "status は state（closed＝閉院・moved＝移転・withdrawn＝ファイルでの案内の終了）を持つ { } にしてください。", "status");
+    else {
+      if (st.date !== undefined && !(typeof st.date === "string" && DATE.test(st.date))) err("E19", "status.date は YYYY-MM-DD の形にしてください。", "status.date");
+      if (st.movedTo !== undefined && (typeof st.movedTo !== "string" || !st.movedTo.trim() || /\s/.test(st.movedTo))) err("E19", "status.movedTo は空白を含まない URL にしてください。", "status.movedTo");
+      if (typeof st.note === "string" && st.note.length > 200) warn("W5", `status の補足が長すぎます（${st.note.length} 字・200 字まで）。`, "status.note");
+    }
+  }
   const c = o.clinic;
   if (!isObj(c)) err("E3", "clinic（医療機関の情報）がありません。", "clinic");
   else {
@@ -650,23 +691,33 @@ function validateIntake(o) {
       const nAreas = Array.isArray(c.focus) ? c.focus.reduce((n, f) => n + (isObj(f) && Array.isArray(f.areas) ? f.areas.length : 0), 0) : 0;
       if (nAreas > 10) warn("W17", `得意分野が ${nAreas} 個あります。多く並べると手がかりにならないので、主なものを数個にしてください。`, "clinic.focus");
     }
+    if (Array.isArray(c.handles) && c.handles.length > 15) warn("W24", `主に診ている症状（handles）が ${c.handles.length} 個あります。多く並べると手がかりにならないので、主なものにしてください（15個まで）。`, "clinic.handles");
     if (Array.isArray(c.notHandled)) c.notHandled.forEach((x, i) => {
       if (isStr(x) && /(\u98f2\u3093\u3067|\u670d\u7528|\u6301\u75c5|\u65e2\u5f80|\u6cbb\u7642\u4e2d|\u901a\u9662\u4e2d|taking|medication|condition)/i.test(x)) warn("W18", `対応していないこと ${i+1}: 「${x}」は患者の持病や薬についての書き方に見えます。提供していない診療・処置・年齢層だけを書いてください（受け入れを断る掲示にならないように）。`, `clinic.notHandled[${i}]`);
     });
-    if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "診療時間を1つ以上入れてください。", "clinic.openingHours");
-    else c.openingHours.forEach((h, i) => {
-      const w = `clinic.openingHours[${i}]`;
-      if (!Array.isArray(h.days) || !h.days.length) err("E5", `診療時間 ${i+1} 行目: 曜日を選んでください。`, w + ".days");
-      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `診療時間 ${i+1} 行目: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
-      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `診療時間 ${i+1} 行目: 時刻を 09:00 の形で入れてください。`, w);
-      else if (h.opens >= h.closes) err("E5", `診療時間 ${i+1} 行目: 始まり（${h.opens}）が終わり（${h.closes}）より後になっています。`, w);
-      checkReception(h, w, `診療時間 ${i+1} 行目`, "E5", err, warn, c.departments);
-      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `診療時間 ${i+1} 行目: mayEndEarly は true か false にしてください。`, w + ".mayEndEarly");
+    const scoped = c.scopedOpeningHours;
+    if (scoped !== undefined && !Array.isArray(scoped)) err("E5", "scopedOpeningHours（対象を絞った診療時間）は配列（[ ]）にしてください。", "clinic.scopedOpeningHours");
+    const nScoped = Array.isArray(scoped) ? scoped.length : 0;
+    const v05 = atLeast(o.specVersion, "0.5");
+    if (!Array.isArray(c.openingHours) || (!c.openingHours.length && !nScoped && !hasStatus)) err("E5", "診療時間を1つ以上入れてください。", "clinic.openingHours");
+    const rows = [];
+    if (Array.isArray(c.openingHours)) c.openingHours.forEach((h, i) => rows.push([h, `clinic.openingHours[${i}]`, `診療時間 ${i+1} 行目`, false]));
+    if (Array.isArray(scoped)) scoped.forEach((h, i) => rows.push([h, `clinic.scopedOpeningHours[${i}]`, `対象を絞った診療時間 ${i+1} 行目`, true]));
+    rows.forEach(([h, w, label, inScoped]) => {
+      if (!isObj(h)) { err("E5", `${label}: 形が正しくありません。`, w); return; }
+      if (!inScoped && v05 && isNarrowed(h)) warn("W23", `${label}: 診療科・用途・初診か再診か・第何週で絞った行、または新しい受付をしない行です。0.5 からは scopedOpeningHours に置いてください（0.4 を知らない AI が、全員向けの時間と読まないように）。`, w);
+      if (!Array.isArray(h.days) || !h.days.length) err("E5", `${label}: 曜日を選んでください。`, w + ".days");
+      else if (h.days.some(x => !DAY_KEYS.includes(x))) err("E5", `${label}: 曜日は Mo〜Su と PH だけが使えます。`, w + ".days");
+      if (!TIME.test(h.opens || "") || !TIME.test(h.closes || "")) err("E5", `${label}: 時刻を 09:00 の形で入れてください。`, w);
+      else if (h.opens >= h.closes) err("E5", `${label}: 始まり（${h.opens}）が終わり（${h.closes}）より後になっています。`, w);
+      checkReception(h, w, label, "E5", err, warn, c.departments);
+      if (h.mayEndEarly !== undefined && typeof h.mayEndEarly !== "boolean") err("E5", `${label}: mayEndEarly は true か false にしてください。`, w + ".mayEndEarly");
       if (h.weeksOfMonth !== undefined && (!Array.isArray(h.weeksOfMonth) || !h.weeksOfMonth.length || h.weeksOfMonth.some(n => !Number.isInteger(n) || n < 1 || n > 5) || new Set(h.weeksOfMonth).size !== h.weeksOfMonth.length))
-        err("E5", `診療時間 ${i+1} 行目: 第何週（weeksOfMonth）は、1〜5 の数を重ならないように並べてください。`, w + ".weeksOfMonth");
+        err("E5", `${label}: 第何週（weeksOfMonth）は、1〜5 の数を重ならないように並べてください。`, w + ".weeksOfMonth");
     });
     if (c.appointmentRequired !== undefined && typeof c.appointmentRequired !== "boolean") err("E17", "完全予約制か（appointmentRequired）は true か false にしてください。わからないときは書かないでください。", "clinic.appointmentRequired");
-    if (!Array.isArray(c.booking) || !c.booking.length) err("E6", "予約・受診の方法を1つ以上入れてください。", "clinic.booking");
+    if (!Array.isArray(c.booking) || (!c.booking.length && !hasStatus)) err("E6", "予約・受診の方法を1つ以上入れてください。", "clinic.booking");
+    if (hasStatus && ((Array.isArray(c.openingHours) && c.openingHours.length) || nScoped || (Array.isArray(c.booking) && c.booking.length))) warn("W26", "閉院・移転など（status）を書いたのに、診療時間か予約の方法が残っています。0.5 を知らない AI に古い時間が見えるので、空にすることを勧めます。", "status");
     else c.booking.forEach((b, i) => {
       const w = `clinic.booking[${i}]`;
       if (!["web","phone","walk-in","other"].includes(b.method)) err("E6", `予約の方法 ${i+1}: method が決まった値（web / phone / walk-in / other）ではありません。`, w + ".method");
@@ -684,11 +735,23 @@ function validateIntake(o) {
       }
       if (b.mode !== undefined && !BOOKING_MODES.includes(b.mode)) err("E6", `予約の方法 ${i+1}: mode は time-slot（時刻の枠）・queue（当日の順番）・request（申し込んで返事を待つ）のどれかにしてください。`, w + ".mode");
       if (b.visitType !== undefined && !VISIT_TYPES.includes(b.visitType)) err("E6", `予約の方法 ${i+1}: visitType は all（すべて）・first（初診）・return（再診）のどれかにしてください。`, w + ".visitType");
+      if (b.platform !== undefined && !(isObj(b.platform) && (isStr(b.platform.name) || isStr(b.platform.url)))) err("E6", `予約の方法 ${i+1}: platform（予約の基盤）は、name か url を持つ { } にしてください。`, w + ".platform");
+      if (b.endpoints !== undefined) {
+        if (!Array.isArray(b.endpoints)) err("E6", `予約の方法 ${i+1}: endpoints は配列（[ ]）にしてください。`, w + ".endpoints");
+        else b.endpoints.forEach((x, k) => {
+          if (!isObj(x) || !ENDPOINT_TYPES.includes(x.type)) err("E6", `予約の方法 ${i+1} の入口 ${k+1}: type は mcp・api・other のどれかにしてください。`, `${w}.endpoints[${k}].type`);
+          if (!isObj(x) || typeof x.url !== "string" || !/^https:\/\/\S+$/.test(x.url)) err("E6", `予約の方法 ${i+1} の入口 ${k+1}: url を https:// で入れてください。`, `${w}.endpoints[${k}].url`);
+        });
+      }
       if (b.statusUrl !== undefined) { if (!isStr(b.statusUrl) || /\s/.test(b.statusUrl)) err("E6", `予約の方法 ${i+1}: 順番や空きを確かめるページ（statusUrl）の URL が正しくありません。`, w + ".statusUrl"); else if (!/^https:\/\//.test(b.statusUrl)) warn("W1", `予約の方法 ${i+1}: 順番や空きを確かめるページの URL が https で始まっていません。`, w + ".statusUrl"); }
     });
   }
   if (o.policy !== undefined && typeof o.policy !== "string" && !(isObj(o.policy) && isStr(o.policy.url))) err("E14", "policy は、url（決まりの場所）を持つ { } にしてください。", "policy");
   if (o.profile !== undefined && !(isStr(o.profile) || (isObj(o.profile) && isStr(o.profile.id)))) err("E16", "profile（地域プロファイル）は、id を持つ { }（例: {\"id\": \"jp\", \"url\": \"…\"}）にしてください。", "profile");
+  if (isObj(o.profile)) {
+    if (o.profile.updated !== undefined && !(typeof o.profile.updated === "string" && DATE.test(o.profile.updated))) err("E20", "profile.updated（使ったプロファイルの更新日）は YYYY-MM-DD の形にしてください。", "profile.updated");
+    if (o.profile.sha256 !== undefined && !(typeof o.profile.sha256 === "string" && /^[0-9a-f]{64}$/.test(o.profile.sha256))) err("E20", "profile.sha256 は16進の小文字64文字にしてください。", "profile.sha256");
+  }
   if (o.files !== undefined) {
     if (!Array.isArray(o.files)) err("E12", "files（正規のファイルの一覧）は配列（[ ]）にしてください。", "files");
     else {
@@ -790,8 +853,11 @@ function validateSchedule(o) {
     if (!overnightOk && opens >= closes) err("S4", `${label}: 始まり（${opens}）が終わり（${closes}）より後になっています。`, where);
   };
   const list = (k) => { if (o[k] === undefined) return []; if (!Array.isArray(o[k])) { err("S1", `${k} は配列（[ ]）にしてください。`, k); return []; } return o[k]; };
-  list("exceptions").forEach((x, i) => {
-    const w = `exceptions[${i}]`, label = `臨時の休診・変更 ${i+1}`;
+  const sv05 = atLeast(o.specVersion, "0.5");
+  const exRows = [];
+  list("exceptions").forEach((x, i) => exRows.push([x, `exceptions[${i}]`, `臨時の休診・変更 ${i+1}`, false]));
+  list("scopedExceptions").forEach((x, i) => exRows.push([x, `scopedExceptions[${i}]`, `絞った臨時の変更 ${i+1}`, true]));
+  exRows.forEach(([x, w, label, inScoped]) => {
     if (!isObj(x)) { err("S4", `${label}: 形が正しくありません。`, w); return; }
     if (!isDate(x.from) || !isDate(x.to)) err("S4", `${label}: 期間（from・to）を YYYY-MM-DD で入れてください。`, w);
     else { if (x.from > x.to) err("S4", `${label}: 始まりの日が終わりの日より後になっています。`, w); old(x.to, w, label); }
@@ -801,6 +867,8 @@ function validateSchedule(o) {
       else x.hours.forEach((h, k) => hoursOk(h?.opens, h?.closes, `${w}.hours[${k}]`, `${label} の時間 ${k+1}`, false));
     }
     checkReception(x, w, label, "S4", err, warn, null);
+    if (!inScoped && sv05 && (x.department !== undefined || x.service !== undefined)) warn("W23", `${label}: 診療科や用途で絞った臨時の変更です。0.5 からは scopedExceptions に置いてください（0.4 を知らない AI が、全体の変更と読まないように）。`, w);
+    if (inScoped && x.department === undefined && x.service === undefined) warn("W23", `${label}: 診療科も用途も書かれていません。全体の変更は exceptions に置いてください。`, w);
     if (x.status === "closed" && (x.reception !== undefined || x.entry !== undefined)) warn("W22", `${label}: 休診（closed）なのに、受付の時間や受け付け方が書いてあります。受付だけを変えるときは changed にしてください。`, w);
   });
   list("doctorSchedule").forEach((x, i) => {
@@ -831,7 +899,7 @@ function validateSchedule(o) {
     if (isDate(x.from) && isDate(x.to) && x.from > x.to) err("S7", `${label}: 始まりの日が終わりの日より後になっています。`, w);
     old(x.to, w, label);
   });
-  if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
+  if (!list("exceptions").length && !list("scopedExceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
     warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定は書かれていない」と、更新した日とともに AI に伝わります。急な休診は、その日のうちに足してください。", "$");
   return { E, W };
 }
@@ -848,6 +916,7 @@ function validateDirectory(o) {
   else if (!SUPPORTED_VERSIONS.includes(o.specVersion)) warn("W6", `specVersion ${o.specVersion} は、この検査器より新しい版です。`, "specVersion");
   if (!(typeof o.updated === "string" && DATE.test(o.updated))) err("D2", "updated は YYYY-MM-DD の形にしてください。", "updated");
   if (!isObj(o.publisher) || !isStr(o.publisher.name)) err("D3", "publisher.name（この一覧をまとめた団体の名前）を入れてください。", "publisher");
+  else if (typeof o.publisher.url !== "string" || !/^https:\/\/\S+$/.test(o.publisher.url)) warn("W25", "publisher.url（まとめた団体の公式のサイト）を https:// で入れてください。読む AI は、一覧の置き場所とこのサイトのドメインが合うかで、発行者を確かめます。", "publisher.url");
   if (!isObj(o.area) || !COUNTRY.test(String(o.area?.addressCountry || ""))) err("D3", "area.addressCountry（国。例: JP）を入れてください。", "area");
   if (!Array.isArray(o.entries) || !o.entries.length) err("D4", "entries（医療機関の一覧）を1件以上入れてください。", "entries");
   else {
@@ -980,7 +1049,7 @@ function validatePersonal(o) {
 // 中身を見て、どちらのファイルかを判断して検査する
 function kindOf(o) { const s = o && typeof o === "object" ? o.spec : null; return s === "open-intake-schedule" ? "schedule" : s === "open-intake-directory" ? "directory" : s === "open-intake-profile" ? "profile" : s === "open-intake-personal" ? "personal" : "intake"; }
 function validate(o) { const k = kindOf(o); return k === "schedule" ? validateSchedule(o) : k === "directory" ? validateDirectory(o) : k === "profile" ? validateProfile(o) : k === "personal" ? validatePersonal(o) : validateIntake(o); }
-return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
+return { KNOWN_ROLES, KNOWN_ID_SYSTEMS, isNarrowed, validate, validateDirectory, validateProfile, validatePersonal, validateIntake, validateSchedule, kindOf, SUPPORTED_VERSIONS, DAY_KEYS, TYPE_KEYS };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = OpenIntakeValidate;
 </script>
@@ -997,7 +1066,7 @@ var LOCALE = {
   extraTemplates: [],
   exampleDoc(x) {
     return {
-      spec: "open-intake", specVersion: "0.3", updated: x.today(), profile: x.profileRef("jp"),
+      spec: "open-intake", specVersion: "0.5", updated: x.today(), profile: x.profileRef("jp"),
       files: [{ role: "schedule", url: "/clinic-schedule.json", note: "臨時の休診・担当医・当番・お知らせ" }],
       clinic: {
         name: "みどり台内科クリニック（架空の例）", url: "https://example.com/", identifiers: [{ system: "jp-medical-institution-code", value: "1310000000" }], telephone: "03-0000-0000",
@@ -1027,7 +1096,7 @@ var LOCALE = {
   },
   exampleSchedule(x) {
     const t = x.today(), d = x.addDays;
-    return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
+    return { spec: "open-intake-schedule", specVersion: "0.5", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
       exceptions: [
         { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "祝日です。当院の診療は午前のみ。午後は内科だけ、地域の休日当番医として受け付けます" },
         { from: d(t, 30), to: d(t, 31), status: "closed", note: "院内研修のため休診" }],
@@ -1051,16 +1120,19 @@ const METHODS = [["web","Web 予約"],["phone","電話"],["walk-in","予約な�
 const ENTRY_OPTS = [["","書かない"],["walk-in","予約なしでも受け付ける"],["appointment","予約の人だけ"],["none","新しい受付はしない（休診ではない）"]];
 const VISIT_OPTS = [["","初診も再診も"],["first","初診だけ"],["return","再診だけ"]];
 const SERVICE_OPTS = [["general","一般の外来"],["checkup","健診"],["vaccination","予防接種"],["procedure","手術・検査"],["rehabilitation","リハビリ"],["other","その他の用途"]];
+const STATE_OPTS = [["","通常どおり（選ばない）"],["closed","閉院した"],["moved","移転した"],["withdrawn","このファイルでの案内をやめた"]];
+const EP_OPTS = [["mcp","MCP"],["api","API"],["other","その他"]];
 const MODE_OPTS = [["","書かない"],["time-slot","時刻の枠を取る"],["queue","当日の順番を取る"],["request","申し込んで、返事で確定"]];
 const APPT_OPTS = [["","書かない（わからない）"],["true","はい（すべて予約制）"],["false","いいえ"]];
 const TYPES = [["boolean","はい／いいえ"],["choice","選ぶ"],["open-choice","選ぶか書く"],["string","短い文"],["text","長い文"],["integer","整数"],["decimal","小数"],["date","日付"],["display","説明文（答えなし）"]];
 const TYPE_KEYS = ["group", ...TYPES.map(t => t[0])];
 const CHOICE = new Set(["choice","open-choice"]);
-const PROFILES = [{"spec":"open-intake-profile","specVersion":"0.3","id":"jp","url":"https://open-intake.github.io/open-intake/profiles/jp.json","title":"日本の地域プロファイル","updated":"2026-11-11","area":{"addressCountry":"JP"},"languages":["ja"],"status":"draft","note":"日本の医療機関が使う基本（救急の番号・救急の目安・識別番号の体系・問診票の基本形）。医師の確認はまだ済んでいない。","emergency":{"message":"命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。","numbers":[{"number":"119","label":"救急車・消防"},{"number":"#7119","label":"救急安心センター（救急車を呼ぶか迷うときの相談。地域による）"},{"number":"#8000","label":"子ども医療電話相談（主に休日・夜間）"}]},"redFlags":["顔: 顔半分が動きにくい、または、しびれる","顔: ニッコリ笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくく、うまく話せない","顔: 見える範囲が狭くなる","顔: 突然、周りが二重に見える","顔: 顔色が明らかに悪い","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 支えなしで立てないぐらい急にふらつく","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 激しい腹痛が持続する","おなか: 血を吐く","おなか: 便に血が混ざる、または、真っ黒い便が出る","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","意識の障害: ぐったりしている","吐き気: 冷や汗を伴うような強い吐き気","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","その他: いつもと違う場合、様子がおかしい場合"],"redFlagsByAge":{"older":{"label":"高齢者","items":["顔: 顔半分が動きにくい、しびれる","顔: 笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくい","顔: 見える範囲が狭くなる","顔: 周りが二重に見える","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 急にふらつき、立っていられない","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 旅行などの後に痛み出した","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 血を吐く","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","吐き気: 冷や汗を伴うような強い吐き気","けいれん: けいれんが止まらない","飲み込み: 物をのどにつまらせた","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故や転落、転倒で強い衝撃を受けた","その他: いつもと違う場合、様子がおかしい場合"],"note":"高齢者は自覚症状が出にくい場合もあるので注意する。"},"child":{"label":"こども（15歳以下）","items":["顔: くちびるの色が紫色","顔: 顔色が明らかに悪い","頭: 頭を痛がって、けいれんがある","頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある","胸: 激しい咳やゼーゼーして呼吸が苦しそう","胸: 呼吸が弱い","手・足: 手足が硬直している","おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない","おなか: 激しいおなかの痛みで苦しがる","おなか: 嘔吐が止まらない","おなか: 便に血がまじった","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった","やけど: 痛みのひどいやけど","やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","生まれて3カ月未満の乳児: 乳児の様子がおかしい","その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"],"note":"判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}},"redFlagsSource":{"publisher":"消防庁","title":"救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜","edition":"令和7年12月発行","url":"https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf","pages":"おとな p.3・高齢者 p.2・こども p.4","note":"出典：「救急車を上手に使いましょう～救急車 必要なのはどんなとき?～」（消防庁）（https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf）（公共データ利用規約 第1.0版）を加工して作成（オープン受診案内）。「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"},"identifierSystems":[{"system":"jp-medical-institution-code","label":"医療機関コード（保険医療機関の番号・10桁）","pattern":"^\\d{10}$"}],"questionnaires":[{"resourceType":"Questionnaire","id":"jp-fever","status":"draft","title":"発熱・せきの問診票（基本形）","purpose":"発熱・せき・のどの痛みで受診する方","item":[{"linkId":"q1","text":"いつから症状がありますか","type":"choice","required":true,"answerOption":[{"valueString":"今日"},{"valueString":"1〜2日前"},{"valueString":"3〜6日前"},{"valueString":"1週間以上前"}]},{"linkId":"q2","text":"いまの体温（℃）","type":"decimal"},{"linkId":"q3","text":"当てはまる症状をすべて選んでください","type":"open-choice","repeats":true,"answerOption":[{"valueString":"せき"},{"valueString":"のどの痛み"},{"valueString":"鼻水"},{"valueString":"頭痛"},{"valueString":"体のだるさ"},{"valueString":"吐き気・おう吐"},{"valueString":"下痢"},{"valueString":"味やにおいがわからない"}]},{"linkId":"q4","text":"家族や周りに同じ症状の人はいますか","type":"boolean"},{"linkId":"q5","text":"持病はありますか","type":"boolean","required":true},{"linkId":"q6","text":"持病の名前","type":"string","enableWhen":[{"question":"q5","operator":"=","answerBoolean":true}]},{"linkId":"q7","text":"いま飲んでいる薬はありますか","type":"boolean","required":true},{"linkId":"q8","text":"薬の名前（わからなければ、お薬手帳を持ってきてください）","type":"text","enableWhen":[{"question":"q7","operator":"=","answerBoolean":true}]},{"linkId":"q9","text":"薬や食べ物のアレルギーはありますか","type":"boolean","required":true},{"linkId":"q10","text":"アレルギーの内容","type":"string","enableWhen":[{"question":"q9","operator":"=","answerBoolean":true}]},{"linkId":"q11","text":"妊娠している、またはその可能性がありますか","type":"choice","answerOption":[{"valueString":"はい"},{"valueString":"いいえ"},{"valueString":"あてはまらない"}]},{"linkId":"q12","text":"そのほか、医師に伝えたいこと","type":"text"}],"url":"https://open-intake.github.io/open-intake/profiles/jp.json#jp-fever"}]},{"spec":"open-intake-profile","specVersion":"0.3","id":"us","url":"https://open-intake.github.io/open-intake/profiles/us.json","title":"United States (starter profile)","updated":"2026-11-11","area":{"addressCountry":"US"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region. Reference not quoted (reproduction not permitted): American College of Emergency Physicians, \"When Your Child Has an Emergency\" (2002), https://www.acep.org/siteassets/uploads/uploaded-files/acep/clinical-and-practice-management/resources/pediatrics/whenyourchildhasanemergency.pdf","emergency":{"message":"If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.","numbers":[{"number":"911","label":"Emergency services (ambulance, fire, police)"},{"number":"988","label":"Suicide & Crisis Lifeline (call or text)"}]},"redFlags":["Stroke: Sudden trouble walking, dizziness, loss of balance, or lack of coordination.","Stroke: Sudden trouble seeing.","Stroke: Sudden numbness or weakness in the face, arm, or leg, especially on one side of the body.","Stroke: Sudden confusion, trouble speaking, or difficulty understanding speech.","Stroke: Sudden severe headache with no known cause.","Heart attack: Chest pain or discomfort. Most heart attacks involve discomfort in the center or left side of the chest that lasts for more than a few minutes or that goes away and comes back. The discomfort can feel like uncomfortable pressure, squeezing, fullness, or pain.","Heart attack: Feeling weak, light-headed, or faint. You may also break into a cold sweat.","Heart attack: Pain or discomfort in the jaw, neck, or back.","Heart attack: Pain or discomfort in one or both arms or shoulders.","Heart attack: Shortness of breath. This often comes along with chest discomfort, but shortness of breath also can happen before chest discomfort."],"redFlagsSource":{"publisher":"U.S. Centers for Disease Control and Prevention (CDC)","title":"Signs and Symptoms of Stroke (May 19, 2026); About Heart Attack Symptoms, Risk, and Recovery (Oct. 24, 2024)","url":"https://www.cdc.gov/stroke/signs-symptoms/index.html","pages":"also https://www.cdc.gov/heart-disease/about/heart-attack.html","note":"Source: Centers for Disease Control and Prevention (CDC). Materials developed by CDC. This material is available free of charge on the CDC website at https://www.cdc.gov/stroke/signs-symptoms/index.html and https://www.cdc.gov/heart-disease/about/heart-attack.html. Use of this material does not imply endorsement by CDC, HHS, or the United States Government of Open Intake or any of its products or services. The wording of each item is unchanged; the condition name (Stroke / Heart attack) is prefixed. These cover stroke and heart attack only, not a general list of emergencies. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[{"system":"http://hl7.org/fhir/sid/us-npi","label":"National Provider Identifier (NPI)","pattern":"^\\d{10}$"}],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"gb","url":"https://open-intake.github.io/open-intake/profiles/gb.json","title":"United Kingdom (starter profile)","updated":"2026-11-11","area":{"addressCountry":"GB"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce an official NHS source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If someone is seriously ill or injured and their life may be at risk, call 999 now. If you need urgent medical help but are not sure whether it is an emergency, use NHS 111 (online, by phone or in the NHS App).","numbers":[{"number":"999","label":"Emergency services"},{"number":"112","label":"Emergency services (also works)"},{"number":"111","label":"NHS 111 (urgent but not life-threatening)"}]},"redFlags":[],"references":[{"publisher":"London Ambulance Service NHS Trust","title":"When to call 999","url":"https://www.londonambulance.nhs.uk/our-services/emergency-care/calling-999/","note":"Examples of when to call 999. Not quoted until permission is granted by the Trust."},{"publisher":"NHS","title":"When to call 999","url":"https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-call-999/"}],"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"au","url":"https://open-intake.github.io/open-intake/profiles/au.json","title":"Australia (starter profile)","updated":"2026-11-11","area":{"addressCountry":"AU"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs are not quoted because the official source (healthdirect) does not permit reproduction without written permission; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"In a life-threatening emergency, call Triple Zero (000) now. If you are not sure whether to seek care, you can call the healthdirect helpline on 1800 022 222.","numbers":[{"number":"000","label":"Triple Zero (ambulance, fire, police)"},{"number":"112","label":"Emergency number from mobile phones"},{"number":"1800 022 222","label":"healthdirect helpline (health advice)"}]},"redFlags":[],"references":[{"publisher":"healthdirect Australia","title":"Calling triple zero (000)","url":"https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero","note":"Official list of when to call for an ambulance. Not quoted here: healthdirect's terms require prior written permission for reproduction."}],"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca","url":"https://open-intake.github.io/open-intake/profiles/ca.json","title":"Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA"},"languages":["en"],"status":"draft","note":"Starter profile for Canada as a whole. Emergency numbers are filled in. Health services are organised by province, so warning signs are kept in provincial profiles (for example ca-bc).","emergency":{"message":"In a life-threatening emergency, call 911 now. In many provinces you can call 811 for health advice from a nurse when it is not an emergency.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"Health advice line (available in many provinces)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"identifierSystems":[],"questionnaires":[]},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca-bc","url":"https://open-intake.github.io/open-intake/profiles/ca-bc.json","title":"British Columbia, Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA","addressRegion":"BC"},"languages":["en"],"status":"draft","note":"Starter profile for British Columbia. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce the official source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If you think you may need emergency care, call 9-1-1 now. If you are not sure whether it is an emergency, call 8-1-1 (HealthLink BC) for advice.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"HealthLink BC (health advice; 7-1-1 for the deaf and hard of hearing)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"references":[{"publisher":"HealthLink BC (Government of British Columbia)","title":"When to visit the emergency room","url":"https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room","note":"Official list of potentially life-threatening symptoms. Not quoted until permission is granted (Province of British Columbia copyright)."}],"identifierSystems":[],"questionnaires":[]}];
+const PROFILES = [{"spec":"open-intake-profile","specVersion":"0.3","id":"jp","url":"https://open-intake.github.io/open-intake/profiles/jp.json","title":"日本の地域プロファイル","updated":"2026-11-11","area":{"addressCountry":"JP"},"languages":["ja"],"status":"draft","note":"日本の医療機関が使う基本（救急の番号・救急の目安・識別番号の体系・問診票の基本形）。医師の確認はまだ済んでいない。","emergency":{"message":"命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。","numbers":[{"number":"119","label":"救急車・消防"},{"number":"#7119","label":"救急安心センター（救急車を呼ぶか迷うときの相談。地域による）"},{"number":"#8000","label":"子ども医療電話相談（主に休日・夜間）"}]},"redFlags":["顔: 顔半分が動きにくい、または、しびれる","顔: ニッコリ笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくく、うまく話せない","顔: 見える範囲が狭くなる","顔: 突然、周りが二重に見える","顔: 顔色が明らかに悪い","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 支えなしで立てないぐらい急にふらつく","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 激しい腹痛が持続する","おなか: 血を吐く","おなか: 便に血が混ざる、または、真っ黒い便が出る","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","意識の障害: ぐったりしている","吐き気: 冷や汗を伴うような強い吐き気","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","その他: いつもと違う場合、様子がおかしい場合"],"redFlagsByAge":{"older":{"label":"高齢者","items":["顔: 顔半分が動きにくい、しびれる","顔: 笑うと口や顔の片方がゆがむ","顔: ろれつがまわりにくい","顔: 見える範囲が狭くなる","顔: 周りが二重に見える","頭: 突然の激しい頭痛","頭: 突然の高熱","頭: 急にふらつき、立っていられない","胸や背中: 突然の激痛","胸や背中: 急な息切れ、呼吸困難","胸や背中: 旅行などの後に痛み出した","胸や背中: 痛む場所が移動する","おなか: 突然の激しい腹痛","おなか: 血を吐く","手・足: 突然のしびれ","手・足: 突然、片方の腕や足に力が入らなくなる","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","吐き気: 冷や汗を伴うような強い吐き気","けいれん: けいれんが止まらない","飲み込み: 物をのどにつまらせた","けが・やけど: 大量の出血を伴うけが","けが・やけど: 広範囲のやけど","事故: 交通事故や転落、転倒で強い衝撃を受けた","その他: いつもと違う場合、様子がおかしい場合"],"note":"高齢者は自覚症状が出にくい場合もあるので注意する。"},"child":{"label":"こども（15歳以下）","items":["顔: くちびるの色が紫色","顔: 顔色が明らかに悪い","頭: 頭を痛がって、けいれんがある","頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある","胸: 激しい咳やゼーゼーして呼吸が苦しそう","胸: 呼吸が弱い","手・足: 手足が硬直している","おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない","おなか: 激しいおなかの痛みで苦しがる","おなか: 嘔吐が止まらない","おなか: 便に血がまじった","意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）","けいれん: けいれんが止まらない","けいれん: けいれんが止まっても、意識がもどらない","飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない","じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった","やけど: 痛みのひどいやけど","やけど: 広範囲のやけど","事故: 交通事故にあった（強い衝撃を受けた）","事故: 水におぼれている","事故: 高いところから落ちた","生まれて3カ月未満の乳児: 乳児の様子がおかしい","その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"],"note":"判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"}},"redFlagsSource":{"publisher":"消防庁","title":"救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜","edition":"令和7年12月発行","url":"https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf","pages":"おとな p.3・高齢者 p.2・こども p.4","note":"出典：「救急車を上手に使いましょう～救急車 必要なのはどんなとき?～」（消防庁）（https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf）（公共データ利用規約 第1.0版）を加工して作成（オープン受診案内）。「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"},"identifierSystems":[{"system":"jp-medical-institution-code","label":"医療機関コード（保険医療機関の番号・10桁）","pattern":"^\\d{10}$"}],"questionnaires":[{"resourceType":"Questionnaire","id":"jp-fever","status":"draft","title":"発熱・せきの問診票（基本形）","purpose":"発熱・せき・のどの痛みで受診する方","item":[{"linkId":"q1","text":"いつから症状がありますか","type":"choice","required":true,"answerOption":[{"valueString":"今日"},{"valueString":"1〜2日前"},{"valueString":"3〜6日前"},{"valueString":"1週間以上前"}]},{"linkId":"q2","text":"いまの体温（℃）","type":"decimal"},{"linkId":"q3","text":"当てはまる症状をすべて選んでください","type":"open-choice","repeats":true,"answerOption":[{"valueString":"せき"},{"valueString":"のどの痛み"},{"valueString":"鼻水"},{"valueString":"頭痛"},{"valueString":"体のだるさ"},{"valueString":"吐き気・おう吐"},{"valueString":"下痢"},{"valueString":"味やにおいがわからない"}]},{"linkId":"q4","text":"家族や周りに同じ症状の人はいますか","type":"boolean"},{"linkId":"q5","text":"持病はありますか","type":"boolean","required":true},{"linkId":"q6","text":"持病の名前","type":"string","enableWhen":[{"question":"q5","operator":"=","answerBoolean":true}]},{"linkId":"q7","text":"いま飲んでいる薬はありますか","type":"boolean","required":true},{"linkId":"q8","text":"薬の名前（わからなければ、お薬手帳を持ってきてください）","type":"text","enableWhen":[{"question":"q7","operator":"=","answerBoolean":true}]},{"linkId":"q9","text":"薬や食べ物のアレルギーはありますか","type":"boolean","required":true},{"linkId":"q10","text":"アレルギーの内容","type":"string","enableWhen":[{"question":"q9","operator":"=","answerBoolean":true}]},{"linkId":"q11","text":"妊娠している、またはその可能性がありますか","type":"choice","answerOption":[{"valueString":"はい"},{"valueString":"いいえ"},{"valueString":"あてはまらない"}]},{"linkId":"q12","text":"そのほか、医師に伝えたいこと","type":"text"}],"url":"https://open-intake.github.io/open-intake/profiles/jp.json#jp-fever"}],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/jp-2026-11-11.json","sha256":"5bfa815bdebd494aeea6b1a8395767280001c0b1138047539cdc86faef3e54c3"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"us","url":"https://open-intake.github.io/open-intake/profiles/us.json","title":"United States (starter profile)","updated":"2026-11-11","area":{"addressCountry":"US"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Warning signs currently cover only stroke and heart attack (CDC); a general list is still needed. To be discussed and maintained by a community in this region. Reference not quoted (reproduction not permitted): American College of Emergency Physicians, \"When Your Child Has an Emergency\" (2002), https://www.acep.org/siteassets/uploads/uploaded-files/acep/clinical-and-practice-management/resources/pediatrics/whenyourchildhasanemergency.pdf","emergency":{"message":"If you think you or someone else has a life-threatening emergency, call 911 now. Do not wait to book an appointment.","numbers":[{"number":"911","label":"Emergency services (ambulance, fire, police)"},{"number":"988","label":"Suicide & Crisis Lifeline (call or text)"}]},"redFlags":["Stroke: Sudden trouble walking, dizziness, loss of balance, or lack of coordination.","Stroke: Sudden trouble seeing.","Stroke: Sudden numbness or weakness in the face, arm, or leg, especially on one side of the body.","Stroke: Sudden confusion, trouble speaking, or difficulty understanding speech.","Stroke: Sudden severe headache with no known cause.","Heart attack: Chest pain or discomfort. Most heart attacks involve discomfort in the center or left side of the chest that lasts for more than a few minutes or that goes away and comes back. The discomfort can feel like uncomfortable pressure, squeezing, fullness, or pain.","Heart attack: Feeling weak, light-headed, or faint. You may also break into a cold sweat.","Heart attack: Pain or discomfort in the jaw, neck, or back.","Heart attack: Pain or discomfort in one or both arms or shoulders.","Heart attack: Shortness of breath. This often comes along with chest discomfort, but shortness of breath also can happen before chest discomfort."],"redFlagsSource":{"publisher":"U.S. Centers for Disease Control and Prevention (CDC)","title":"Signs and Symptoms of Stroke (May 19, 2026); About Heart Attack Symptoms, Risk, and Recovery (Oct. 24, 2024)","url":"https://www.cdc.gov/stroke/signs-symptoms/index.html","pages":"also https://www.cdc.gov/heart-disease/about/heart-attack.html","note":"Source: Centers for Disease Control and Prevention (CDC). Materials developed by CDC. This material is available free of charge on the CDC website at https://www.cdc.gov/stroke/signs-symptoms/index.html and https://www.cdc.gov/heart-disease/about/heart-attack.html. Use of this material does not imply endorsement by CDC, HHS, or the United States Government of Open Intake or any of its products or services. The wording of each item is unchanged; the condition name (Stroke / Heart attack) is prefixed. These cover stroke and heart attack only, not a general list of emergencies. Accessed 2026-11-11. Not yet reviewed by clinicians in this region."},"identifierSystems":[{"system":"http://hl7.org/fhir/sid/us-npi","label":"National Provider Identifier (NPI)","pattern":"^\\d{10}$"}],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/us-2026-11-11.json","sha256":"c8033d97de758241e9abfeb93b270dcdeb19af6217c195a6d082c71fad1a18e0"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"gb","url":"https://open-intake.github.io/open-intake/profiles/gb.json","title":"United Kingdom (starter profile)","updated":"2026-11-11","area":{"addressCountry":"GB"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce an official NHS source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If someone is seriously ill or injured and their life may be at risk, call 999 now. If you need urgent medical help but are not sure whether it is an emergency, use NHS 111 (online, by phone or in the NHS App).","numbers":[{"number":"999","label":"Emergency services"},{"number":"112","label":"Emergency services (also works)"},{"number":"111","label":"NHS 111 (urgent but not life-threatening)"}]},"redFlags":[],"references":[{"publisher":"London Ambulance Service NHS Trust","title":"When to call 999","url":"https://www.londonambulance.nhs.uk/our-services/emergency-care/calling-999/","note":"Examples of when to call 999. Not quoted until permission is granted by the Trust."},{"publisher":"NHS","title":"When to call 999","url":"https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-call-999/"}],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/gb-2026-11-11.json","sha256":"13c94a1b37e4b48e15d103d5f34ac9dcc2d957b2c0f8902ea0818849f0fa8eea"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"au","url":"https://open-intake.github.io/open-intake/profiles/au.json","title":"Australia (starter profile)","updated":"2026-11-11","area":{"addressCountry":"AU"},"languages":["en"],"status":"draft","note":"Starter profile. Emergency numbers are filled in. Emergency warning signs are not quoted because the official source (healthdirect) does not permit reproduction without written permission; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"In a life-threatening emergency, call Triple Zero (000) now. If you are not sure whether to seek care, you can call the healthdirect helpline on 1800 022 222.","numbers":[{"number":"000","label":"Triple Zero (ambulance, fire, police)"},{"number":"112","label":"Emergency number from mobile phones"},{"number":"1800 022 222","label":"healthdirect helpline (health advice)"}]},"redFlags":[],"references":[{"publisher":"healthdirect Australia","title":"Calling triple zero (000)","url":"https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero","note":"Official list of when to call for an ambulance. Not quoted here: healthdirect's terms require prior written permission for reproduction."}],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/au-2026-11-11.json","sha256":"1648f0d9ff1bb034bc7f8c3a1c1aa97da3d7502602ce8a64a409b6a5eae351f2"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca","url":"https://open-intake.github.io/open-intake/profiles/ca.json","title":"Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA"},"languages":["en"],"status":"draft","note":"Starter profile for Canada as a whole. Emergency numbers are filled in. Health services are organised by province, so warning signs are kept in provincial profiles (for example ca-bc).","emergency":{"message":"In a life-threatening emergency, call 911 now. In many provinces you can call 811 for health advice from a nurse when it is not an emergency.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"Health advice line (available in many provinces)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/ca-2026-11-11.json","sha256":"3ceaa51aec0e2258bd252c4faa34f6e5d4865d4e49e98a2f50152ce786b36511"}},{"spec":"open-intake-profile","specVersion":"0.3","id":"ca-bc","url":"https://open-intake.github.io/open-intake/profiles/ca-bc.json","title":"British Columbia, Canada (starter profile)","updated":"2026-11-11","area":{"addressCountry":"CA","addressRegion":"BC"},"languages":["en"],"status":"draft","note":"Starter profile for British Columbia. Emergency numbers are filled in. Emergency warning signs will be added once permission to reproduce the official source is granted; see references. To be discussed and maintained by a community in this region.","emergency":{"message":"If you think you may need emergency care, call 9-1-1 now. If you are not sure whether it is an emergency, call 8-1-1 (HealthLink BC) for advice.","numbers":[{"number":"911","label":"Emergency services"},{"number":"811","label":"HealthLink BC (health advice; 7-1-1 for the deaf and hard of hearing)"},{"number":"988","label":"Suicide Crisis Helpline (call or text)"}]},"redFlags":[],"references":[{"publisher":"HealthLink BC (Government of British Columbia)","title":"When to visit the emergency room","url":"https://www.healthlinkbc.ca/health-library/health-features/when-visit-emergency-room","note":"Official list of potentially life-threatening symptoms. Not quoted until permission is granted (Province of British Columbia copyright)."}],"identifierSystems":[],"questionnaires":[],"_archive":{"url":"https://open-intake.github.io/open-intake/profiles/archive/ca-bc-2026-11-11.json","sha256":"a891e1d705c4d1b8154e060a115dc78c94eb6b610ad29aab5e6e6c1063b1a991"}}];
 const profileById = id => PROFILES.find(p => p.id === id);
 const currentProfile = () => profileById(S && S.profile && (S.profile.id || S.profile)) || profileById(LOCALE.defaultProfile) || PROFILES[0];
 const profileName = p => (LOCALE.profileNames && LOCALE.profileNames[p.id]) || p.title;
-const profileRef = id => { const p = profileById(id); return p ? { id: p.id, url: p.url } : { id }; };
+// 使ったプロファイルの版を書く（url は版ごとの写し。あとから中身が変わらない。SPEC §4d・v0.5）
+const profileRef = id => { const p = profileById(id); if (!p) return { id }; const r = { id: p.id, url: p._archive ? p._archive.url : p.url }; if (p.updated) r.updated = p.updated; if (p._archive) r.sha256 = p._archive.sha256; return r; };
 const POLICY_URL = LOCALE.policy;
 const STORE_KEY = "open-intake-draft-v1";
 const STORE_KEY_S = "open-intake-schedule-draft-v1";
@@ -1088,7 +1160,7 @@ const X = { today: () => today(), addDays: (d, n) => addDays(d, n), profileRef, 
 function exampleDoc() { return LOCALE.exampleDoc(X); }
 function blankDoc() {
   return {
-    spec: "open-intake", specVersion: "0.4", updated: today(), profile: profileRef(LOCALE.defaultProfile), files: [],
+    spec: "open-intake", specVersion: "0.5", updated: today(), profile: profileRef(LOCALE.defaultProfile), files: [],
     clinic: { name: "", url: "", identifiers: [], telephone: "", address: { addressCountry: (profileById(LOCALE.defaultProfile)?.area?.addressCountry) || "", postalCode: "", addressRegion: "", addressLocality: "", streetAddress: "" }, geo: null, access: [],
       departments: [], openingHours: [{ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "12:00" }], closedNote: "",
       handles: [], notHandled: [], booking: [{ method: "phone", telephone: "" }], bring: [], languages: [LOCALE.lang], accessibility: [] },
@@ -1106,6 +1178,9 @@ function normalize(doc) {
   d.spec = "open-intake"; d.specVersion = typeof d.specVersion === "string" ? d.specVersion : "0.1";
   if (d.profile === undefined) d.profile = profileRef(LOCALE.defaultProfile);
   if (typeof d.updated !== "string") d.updated = today();
+  if (typeof d.verified !== "string") delete d.verified;
+  if (d.status && typeof d.status === "object" && typeof d.status.state === "string") { const st = d.status; for (const k of ["date","movedTo","note"]) if (typeof st[k] !== "string") delete st[k]; }
+  else delete d.status;
   d.files = Array.isArray(d.files) ? d.files.filter(f => f && typeof f === "object").map(f => ({ ...f, role: String(f.role ?? ""), url: String(f.url ?? "") })) : [];
   const c = d.clinic = (d.clinic && typeof d.clinic === "object") ? d.clinic : {};
   for (const k of ["name","url","telephone","closedNote"]) if (typeof c[k] !== "string") c[k] = "";
@@ -1118,6 +1193,8 @@ function normalize(doc) {
   for (const k of ["departments","handles","notHandled","bring","languages","accessibility"]) c[k] = Array.isArray(c[k]) ? c[k].filter(x => typeof x === "string") : [];
   c.focus = Array.isArray(c.focus) ? c.focus.filter(f => f && typeof f === "object").map(f => ({ ...f, department: typeof f.department === "string" ? f.department : "", areas: Array.isArray(f.areas) ? f.areas.filter(x => typeof x === "string") : [], note: typeof f.note === "string" ? f.note : "" })) : [];
   // 知らない欄も消さずに持っておく（SPEC §8。読み込んで保存し直しても欄が消えないように）
+  // 対象を絞った行（scopedOpeningHours・v0.5）は、編集の間はひとつの表にまとめる。出力のときに分け直す
+  c.openingHours = [...arr(c.openingHours), ...arr(c.scopedOpeningHours)]; delete c.scopedOpeningHours;
   c.openingHours = Array.isArray(c.openingHours) ? c.openingHours.filter(h => h && typeof h === "object").map(h => ({ ...h, days: Array.isArray(h.days) ? h.days.filter(x => DAY_KEYS.includes(x)) : [], opens: h.opens || "", closes: h.closes || "" })) : [];
   c.booking = Array.isArray(c.booking) ? c.booking.filter(b => b && typeof b === "object").map(b => ({ ...b, method: b.method || "other", url: b.url || "", telephone: b.telephone || "", note: b.note || "", hours: Array.isArray(b.hours) ? b.hours.filter(x => x && typeof x === "object").map(x => ({ ...x, days: Array.isArray(x.days) ? x.days.filter(k => DAY_KEYS.includes(k)) : [] })) : [] })) : [];
   if (typeof c.appointmentRequired !== "boolean") delete c.appointmentRequired;
@@ -1171,7 +1248,11 @@ function hoursOut(h) {
   return keepUnknown(h, o, HOURS_KEYS);
 }
 function build(d) {
-  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.4", updated: d.updated, policy: POLICY_URL };
+  const c = d.clinic, out = { spec: "open-intake", specVersion: "0.5", updated: d.updated };
+  if (d.verified && d.verified >= d.updated) out.verified = d.verified;
+  const st = d.status && STATE_OPTS.some(o => o[0] && o[0] === d.status.state) ? d.status : null;
+  if (st) { const so = { state: st.state }; if (clean(st.date)) so.date = clean(st.date); if (st.state === "moved" && clean(st.movedTo)) so.movedTo = clean(st.movedTo); if (clean(st.note)) so.note = clean(st.note); out.status = keepUnknown(st, so, ["state","date","movedTo","note"]); }
+  out.policy = POLICY_URL;
   if (d.profile) out.profile = d.profile;
   const files = (d.files || []).map(f => { const o = { ...f, role: clean(f.role), url: clean(f.url) }; if (!clean(o.note)) delete o.note; return o; }).filter(f => f.role || f.url);
   if (files.length) out.files = files;
@@ -1185,20 +1266,23 @@ function build(d) {
   if (c.geo) clinic.geo = { latitude: c.geo.latitude, longitude: c.geo.longitude };
   { const v = cleanList(c.access); if (v.length) clinic.access = v; }
   clinic.departments = cleanList(c.departments);
-  clinic.openingHours = c.openingHours.map(hoursOut);
+  // 全員向けの行は openingHours、対象を絞った行は scopedOpeningHours に分ける（SPEC §4・v0.5）。閉院などのときは空にする
+  { const rows = st ? [] : c.openingHours.map(hoursOut); clinic.openingHours = rows.filter(x => !isNarrowed(x)); const sc = rows.filter(isNarrowed); if (sc.length) clinic.scopedOpeningHours = sc; }
   if (clean(c.closedNote)) clinic.closedNote = clean(c.closedNote);
   if (typeof c.appointmentRequired === "boolean") clinic.appointmentRequired = c.appointmentRequired;
   { const fo = c.focus.map(f => { const o = {}; if (clean(f.department)) o.department = clean(f.department); o.areas = cleanList(f.areas); if (clean(f.note)) o.note = clean(f.note); return o; }).filter(f => f.areas.length || f.department); if (fo.length) clinic.focus = fo; }
   for (const k of ["handles","notHandled"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
-  clinic.booking = c.booking.map(b => {
+  clinic.booking = st ? [] : c.booking.map(b => {
     const o = { method: b.method }; if (b.method === "web" || (b.method === "other" && clean(b.url))) o.url = clean(b.url); if (b.method === "phone" || (b.method === "other" && clean(b.telephone))) o.telephone = clean(b.telephone);
     const hrs = arr(b.hours).filter(x => arr(x.days).length || x.opens || x.closes).map(x => ({ ...x, days: DAY_KEYS.filter(k => arr(x.days).includes(k)), opens: x.opens || "", closes: x.closes || "" }));
     if (hrs.length) o.hours = hrs;
     if (b.mode) o.mode = b.mode;
     if (b.visitType === "first" || b.visitType === "return") o.visitType = b.visitType;
     if (clean(b.statusUrl)) o.statusUrl = clean(b.statusUrl);
+    if (b.platform && (clean(b.platform.name) || clean(b.platform.url))) { const p = {}; if (clean(b.platform.name)) p.name = clean(b.platform.name); if (clean(b.platform.url)) p.url = clean(b.platform.url); o.platform = keepUnknown(b.platform, p, ["name","url"]); }
+    { const ep = arr(b.endpoints).filter(x => x && clean(x.url)).map(x => keepUnknown(x, { type: x.type || "other", url: clean(x.url) }, ["type","url"])); if (ep.length) o.endpoints = ep; }
     if (clean(b.note)) o.note = clean(b.note);
-    return keepUnknown(b, o, ["method","url","telephone","hours","mode","visitType","statusUrl","note"]);
+    return keepUnknown(b, o, ["method","url","telephone","hours","mode","visitType","statusUrl","platform","endpoints","note"]);
   });
   for (const k of ["bring","languages","accessibility"]) { const v = cleanList(c[k]); if (v.length) clinic[k] = v; }
   out.clinic = clinic;
@@ -1224,7 +1308,7 @@ function build(d) {
   return out;
 }
 
-const { validate } = OpenIntakeValidate;
+const { validate, isNarrowed } = OpenIntakeValidate;
 
 // ---------- DOM の小道具 ----------
 function h(tag, props, ...kids) {
@@ -1368,7 +1452,8 @@ function renderHours() {
     h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.openingHours.push({ days: [], opens: "15:00", closes: "18:00" }); renderHours(); changed(); } }, "＋ 行を足す")),
     field("f-closed", "休診の補足", "closedNote", text("f-closed", () => c.closedNote, v => c.closedNote = v, { placeholder: "木曜午後・日曜・祝日は休診" })),
     field("f-appt", "完全予約制か", "appointmentRequired", pick("f-appt", APPT_OPTS, () => typeof c.appointmentRequired === "boolean" ? String(c.appointmentRequired) : "", v => setOrDrop(c, "appointmentRequired", v === "" ? undefined : v === "true"), "完全予約制か"),
-      { hint: "はっきり決まっているときだけ選びます。時間帯ごとの違いは、各行の「受け付け方」で書けます。" }));
+      { hint: "はっきり決まっているときだけ選びます。時間帯ごとの違いは、各行の「受け付け方」で書けます。" }),
+    h("p", { class: "small", text: "診療科・用途・初診か再診か・第何週で絞った行と、新しい受付をしない行は、できあがりでは scopedOpeningHours に分けて書き出します（0.4 までしか知らない AI が、全員向けの時間と読まないように）。ここでは一つの表のまま編集できます。「表示」タブの曜日ごとの表で、意図どおりかを確かめてください。" }));
 }
 
 function renderBooking() {
@@ -1383,7 +1468,7 @@ function renderBooking() {
         (b.method === "web" || b.method === "other") && field(fid("bk", i, "u"), "予約ページの URL", "url", text(fid("bk", i, "u"), () => b.url, v => b.url = v, { type: "url", placeholder: "https://" }), { req: b.method === "web" }),
         (b.method === "phone" || b.method === "other") && field(fid("bk", i, "t"), "予約用の電話番号", "telephone", text(fid("bk", i, "t"), () => b.telephone, v => b.telephone = v, { type: "tel", placeholder: "03-0000-0000" }), { req: b.method === "phone" }),
         field(fid("bk", i, "n"), "注意", "note", text(fid("bk", i, "n"), () => b.note, v => b.note = v, { placeholder: "初診は電話のみ など" }))),
-      h("details", { class: "more", open: !!(b.mode || b.visitType || b.statusUrl || arr(b.hours).length) }, h("summary", { text: "予約の取り方・受け付ける時間など（任意）" }),
+      h("details", { class: "more", open: !!(b.mode || b.visitType || b.statusUrl || arr(b.hours).length || b.platform || arr(b.endpoints).length) }, h("summary", { text: "予約の取り方・受け付ける時間など（任意）" }),
         h("div", { class: "grid" },
           field(fid("bk", i, "md"), "取り方", "mode", pick(fid("bk", i, "md"), MODE_OPTS, () => b.mode, v => setOrDrop(b, "mode", v), "取り方")),
           field(fid("bk", i, "vt"), "初診・再診", "visitType", pick(fid("bk", i, "vt"), VISIT_OPTS, () => b.visitType, v => setOrDrop(b, "visitType", v), "初診・再診")),
@@ -1394,7 +1479,17 @@ function renderBooking() {
             h("input", { type: "checkbox", checked: arr(x.days).includes(dk), "aria-label": n, onchange: e => { x.days = e.target.checked ? DAY_KEYS.filter(y => y === dk || arr(x.days).includes(y)) : arr(x.days).filter(y => y !== dk); changed(); } }), h("span", { text: n })))),
           timeIn(fid("bk", i, "ho", k), () => x.opens, v => x.opens = v, "始まり"), h("span", { text: "〜" }), timeIn(fid("bk", i, "hc", k), () => x.closes, v => x.closes = v, "終わり"),
           delBtn(b.hours, k, renderBooking, "この時間を消す")))),
-        addBtn("＋ 予約を受け付ける時間を足す", () => { b.hours = arr(b.hours); b.hours.push({ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "17:00" }); renderBooking(); }))))),
+        addBtn("＋ 予約を受け付ける時間を足す", () => { b.hours = arr(b.hours); b.hours.push({ days: ["Mo","Tu","We","Th","Fr"], opens: "09:00", closes: "17:00" }); renderBooking(); }),
+        h("div", { class: "small", text: "予約の仕組みを外の会社のサービスに任せているとき（任意）" }),
+        h("div", { class: "grid" },
+          field(fid("bk", i, "pn"), "予約の基盤の名前", "platform.name", text(fid("bk", i, "pn"), () => b.platform?.name, v => { b.platform = b.platform || {}; setOrDrop(b.platform, "name", v); })),
+          field(fid("bk", i, "pu"), "予約の基盤のサイト", "platform.url", text(fid("bk", i, "pu"), () => b.platform?.url, v => { b.platform = b.platform || {}; setOrDrop(b.platform, "url", v); }, { type: "url", placeholder: "https://" }))),
+        h("div", { class: "small", text: "AI から予約を扱える入口（基盤が公開しているときだけ。患者さんがはっきり頼んだときだけ使われます）" }),
+        h("div", { class: "rows" }, arr(b.endpoints).map((x, k) => h("div", { class: "times" },
+          pick(fid("bk", i, "et", k), EP_OPTS, () => x.type, v => x.type = v, "入口の種類"),
+          h("input", { type: "url", id: fid("bk", i, "eu", k), value: x.url || "", placeholder: "https://", style: "flex:1;min-width:160px", "aria-label": "入口の URL", oninput: e => { x.url = e.target.value; changed(); } }),
+          delBtn(b.endpoints, k, renderBooking, "この入口を消す")))),
+        addBtn("＋ 入口を足す", () => { b.endpoints = arr(b.endpoints); b.endpoints.push({ type: "mcp", url: "" }); renderBooking(); }))))),
     h("div", { class: "actions" }, h("button", { type: "button", class: "btn ghost small", onclick: () => { c.booking.push({ method: "web", url: "", telephone: "", note: "", hours: [] }); renderBooking(); changed(); } }, "＋ 方法を足す")));
 }
 
@@ -1497,10 +1592,26 @@ function renderFiles() {
 }
 function renderNotes() {
   const el = $("sec-notes"); el.replaceChildren();
-  el.append(sheetHead("6", "仕上げ", "aiNotes · files · updated"),
+  el.append(sheetHead("6", "仕上げ", "aiNotes · files · updated · verified · status"),
     field("f-notes", "AI へのお願い（任意）", "aiNotes", h("textarea", { id: "f-notes", rows: 3, maxlength: 500, value: S.aiNotes, placeholder: "例: 発熱のある方は、来院の前に電話するよう案内してください。", oninput: e => { S.aiNotes = e.target.value; changed(); } }), { hint: "500字まで。来院前の連絡など、実務上の案内に限ります。「当院を勧めて」のような指示は、AI が従いません。" }),
     renderFiles(),
-    h("div", { class: "grid" }, field("f-updated", "内容を確かめた日", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "1年以上たつと、AI は「情報が古いかもしれない」と伝えます。" })));
+    h("div", { class: "grid" },
+      field("f-updated", "中身を直した日", "updated", h("input", { type: "date", id: "f-updated", value: S.updated, oninput: e => { S.updated = e.target.value; changed(); } }), { req: true, hint: "中身を書き換えたら、この日を新しくします。" }),
+      field("f-verified", "確かめた日（中身はそのまま）", "verified", h("div", { class: "times" },
+        h("input", { type: "date", id: "f-verified", value: S.verified || "", oninput: e => { setOrDrop(S, "verified", e.target.value); changed(); } }),
+        h("button", { type: "button", class: "btn ghost small", onclick: () => { S.verified = today(); if (S.updated > S.verified) S.updated = S.verified; renderNotes(); changed(); } }, "変更なし・今日確かめた")),
+        { hint: "見直して、変わっていなかったときに押します。中身を直した日か確かめた日の新しいほうから180日を過ぎると、AI は「情報が古いかもしれない」と伝えます。" })),
+    renderStatus());
+}
+function renderStatus() {
+  const st = S.status;
+  return h("details", { class: "more", open: !!st }, h("summary", { text: "閉院・移転したとき（任意）" }),
+    h("p", { class: "small", text: "閉院・移転したとき、またはこのファイルでの案内をやめるときに選びます。選ぶと、できあがりの診療時間と予約の方法は空になります（古い時間を AI が案内しないように）。フォームの中身は残るので、元に戻せます。ファイルは消さずに、しばらく置いておいてください。" }),
+    h("div", { class: "grid" },
+      field("f-st", "状態", "status.state", pick("f-st", STATE_OPTS, () => st ? st.state : "", v => { if (!v) delete S.status; else S.status = { ...(S.status || {}), state: v }; renderNotes(); }, "状態")),
+      st && field("f-st-d", "その日", "status.date", h("input", { type: "date", id: "f-st-d", value: st.date || "", oninput: e => { setOrDrop(st, "date", e.target.value); changed(); } })),
+      st && st.state === "moved" && field("f-st-m", "移転先の案内（URL）", "status.movedTo", text("f-st-m", () => st.movedTo || "", v => setOrDrop(st, "movedTo", v), { type: "url", placeholder: "https://" })),
+      st && field("f-st-n", "補足", "status.note", text("f-st-n", () => st.note || "", v => setOrDrop(st, "note", v), { maxlength: 200, placeholder: "例: 2027年4月から ○○ 診療所が引き継ぎます" }))));
 }
 
 function renderAll() { renderClinic(); renderFocus(); renderHours(); renderBooking(); renderSafety(); renderQuestionnaires(); renderNotes(); renderNotice(); changed(true); }
@@ -1510,10 +1621,11 @@ let SC, originS = "";
 const EXC_STATUS = [["closed","休診"],["open","臨時に診療"],["changed","時間の変更"]];
 const ONCALL_KIND = [["holiday","休日の当番"],["night","夜間の当番"],["other","その他"]];
 function exampleSchedule() { return LOCALE.exampleSchedule(X); }
-function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.4", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
+function blankSchedule() { const t = today(); return { spec: "open-intake-schedule", specVersion: "0.5", updated: t, validUntil: addDays(t, 30), main: "/clinic-intake.json", exceptions: [], doctorSchedule: [], onCall: [], notices: [] }; }
 function normalizeSchedule(o) {
   const d = (o && typeof o === "object") ? JSON.parse(JSON.stringify(o)) : {};
-  d.spec = "open-intake-schedule"; d.specVersion = "0.4";
+  d.spec = "open-intake-schedule"; d.specVersion = "0.5";
+  d.exceptions = [...arr(d.exceptions), ...arr(d.scopedExceptions)]; delete d.scopedExceptions;
   for (const k of ["updated","validUntil","main"]) if (typeof d[k] !== "string") d[k] = k === "updated" ? today() : k === "validUntil" ? addDays(today(), 30) : "";
   for (const k of ["exceptions","doctorSchedule","onCall","notices"]) d[k] = Array.isArray(d[k]) ? d[k].filter(x => x && typeof x === "object") : [];
   for (const x of d.exceptions) { x.hours = Array.isArray(x.hours) ? x.hours : []; for (const k of ["from","to","note"]) x[k] = x[k] || ""; if (!x.status) x.status = "closed"; }
@@ -1524,13 +1636,17 @@ function normalizeSchedule(o) {
 }
 function buildSchedule(d) {
   const keep = (o, keys) => { const r = {}; for (const k of keys) { const v = clean(o[k]); if (v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)) r[k] = v; } return r; };
-  const out = { spec: "open-intake-schedule", specVersion: "0.4", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
+  const out = { spec: "open-intake-schedule", specVersion: "0.5", updated: d.updated, validUntil: d.validUntil, policy: POLICY_URL };
   if (clean(d.main)) out.main = clean(d.main);
-  if (d.exceptions.length) out.exceptions = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]);
+  const exAll = d.exceptions.map(x => { const r = keep(x, ["from","to","status"]);
     if (x.status !== "closed") { r.hours = x.hours.map(h => ({ opens: h.opens, closes: h.closes }));
       if (clean(x.department)) r.department = clean(x.department); if (Array.isArray(x.service) && x.service.length) r.service = x.service.slice();
       const rc = receptionOut(x.reception); if (rc) r.reception = rc; if (x.entry) r.entry = x.entry; }
     if (clean(x.note)) r.note = clean(x.note); return keepUnknown(x, r, ["from","to","status","hours","department","service","reception","entry","note"]); });
+  // 診療科・用途で絞った変更は scopedExceptions に分ける（SPEC §6b・v0.5）
+  const exScoped = x => x.department !== undefined || x.service !== undefined;
+  if (exAll.some(x => !exScoped(x))) out.exceptions = exAll.filter(x => !exScoped(x));
+  if (exAll.some(exScoped)) out.scopedExceptions = exAll.filter(exScoped);
   if (d.doctorSchedule.length) out.doctorSchedule = d.doctorSchedule.map(x => { const r = keep(x, ["department","name"]); if (x._byDate) r.date = x.date; else r.days = DAY_KEYS.filter(k => x.days.includes(k)); r.opens = x.opens; r.closes = x.closes; if (clean(x.note)) r.note = clean(x.note); return r; });
   if (d.onCall.length) out.onCall = d.onCall.map(x => ({ ...keep(x, ["date","kind","opens","closes","department","note"]) }));
   if (d.notices.length) out.notices = d.notices.map(x => keep(x, ["text","from","to"]));
@@ -1663,20 +1779,42 @@ const hm = (o, c) => (c && o && c <= o) ? `${o}〜翌${c}` : `${o || "?"}〜${c 
 function dl(rows) { return h("dl", {}, rows.filter(r => r && r[1] !== "" && r[1] != null && !(Array.isArray(r[1]) && !r[1].length)).map(([k, v]) => [h("dt", { text: k }), h("dd", {}, Array.isArray(v) ? v.join("、") : v)])); }
 function block(title, ...kids) { const c = kids.flat().filter(Boolean); return c.length ? h("section", {}, h("h4", { text: title }), c) : null; }
 function list(items, tag = "ul") { const it = items.filter(Boolean); return it.length ? h(tag, {}, it.map(x => h("li", {}, x))) : null; }
+const STATE_JA = Object.fromEntries(STATE_OPTS.filter(o => o[0]));
+// 曜日ごとの確かめの表（B3）。全員向けの行と対象を絞った行を、曜日ごとに並べ直して、人の言葉で見せる
+function weekTable(c) {
+  const rows = [...arr(c.openingHours).map(x => [x, false]), ...arr(c.scopedOpeningHours).map(x => [x, true])].filter(([x]) => x && typeof x === "object");
+  if (!rows.length) return null;
+  const who = x => [arr(x.weeksOfMonth).length && arr(x.weeksOfMonth).map(n => `第${n}`).join("・") + "週だけ", x.department && str(x.department), arr(x.service).length && !(arr(x.service).length === 1 && x.service[0] === "general") && arr(x.service).map(k => SERVICE_JA[k] || str(k)).join("・"), VISIT_JA[x.visitType]].filter(Boolean).join("・") || "全員";
+  const rec = x => { const r = x.reception && typeof x.reception === "object" ? x.reception : null; return [r && (r.opens || r.closes) && `${r.opens || "?"}〜${r.closes || "?"}`, r && r.note && str(r.note)].filter(Boolean).join("　") || "書かれていない"; };
+  const how = x => [x.entry ? ENTRY_JA[x.entry] : "書かれていない", x.mayEndEarly === true && "早く締めることあり"].filter(Boolean).join("・");
+  const body = DAYS.map(([k, n]) => {
+    const hit = rows.filter(([x]) => arr(x.days).includes(k)).sort((a, b) => str(a[0].opens).localeCompare(str(b[0].opens)));
+    if (!hit.length) return [h("tr", {}, h("th", { text: n }), h("td", { colspan: 4, class: "sub", text: "書かれた時間なし（休診か、わからない）" }))];
+    return hit.map(([x], j) => h("tr", {}, j === 0 && h("th", { rowspan: hit.length, text: n }), h("td", { text: hm(x.opens, x.closes) }), h("td", { text: who(x) }), h("td", { text: rec(x) }), h("td", { text: how(x) })));
+  }).flat();
+  return block("曜日ごとの確かめ表", h("p", { class: "sub", style: "margin:0 0 4px", text: "ふだんの時間と対象を絞った時間を、曜日ごとに並べ直しました。「誰に」が全員でない行は、その人にだけ当てはまります。臨時の休診・変更は入っていません。" }),
+    h("div", { class: "wk" }, h("table", {}, h("thead", {}, h("tr", {}, ["曜日","時間","誰に","受付の時間","受け付け方"].map(s => h("th", { text: s })))), h("tbody", {}, body))));
+}
 function viewIntake(o) {
   const c = o.clinic || {}, a = c.address || {}, s = o.safety || {};
   const qs = arr(o.questionnaires);
   return [
     h("h3", { text: str(c.name) || "（名前が空です）" }),
-    dl([["電話", str(c.telephone)], ["住所", [a.addressCountry, a.postalCode && "〒" + a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["行き方", arr(c.access)], ["位置", c.geo ? `${c.geo.latitude}, ${c.geo.longitude}` : ""], ["識別番号", arr(c.identifiers).map(x => { const sys = PROFILES.flatMap(p => p.identifierSystems || []).find(y => y.system === x.system); return `${sys ? sys.label : str(x.system)} ${str(x.value)}`; })], ["サイト", str(c.url)], ["診療科", arr(c.departments)], ["地域プロファイル", o.profile ? str(o.profile.id || o.profile) : ""], ["内容を確かめた日", str(o.updated)]]),
+    dl([["電話", str(c.telephone)], ["住所", [a.addressCountry, a.postalCode && "〒" + a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ")], ["行き方", arr(c.access)], ["位置", c.geo ? `${c.geo.latitude}, ${c.geo.longitude}` : ""], ["識別番号", arr(c.identifiers).map(x => { const sys = PROFILES.flatMap(p => p.identifierSystems || []).find(y => y.system === x.system); return `${sys ? sys.label : str(x.system)} ${str(x.value)}`; })], ["サイト", str(c.url)], ["診療科", arr(c.departments)], ["地域プロファイル", o.profile ? str(o.profile.id || o.profile) + (o.profile.updated ? `（${str(o.profile.updated)} 版）` : "") : ""], ["中身を直した日", str(o.updated)], ["確かめた日", str(o.verified)]]),
+    o.status && typeof o.status === "object" && block("閉院・移転", h("div", {}, h("span", { class: "tag alert", text: STATE_JA[o.status.state] || str(o.status.state) }), o.status.date && h("span", { text: "　" + str(o.status.date) }), o.status.movedTo && h("div", { class: "sub", text: "移転先: " + str(o.status.movedTo) }), o.status.note && h("div", { class: "sub", text: str(o.status.note) }), h("div", { class: "sub", text: "読む AI は、ここに書かれた時間や予約の方法を案内しません。" }))),
     block("ふだんの診療時間", list(arr(c.openingHours).map(x => h("span", {}, `${arr(x.weeksOfMonth).length ? arr(x.weeksOfMonth).map(n => `第${n}`).join("・") + "週の " : ""}${days(x.days)}　${hm(x.opens, x.closes)}`,
         hoursExtra(x).length > 0 && h("span", { class: "sub", text: "　" + hoursExtra(x).join("／") }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" })))),
       c.closedNote && h("div", { class: "sub", text: c.closedNote }),
       typeof c.appointmentRequired === "boolean" && h("div", { class: "sub", text: c.appointmentRequired ? "完全予約制" : "完全予約制ではない" })),
+    block("対象を絞った診療時間（scopedOpeningHours）", list(arr(c.scopedOpeningHours).map(x => h("span", {}, `${arr(x.weeksOfMonth).length ? arr(x.weeksOfMonth).map(n => `第${n}`).join("・") + "週の " : ""}${days(x.days)}　${hm(x.opens, x.closes)}`,
+        hoursExtra(x).length > 0 && h("span", { class: "sub", text: "　" + hoursExtra(x).join("／") }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }))))),
+    weekTable(c),
     block("予約・受診の方法", list(arr(c.booking).map(b => h("span", {}, METHOD_JA[b.method] || str(b.method), b.url && h("span", { class: "sub", text: "　" + b.url }), b.telephone && h("span", { text: "　" + b.telephone }),
       (b.mode || b.visitType) && h("span", { class: "sub", text: "　" + [MODE_JA[b.mode], VISIT_JA[b.visitType]].filter(Boolean).join("／") }),
       arr(b.hours).length > 0 && h("div", { class: "sub", text: "予約を受け付ける時間: " + arr(b.hours).map(x => `${days(x.days)} ${hm(x.opens, x.closes)}`).join("、") }),
       b.statusUrl && h("div", { class: "sub", text: "今の順番・空き: " + b.statusUrl }),
+      b.platform && typeof b.platform === "object" && h("div", { class: "sub", text: "予約の基盤: " + [str(b.platform.name), str(b.platform.url)].filter(Boolean).join("　") }),
+      arr(b.endpoints).length > 0 && h("div", { class: "sub", text: "AI 向けの入口（患者さんが頼んだときだけ）: " + arr(b.endpoints).map(x => `${str(x.type)} ${str(x.url)}`).join("、") }),
       b.note && h("span", { class: "sub", text: "（" + b.note + "）" }))))),
     block("得意分野・力を入れていること（医療機関の自己申告）", list(arr(c.focus).map(f => h("span", {}, f.department && h("strong", { text: str(f.department) + "　" }), arr(f.areas).join("、"), f.note && h("span", { class: "sub", text: "（" + f.note + "）" }))))),
     block("主に診ている症状・相談", list(arr(c.handles))),
@@ -1708,17 +1846,70 @@ function viewSchedule(o) {
     h("h3", { text: "臨時の情報" }),
     h("div", {}, expired ? h("span", { class: "tag alert", text: `有効期限切れ（${o.validUntil}）: AI はこのファイルを使いません` }) : h("span", { class: "tag good", text: `有効: ${str(o.validUntil)} まで` })),
     dl([["更新した日", str(o.updated)], ["メインのファイル", str(o.main)]]),
-    block("臨時の休診・診療時間の変更", list(arr(o.exceptions).map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "　" + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "　" + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join("・") }), hoursExtra(x).length > 0 && h("span", { class: "sub", text: "　" + hoursExtra(x).join("／") }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.to))))),
+    block("臨時の休診・診療時間の変更", list([...arr(o.exceptions), ...arr(o.scopedExceptions)].map(x => h("span", {}, h("strong", { text: span(x.from, x.to) }), "　" + (STATUS_JA[x.status] || str(x.status)), arr(x.hours).length > 0 && h("span", { text: "　" + arr(x.hours).map(hh => hm(hh.opens, hh.closes)).join("・") }), hoursExtra(x).length > 0 && h("span", { class: "sub", text: "　" + hoursExtra(x).join("／") }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.to))))),
     block("担当医の予定", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("　") }), "　" + (x.date ? x.date : "毎週 " + days(x.days)) + "　" + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date || x.to))))),
     block("当番", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "　" + (KIND_JA[x.kind] || str(x.kind)) + "　" + hm(x.opens, x.closes), x.department && h("span", { text: "　" + x.department }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date))))),
     block("お知らせ", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), past(x.to))))),
-    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "臨時の予定は書かれていません。" })
+    !arr(o.exceptions).length && !arr(o.scopedExceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "臨時の予定は書かれていません。" })
   ];
 }
 function renderView(el, o) {
   el.replaceChildren();
   try { el.append(...(OpenIntakeValidate.kindOf(o) === "schedule" ? viewSchedule(o) : viewIntake(o)).filter(Boolean)); }
   catch (e) { el.append(h("p", { class: "sub", text: "この JSON は表示できませんでした: " + e.message })); }
+}
+
+// ---------- サイト用の出力（JSON-LD・HTML。C1） ----------
+const SCHEMA_DAY = { Mo: "Monday", Tu: "Tuesday", We: "Wednesday", Th: "Thursday", Fr: "Friday", Sa: "Saturday", Su: "Sunday" };
+function jsonLd(o, sch) {
+  const c = o.clinic || {}, a = c.address || {};
+  const ld = { "@context": "https://schema.org", "@type": "MedicalClinic", name: str(c.name) };
+  if (c.url) ld.url = c.url;
+  if (c.telephone) ld.telephone = c.telephone;
+  const ad = { "@type": "PostalAddress" }; for (const [k, v] of [["addressCountry", a.addressCountry], ["postalCode", a.postalCode], ["addressRegion", a.addressRegion], ["addressLocality", a.addressLocality], ["streetAddress", a.streetAddress]]) if (str(v)) ad[k] = str(v);
+  if (Object.keys(ad).length > 1) ld.address = ad;
+  if (c.geo) ld.geo = { "@type": "GeoCoordinates", latitude: c.geo.latitude, longitude: c.geo.longitude };
+  if (o.status) return ld;
+  const spec = arr(c.openingHours).filter(x => !isNarrowed(x)).map(x => ({ "@type": "OpeningHoursSpecification", dayOfWeek: arr(x.days).filter(k => SCHEMA_DAY[k]).map(k => "https://schema.org/" + SCHEMA_DAY[k]), opens: x.opens, closes: x.closes })).filter(x => x.dayOfWeek.length);
+  if (spec.length) ld.openingHoursSpecification = spec;
+  if (sch) {
+    const sp = [];
+    for (const x of arr(sch.exceptions)) {
+      if (x.department !== undefined || x.service !== undefined) continue;
+      const base = { "@type": "OpeningHoursSpecification", validFrom: x.from, validThrough: x.to || x.from };
+      if (x.status === "closed") sp.push({ ...base, opens: "00:00", closes: "00:00" });
+      else for (const hh of arr(x.hours)) sp.push({ ...base, opens: hh.opens, closes: hh.closes });
+    }
+    if (sp.length) ld.specialOpeningHoursSpecification = sp;
+  }
+  return ld;
+}
+const escHtml = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function siteHtml(o) {
+  const c = o.clinic || {}, a = c.address || {}, L = [];
+  L.push(`<section class="open-intake" lang="${escHtml(LOCALE.lang)}">`, `  <h2>${escHtml(str(c.name))}</h2>`);
+  if (o.status) {
+    L.push(`  <p><strong>${escHtml(STATE_JA[o.status.state] || str(o.status.state))}</strong>${o.status.date ? " " + escHtml(o.status.date) : ""}</p>`);
+    if (o.status.note) L.push(`  <p>${escHtml(o.status.note)}</p>`);
+    if (o.status.movedTo) L.push(`  <p><a href="${escHtml(o.status.movedTo)}">${escHtml("移転先の案内")}</a></p>`);
+  } else {
+    const row = x => `${arr(x.weeksOfMonth).length ? arr(x.weeksOfMonth).map(n => `第${n}`).join("・") + "週の " : ""}${days(x.days)} ${hm(x.opens, x.closes)}${hoursExtra(x).length ? "（" + hoursExtra(x).join("／") + "）" : ""}${x.note ? " " + x.note : ""}`;
+    L.push(`  <h3>${escHtml("診療時間")}</h3>`, "  <ul>", ...arr(c.openingHours).map(x => `    <li>${escHtml(row(x))}</li>`), "  </ul>");
+    if (arr(c.scopedOpeningHours).length) L.push(`  <h3>${escHtml("対象を絞った診療時間")}</h3>`, "  <ul>", ...arr(c.scopedOpeningHours).map(x => `    <li>${escHtml(row(x))}</li>`), "  </ul>");
+    if (c.closedNote) L.push(`  <p>${escHtml(c.closedNote)}</p>`);
+    L.push(`  <h3>${escHtml("予約・受診の方法")}</h3>`, "  <ul>", ...arr(c.booking).map(b => `    <li>${escHtml(METHOD_JA[b.method] || str(b.method))}${b.url ? ` <a href="${escHtml(b.url)}">${escHtml(b.url)}</a>` : ""}${b.telephone ? " " + escHtml(b.telephone) : ""}${b.note ? "（" + escHtml(b.note) + "）" : ""}</li>`), "  </ul>");
+  }
+  L.push("  <dl>");
+  if (c.telephone) L.push(`    <dt>${escHtml("電話")}</dt><dd>${escHtml(c.telephone)}</dd>`);
+  const adr = [a.postalCode && "〒" + a.postalCode, a.addressRegion, a.addressLocality, a.streetAddress].filter(Boolean).join(" ");
+  if (adr) L.push(`    <dt>${escHtml("住所")}</dt><dd>${escHtml(adr)}</dd>`);
+  L.push("  </dl>", `  <p><small>${escHtml("この案内は、AI 向けのファイル")} <a href="/clinic-intake.json">clinic-intake.json</a> ${escHtml("と同じ内容です（中身を直した日:")} ${escHtml(str(o.updated))}${o.verified ? escHtml("・確かめた日: " + o.verified) : ""}${escHtml("）。")}</small></p>`, "</section>");
+  return L.join("\n");
+}
+function renderWeb(o) {
+  const sch = S.files.some(f => f.role === "schedule") && SC ? buildSchedule(SC) : null;
+  const ld = '<' + 'script type="application/ld+json">\n' + JSON.stringify(jsonLd(o, sch), null, 2).replace(/</g, "\\u003c") + '\n</' + 'script>';
+  $("ldOut").textContent = ld; $("htmlOut").textContent = siteHtml(o);
 }
 
 // ---------- 出力の更新 ----------
@@ -1746,6 +1937,7 @@ function changed(immediate) {
   $("json").innerHTML = highlight(json);
   const res = validate(lastOut);
   statusOf(res); renderIssues($("issues"), res); renderView($("view"), lastOut);
+  try { renderWeb(mode === "schedule" ? build(S) : lastOut); } catch (_) {}
   $("tab-issues").textContent = `チェック（${res.E.length + res.W.length}）`;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); localStorage.setItem(STORE_KEY_S, JSON.stringify(SC)); } catch (_) {} }, immediate ? 0 : 400);
@@ -1753,9 +1945,9 @@ function changed(immediate) {
 
 // ---------- タブ・コピー・保存・読み込み ----------
 function selectTab(name) {
-  for (const t of ["json","view","issues","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
+  for (const t of ["json","view","issues","web","load"]) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); $("panel-" + t).hidden = t !== name; }
 }
-for (const t of ["json","view","issues","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
+for (const t of ["json","view","issues","web","load"]) $("tab-" + t).addEventListener("click", () => selectTab(t));
 $("status").addEventListener("click", () => selectTab("issues"));
 
 function copyText(textValue, toastEl, fallbackEl) {
@@ -1763,6 +1955,8 @@ function copyText(textValue, toastEl, fallbackEl) {
   const fallback = () => { const r = document.createRange(); r.selectNodeContents(fallbackEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("選択しました。Ctrl+C（⌘+C）でコピーしてください。"); };
   try { navigator.clipboard.writeText(textValue).then(() => done("コピーしました。"), fallback); } catch (_) { fallback(); }
 }
+$("copyLd").addEventListener("click", () => copyText($("ldOut").textContent + "\n", $("ldToast"), $("ldOut")));
+$("copyHtml").addEventListener("click", () => copyText($("htmlOut").textContent + "\n", $("htmlToast"), $("htmlOut")));
 $("copyJson").addEventListener("click", () => copyText(JSON.stringify(lastOut, null, 2) + "\n", $("jsonToast"), $("json")));
 $("copyPrompt").addEventListener("click", () => copyText($("aiPrompt").textContent.trim() + "\n", $("promptToast"), $("aiPrompt")));
 $("copyPromptS").addEventListener("click", () => copyText($("aiPromptS").textContent.trim() + "\n", $("promptToastS"), $("aiPromptS")));
@@ -1813,7 +2007,7 @@ if (draft) { S = normalize(draft).doc; origin = "draft"; } else { S = normalize(
 if (draftS) { SC = normalizeSchedule(draftS); originS = "draft"; } else { SC = normalizeSchedule(exampleSchedule()); originS = "example"; }
 renderAll(); renderScheduleMeta(); renderExceptions(); renderDoctors(); renderOnCall(); renderNotices();
 setMode("intake");
-window.OpenIntake = { validate, build, normalize, buildSchedule, normalizeSchedule, setMode };
+window.OpenIntake = { validate, build, normalize, buildSchedule, normalizeSchedule, setMode, jsonLd, siteHtml };
 })();
 </script>
 

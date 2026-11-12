@@ -29,7 +29,7 @@ var LOCALE = {
   }],
   exampleDoc(x) {
     return {
-      spec: "open-intake", specVersion: "0.3", updated: x.today(), profile: x.profileRef("us"),
+      spec: "open-intake", specVersion: "0.5", updated: x.today(), profile: x.profileRef("us"),
       files: [{ role: "schedule", url: "/clinic-schedule.json", note: "Temporary closures, doctors, on-call duty and notices" }],
       clinic: {
         name: "Greenfield Family Practice (fictional example)", url: "https://example.com/", telephone: "(503) 000-0000",
@@ -60,7 +60,7 @@ var LOCALE = {
   },
   exampleSchedule(x) {
     const t = x.today(), d = x.addDays;
-    return { spec: "open-intake-schedule", specVersion: "0.3", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
+    return { spec: "open-intake-schedule", specVersion: "0.5", updated: t, validUntil: d(t, 60), main: "/clinic-intake.json",
       exceptions: [
         { from: d(t, 13), to: d(t, 13), status: "open", hours: [{ opens: "09:00", closes: "12:00" }], note: "Public holiday: open in the morning only" },
         { from: d(t, 30), to: d(t, 31), status: "closed", note: "Closed for staff training" }],
