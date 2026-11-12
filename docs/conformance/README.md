@@ -25,6 +25,10 @@
 
 問題集はテストの一部（`node tools/test.mjs`）で、ファイルの場所と形が正しいことを確かめています。答えの判定は自動ではしません。
 
+## 結果
+
+- [2026年11月: 3つの AI（Fable・Astra・Carbon）で解いた結果](results-2026-11.md)
+
 ## 問題を足すとき
 
 - 1問で確かめることは1つか2つにする
@@ -57,6 +61,10 @@ All clinics, phone numbers and URLs are fictional.
 3. A person judges, or another AI given `must`, `mustNot` and the answer. Wording does not matter, only content
 
 The set is part of the tests (`node tools/test.mjs`), which check that the file paths and shapes are correct. Answers are not judged automatically.
+
+### Results
+
+- [November 2026: results with three AI models (Fable, Astra, Carbon)](results-2026-11.md)
 
 ### Adding cases
 
