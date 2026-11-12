@@ -4,7 +4,7 @@
 
 ## [0.6.1] — 2026-11
 
-- Zenodo のアーカイブ（GitHub の Release の ZIP）から `runs/` を外した（`.gitattributes` の `export-ignore`）。v0.6.0 では `runs/2026-11/` のファイルが多すぎて、Zenodo が受け取れなかった。記録は GitHub の `runs/2026-11/` で見られる。中身は v0.6.0 と同じ
+- Zenodo のアーカイブ（GitHub の Release の ZIP）から `runs/` を外した（`.gitattributes` の `export-ignore`）。v0.6.0 では `runs/2026-11/` のファイルが多すぎて、Zenodo のページで ZIP の中身の一覧が表示されなかった（記録そのものは v0.6.0 として公開されている）。記録は GitHub の `runs/2026-11/` で見られる。中身は v0.6.0 と同じ
 
 ## [0.6.0] — 2026-11
 
