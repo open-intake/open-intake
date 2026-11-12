@@ -216,6 +216,17 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   ok(brief(one, "2026-11-23T10:00:00+09:00").includes("11月23日（月・祝）"), "まとめの日付に、曜日と祝日が付く");
   ok(brief(one, "2027-01-11T10:00:00+09:00").includes("1月11日（月・祝）"), "成人の日を祝日として扱う");
   ok(brief(one, "2026-11-23T10:00:00+09:00", { holidays: [] }).includes("11月23日（月）"), "祝日の一覧はアプリが渡せる");
+  // 未見の問（holdout1）で見つかった誤りを直したこと
+  const fri = brief(one, "2026-11-27T18:01:00+09:00"), fri2 = brief(one, "2026-11-27T19:00:00+09:00"), thu = brief(one, "2026-11-26T16:10:00+09:00");
+  ok(!fri.includes("金曜の午後は") && fri.includes("受付は 18:00 で締め切りました") && fri.includes("受付を済ませた人"), "午後の診療がある日に受付が終わっても「午後は休診」と書かせない");
+  ok(!fri2.includes("金曜の午後は") && !fri2.includes("続いています"), "診療が終わったあとも「午後は休診」と書かせない");
+  ok(thu.includes("木曜の午後は、ふだんの診療時間に書かれていません"), "午後の行がない日は「午後は休診」の型を出す");
+  const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
+  ok(brief(two, "2026-12-31T08:20:00+09:00").includes("2026年12月29日〜2027年1月3日"), "臨時の休診の期間をまとめに書く");
+  ok(brief(two, "2027-01-11T14:35:00+09:00").includes("closedNote"), "祝日の行がないとき、休診の説明（closedNote）を渡す");
+  ok(brief(one, "2026-11-21T08:40:00+09:00").includes("早めに受付を終えることがあります"), "行の注（土曜は早めに受付を終えることがある）を渡す");
+  const ep = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/endpoints.json", "utf8")) };
+  ok(brief(ep, "2026-11-30T09:25:00+09:00").includes("送る項目は、入口の手順を読むまで分からない"), "予約の入口で送る項目がまだ分からないことを渡す");
 }
 
 // 新しい版・知らないキーはエラーにしない

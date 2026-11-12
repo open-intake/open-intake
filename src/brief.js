@@ -68,6 +68,8 @@
       return true;
     };
     const inRange = (e, day) => dnum(D(e.from)) <= dnum(day) && dnum(day) <= dnum(D(e.to || e.from));
+    const span = e => { const f = D(e.from), t = D(e.to || e.from); return e.to && e.to !== e.from ? `${f.y}年${f.m}月${f.d}日〜${t.y}年${t.m}月${t.d}日` : `${f.y}年${f.m}月${f.d}日`; };
+    const rnote = r => r.note ? `（医療機関の注: ${r.note}）` : "";
     const rec = r => { const rc = r.reception || {}; return [rc.opens || r.opens, rc.closes || r.closes]; };
     const hoursText = r => `診療 ${HM(r.opens)}〜${HM(r.closes)}・受付 ${HM(rec(r)[0])}〜${HM(rec(r)[1])}`;
 
@@ -82,7 +84,7 @@
       if (sched && !schedExpired) {
         for (const e of sched.exceptions || []) {
           if (inRange(e, day)) {
-            if (e.status === "closed") return [[], "臨時の休診（" + (e.note || "") + "）"];
+            if (e.status === "closed") return [[], "臨時の休診（" + span(e) + (e.note ? "・" + e.note : "") + "）。答えでは、この休診の期間を書く"];
             const rows = (e.hours || []).map(h => ({ opens: h.opens, closes: h.closes, reception: e.reception || {} }));
             return [rows, "臨時の情報（" + (e.note || "") + "）"];
           }
@@ -136,7 +138,7 @@
         else if (nm < T(rc)) state = `今は受付中（受付の締め切り ${HM(rc)}）`;
         else if (nm < T(r.closes)) state = `受付は ${HM(rc)} で締め切った（診療は ${HM(r.closes)} まで）`;
         else state = "終わった";
-        return `診療 ${HM(r.opens)}〜${HM(r.closes)}・受付 ${HM(ro)}〜${HM(rc)} → ${state}`;
+        return `診療 ${HM(r.opens)}〜${HM(r.closes)}・受付 ${HM(ro)}〜${HM(rc)} → ${state}${rnote(r)}`;
       });
       const stillOpen = parts.some(x => x.includes("受付中") || x.includes("まだ"));
       if (src.startsWith("臨時の情報（")) {
@@ -147,22 +149,36 @@
       } else {
         L.push(`- 今日の全員向けの時間（${src}）: ` + parts.join(" ／ "));
       }
-      if (!stillOpen) L.push(`- 今日 ${jday(today)} このあとの全員向けの受付: なし。答えの初めに「${WJ[wday(today)]}曜の${nm >= T("12:00") ? "午後" : "このあと"}は、ふだんの診療時間に書かれていません（休診です）」と書く`);
+      if (!stillOpen) {
+        // 「◯曜の午後は休診」は、ふだんの時間に、その時間帯の行がそもそもないときだけ
+        const pm = nm >= T("12:00");
+        const noRowsLater = pm ? !rows.some(r => T(r.opens) >= T("12:00")) : !rows.some(r => T(r.closes) > nm);
+        if (src === "ふだんの時間" && noRowsLater)
+          L.push(`- 今日 ${jday(today)} このあとの全員向けの受付: なし。答えの初めに「${WJ[wday(today)]}曜の${pm ? "午後" : "このあと"}は、ふだんの診療時間に書かれていません（休診です）」と書く`);
+        else {
+          const last = rows.slice().sort((a, b) => T(a.closes) - T(b.closes)).pop(), lrc = rec(last)[1];
+          const going = nm < T(last.closes);
+          L.push(`- 今日 ${jday(today)} このあとの全員向けの受付: なし。答えの初めに「今日の全員向けの受付は ${HM(lrc)} で締め切りました` + (going ? `（診療は ${HM(last.closes)} まで続いています）` : "") + "」と書く。今日を「休診」とは書かない" +
+            (going ? "。すでに受付を済ませた人の扱いは、医療機関に電話で確かめるよう勧める" : ""));
+        }
+      }
       if (!parts.some(x => x.includes("受付中")) && parts.some(x => x.includes("締め切った") || x.includes("終わった")))
         L.push("- 受付が終わったとき: 答えでは、次に受けられる診療と受付の時間と、急ぐとき・悪くなるときは電話や救急相談（#7119 など）を使えることを、両方書く。受付が終わったことを、受診を延ばしてよい理由にしない");
     } else {
       L.push(`- 今日の全員向けの時間: なし（${src}）`);
     }
+    if (c.closedNote && (src.startsWith("祝日") || generalRows(fromNum(dnum(today) + 1))[1].startsWith("祝日")))
+      L.push(`- 休診の説明（closedNote、医療機関の言葉）: 「${c.closedNote}」。祝日の行がないときは、答えで「開いているかはわからない」と伝え、この説明（祝日についての部分）も書く`);
     const tm = fromNum(dnum(today) + 1);
     const [rows2, src2] = generalRows(tm);
-    if (rows2.length) L.push(`- 明日 ${jday(tm)} の全員向けの時間（${src2}）: ` + rows2.map(hoursText).join(" ／ "));
+    if (rows2.length) L.push(`- 明日 ${jday(tm)} の全員向けの時間（${src2}）: ` + rows2.map(r => hoursText(r) + rnote(r)).join(" ／ "));
     else L.push(`- 明日 ${jday(tm)} の全員向けの時間: なし（${src2}）`);
 
     const sc = (c.scopedOpeningHours || []).filter(r => matches(r, today))
       .concat((c.openingHours || []).filter(r => SCOPE_KEYS.some(k => k in r) && matches(r, today)));
     for (const r of sc) {
       const nowIn = T(r.opens) <= nm && nm < T(r.closes);
-      L.push(`- 今日の対象を絞った時間: ${HM(r.opens)}〜${HM(r.closes)}（対象: ${scopeLabel(r)}）。対象に当てはまる人だけの時間で、全員向けの時間ではない。答えでは、対象（かっこの中）の名前を出して、この時間が誰のためのものかを書く` +
+      L.push(`- 今日の対象を絞った時間: ${HM(r.opens)}〜${HM(r.closes)}（対象: ${scopeLabel(r)}）${rnote(r)}。対象に当てはまる人だけの時間で、全員向けの時間ではない。答えでは、対象（かっこの中）の名前を出して、この時間が誰のためのものかを書く` +
         (nowIn ? `。今はこの枠の時間。答えの初めに「今の ${HM(r.opens)}〜${HM(r.closes)} は、${scopeLabel(r)}のための時間です」と書き、対象でない人には、次の全員向けの時間を伝える` : ""));
     }
     if (sched && !schedExpired) {
@@ -206,7 +222,7 @@
       let s = x.method;
       if (x.url) s += ` ${x.url}` + (host(x.url) !== siteHost ? "（医療機関のサイトと別のドメイン）" : "");
       if (x.platform) s += `・予約の基盤 ${x.platform.name}（${host(x.platform.url || "")}）`;
-      if (x.endpoints) s += "・機械から予約できる入口あり（患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない）";
+      if (x.endpoints) s += "・機械から予約できる入口あり（患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
       return s;
     });
     if (bk.length) L.push("- 予約の方法: " + bk.join(" ／ ") + ((c.booking || []).some(x => x.method === "web" && x.url) ? "。Web で予約できるかを聞かれたら、答えに Web の URL をそのまま書く" : ""));

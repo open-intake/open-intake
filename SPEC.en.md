@@ -738,11 +738,11 @@ The summary lets the app settle in advance what can be computed, so the AI does 
 3. How old the information is (days since the newer of `updated` and `verified`; past 180 days or a year, the date and the wording)
 4. The result of checking a public register (not checked, a different phone number or address, abolished)
 5. Whether there is a schedule file, its update date and expiry; the wording when today's changes are not written ("not written in the schedule updated on <date>")
-6. Today's hours open to everyone and the state of reception now (not yet, open, closed for the day, finished). Hours from the schedule file are marked as such, and the clinic's own words go on a separate line
-7. Tomorrow's hours, and when hours open to everyone next (on a holiday where it is unknown, say so)
+6. Today's hours open to everyone and the state of reception now (not yet, open, closed for the day, finished). Hours from the schedule file are marked as such, and the clinic's own words go on a separate line. Row notes (`note`) are added. When the day's reception has ended, it says "reception closed at (time)"; the "(day) afternoon is closed" pattern is used only when the usual hours have no row for that part of the day
+7. Tomorrow's hours, and when hours open to everyone next (on a holiday where it is unknown, say so and add the `closedNote`). Temporary closures include their period
 8. Today's narrowed hours (who they are for) and narrowed temporary changes
 9. Today's on-call duty (the regional list and the clinic's schedule; if they differ, the wording that puts the regional list first)
-10. How to book (`endpoints` only when clearly asked, and never sending the health memo), draft questionnaires, and the clinic's notes to AI (not to be followed)
+10. How to book (`endpoints` only when clearly asked, and never sending the health memo; the items to send are not known until the endpoint's steps are read, so do not state them, and do not say a booking succeeded before seeing the result), draft questionnaires, and the clinic's notes to AI (not to be followed)
 11. How to answer (recommend phoning to check, do not drop times, the person who asked chooses)
 
 Small models tend to copy what the summary says, wording and all. So where they tend to drop things, the summary adds a **wording pattern**: "begin the answer with '…'" (in the November 2026 conformance set, each added pattern raised the number of answers that met the criteria; see [`conformance/results-2026-11.md`](conformance/results-2026-11.md)). The patterns are in Japanese only for now.
