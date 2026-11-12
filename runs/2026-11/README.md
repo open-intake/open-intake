@@ -28,7 +28,9 @@
 - `judge/` … Claude の判定。`judge2/` … 答えたモデルと別の系統の AI の判定。`in-*.md` は判定役に渡した資料（1回目は `judge/` にまとめて置いた）
 - `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`-` は答えなし）
 
-入れていないもの: 道具が出した生の記録（実行のログ・エラーの出力）。答えと判定の中身は、上のファイルにすべてあります。
+入れていないもの: 道具が出した生の記録（実行のログ・エラーの出力）。
+
+このフォルダは、ファイルが多いので、Zenodo のアーカイブ（Release の ZIP）には入れていません。GitHub のこのフォルダで見てください。答えと判定の中身は、上のファイルにすべてあります。
 
 ## 注意
 
@@ -72,6 +74,8 @@ In each round folder:
 - `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json` keeps the stricter verdict, because no reading would change any result; `-` means no answer)
 
 Not included: raw tool output (run logs, error output). The answers and judgments themselves are all in the files above.
+
+This folder has many files, so it is not in the Zenodo archive (the Release ZIP). View it in this folder on GitHub.
 
 ### Notes
 

@@ -2,6 +2,10 @@
 
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) にならいます。仕様の版（`specVersion`）と、ツールの変更を分けて書きます。
 
+## [0.6.1] — 2026-11
+
+- Zenodo のアーカイブ（GitHub の Release の ZIP）から `runs/` を外した（`.gitattributes` の `export-ignore`）。v0.6.0 では `runs/2026-11/` のファイルが多すぎて、Zenodo が受け取れなかった。記録は GitHub の `runs/2026-11/` で見られる。中身は v0.6.0 と同じ
+
 ## [0.6.0] — 2026-11
 
 **企画の版**。仕様の版（`specVersion`）は **0.5 のまま**で、医療機関がファイルを直す必要はない。読む側が形式を使い始めるときの方針とロードマップ（対応レベル V1・V2・V3）、読む側の道具、問題集の結果と記録を足した。
