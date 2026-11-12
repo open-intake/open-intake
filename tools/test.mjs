@@ -188,6 +188,8 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     for (const [u, f] of Object.entries(c.files || {})) {
       const there = fs.existsSync(f); ok(/^https:\/\//.test(u) && there, `問題 ${c.id} のファイル ${f} がある`);
       if (there) { const r = validate(JSON.parse(fs.readFileSync(f, "utf8"))); ok(r.E.length === 0, `問題 ${c.id} の ${f} がエラーなしで通る`, JSON.stringify(r.E)); }
+      // 「架空」と書くと、読む AI が実在しないとして答えを控える（2026-11 の結果）。架空であることは README に書く
+      ok(f.startsWith("conformance/files/") && !fs.readFileSync(f, "utf8").includes("架空"), `問題 ${c.id} の ${f} は問題集の中の写しで、「架空」と書いていない`);
     }
   }
 }

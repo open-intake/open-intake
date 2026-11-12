@@ -7,7 +7,7 @@
     "state": "moved",
     "date": "2026-10-01",
     "movedTo": "https://example.com/new/",
-    "note": "2026年10月から新しい場所で診療しています（架空の例）"
+    "note": "2026年10月から新しい場所で診療しています"
   },
   "policy": {
     "url": "https://open-intake.github.io/open-intake/#policy",
@@ -26,7 +26,7 @@
     }
   ],
   "clinic": {
-    "name": "みどり台内科クリニック（架空の例）",
+    "name": "みどり台内科クリニック",
     "url": "https://example.com/",
     "identifiers": [
       {
@@ -47,7 +47,7 @@
       "longitude": 139.7536
     },
     "access": [
-      "みどり台駅（架空）から徒歩3分",
+      "みどり台駅から徒歩3分",
       "駐車場 3台"
     ],
     "departments": [
@@ -63,8 +63,7 @@
           "高血圧",
           "糖尿病",
           "甲状腺の病気"
-        ],
-        "note": "（架空の例）"
+        ]
       },
       {
         "department": "小児科",

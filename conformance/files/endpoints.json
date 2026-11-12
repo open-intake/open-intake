@@ -20,7 +20,7 @@
     }
   ],
   "clinic": {
-    "name": "みどり台内科クリニック（架空の例）",
+    "name": "みどり台内科クリニック",
     "url": "https://example.com/",
     "identifiers": [
       {
@@ -41,7 +41,7 @@
       "longitude": 139.7536
     },
     "access": [
-      "みどり台駅（架空）から徒歩3分",
+      "みどり台駅から徒歩3分",
       "駐車場 3台"
     ],
     "departments": [
@@ -134,8 +134,7 @@
           "高血圧",
           "糖尿病",
           "甲状腺の病気"
-        ],
-        "note": "（架空の例）"
+        ]
       },
       {
         "department": "小児科",
@@ -164,7 +163,7 @@
         "statusUrl": "https://example.com/now",
         "note": "当日の順番を取れます。今の順番もこのページで確かめられます",
         "platform": {
-          "name": "架空の予約サービス",
+          "name": "みどり予約",
           "url": "https://booking.example.org/"
         },
         "endpoints": [

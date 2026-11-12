@@ -13,9 +13,9 @@
   - `patient`: 患者さんの言葉
   - `must`: 答えに必ず含むこと。`mustNot`: 答えに含んではいけないこと
   - `rules`: 当てはまる仕様書の箇所（`§5-20` は §5 の決まり20）
-- `files/`: 問題のために、`examples/v0.5/` の例を少し変えたファイル（古い・移転・予約の入口・誘導の文・当番の食い違い）
+- `files/`: 問題で読むファイル。`examples/v0.5/`（と v0.4）の例の写しと、それを少し変えたもの（古い・移転・予約の入口・誘導の文・当番の食い違い）
 
-医療機関・電話番号・URL は、どれも架空のものです。
+医療機関・電話番号・URL は、どれも架空のものです。ただし `files/` の中には「架空」と書いていません。書いておくと、読む AI が「実在しないので案内できない」と答えを控えてしまい、確かめたいことが確かめられないためです（2026年11月の結果）。
 
 ## 使い方
 
@@ -50,9 +50,9 @@ A test set for **readers of Open Intake files** (a patient's AI or app) to check
   - `patient`: what the patient says
   - `must`: what the answer must contain. `mustNot`: what it must not contain
   - `rules`: the relevant parts of the specification (`§5-20` is rule 20 in §5)
-- `files/`: slightly changed copies of the `examples/v0.5/` examples (out of date, moved, booking entry points, promotional text, on-call rosters that differ)
+- `files/`: the files the cases read. Copies of the `examples/v0.5/` (and v0.4) examples, and slightly changed versions of them (out of date, moved, booking entry points, promotional text, on-call rosters that differ)
 
-All clinics, phone numbers and URLs are fictional.
+All clinics, phone numbers and URLs are fictional. The files in `files/` do not say "fictional", though: when they did, readers declined to suggest the clinic as a real option, so the case could not check what it was meant to (November 2026 results).
 
 ### How to use
 

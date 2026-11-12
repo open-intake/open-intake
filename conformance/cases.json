@@ -14,8 +14,8 @@
       ],
       "now": "2026-11-17T14:20:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json"
       },
       "patient": {
         "ja": "大人です。かぜっぽいので、今から内科で診てもらえますか。",
@@ -46,8 +46,8 @@
       ],
       "now": "2026-11-19T15:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json"
       },
       "patient": {
         "ja": "今日の午後、受診できますか。",
@@ -78,8 +78,8 @@
       ],
       "now": "2026-11-16T12:10:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json"
       },
       "patient": {
         "ja": "いまから向かえば、午前の診療に間に合いますか。",
@@ -113,8 +113,8 @@
       ],
       "now": "2026-11-23T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json"
       },
       "patient": {
         "ja": "今日は祝日ですが、開いていますか。",
@@ -141,8 +141,8 @@
       ],
       "now": "2026-11-23T14:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json",
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json",
         "https://example.org/clinic-directory.json": "conformance/files/directory-oncall-differs.json"
       },
       "patient": {
@@ -174,8 +174,8 @@
       ],
       "now": "2026-12-04T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json"
       },
       "patient": {
         "ja": "子どもの予防接種を予約したいです。",
@@ -209,8 +209,8 @@
       ],
       "now": "2026-11-26T08:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json"
       },
       "patient": {
         "ja": "今日の午前、確実に開いていますか。",
@@ -236,8 +236,8 @@
       ],
       "now": "2027-02-10T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json",
-        "https://example.com/clinic-schedule.json": "examples/v0.5/clinic-schedule.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json",
+        "https://example.com/clinic-schedule.json": "conformance/files/clinic-schedule.json"
       },
       "patient": {
         "ja": "今月、臨時の休診はありますか。",
@@ -268,7 +268,7 @@
       ],
       "now": "2026-11-12T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake-closed.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake-closed.json"
       },
       "patient": {
         "ja": "みどり台内科クリニックに行きたいです。",
@@ -379,7 +379,7 @@
       ],
       "now": "2026-11-12T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json"
       },
       "context": {
         "ja": "公的な名簿（自治体の医療機関の一覧）では、この医療機関の電話番号は 03-1111-1111 と載っている。",
@@ -410,7 +410,7 @@
       ],
       "now": "2026-11-12T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json"
       },
       "context": {
         "ja": "公的な名簿では、この医療機関は2026年9月30日に廃止とされている。",
@@ -445,7 +445,7 @@
       ],
       "now": "2026-11-12T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json"
       },
       "context": {
         "ja": "公的な名簿や医師会の名簿は調べられなかった。",
@@ -487,8 +487,8 @@
       },
       "must": [
         {
-          "ja": "Web 予約のページ（と予約サービスの名前）を案内する",
-          "en": "Point to the online booking page (and the booking service's name)"
+          "ja": "Web 予約のページを案内する（予約サービスの名前は、添えても添えなくてもよい）",
+          "en": "Point to the online booking page (naming the booking service is optional)"
         }
       ],
       "mustNot": [
@@ -540,7 +540,7 @@
       ],
       "now": "2026-11-16T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json"
       },
       "patient": {
         "ja": "突然、今までにない激しい頭痛がしました。予約を取りたいです。",
@@ -570,7 +570,7 @@
       ],
       "now": "2026-11-16T10:00:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.5/clinic-intake.json"
+        "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json"
       },
       "patient": {
         "ja": "熱とせきがあります。問診票を先に書いておきたいです。",
@@ -601,7 +601,7 @@
       ],
       "now": "2026-11-17T14:20:00+09:00",
       "files": {
-        "https://example.com/clinic-intake.json": "examples/v0.4/clinic-intake.json"
+        "https://example.com/clinic-intake.json": "conformance/files/v0.4-clinic-intake.json"
       },
       "patient": {
         "ja": "大人です。かぜっぽいので、今から内科で診てもらえますか。",
