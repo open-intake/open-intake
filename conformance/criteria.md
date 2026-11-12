@@ -67,6 +67,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 - **未見の問では、3回とも満たしたのは Haiku だけだった**（Luna・Flash は ○ が足りない回があった。× は 0）。二つ以上の系統に届かないので、**区分 A は、まだ 6 の「この企画として使ってよい」とは書かない**。まとめの誤りと足りないところを直し、新しい未見の問で確かめ直す（[結果](results-2026-11.md)の「未見の問」）。
 - まとめを直した11回目では、20問で3つとも3回とも満たした。**未見の問の2組目（holdout2）では、どのモデルも満たさなかった**（Haiku は3回とも H13 が ×）。H13 の × は、まとめの誤り（全体の臨時の変更がある日に、対象を絞った時間を渡していた）によるもので、直したが、結果はそのまま数える。**区分 A は、まだ「この企画として使ってよい」とは書かない**。次の未見の問（holdout3）で確かめ直す（[結果](results-2026-11.md)の「未見の問の2組目」）。
 - まとめを仕様書の決まりと照らす検査で直した12回目では、Haiku と Luna が20問で3回とも満たした。**未見の問の3組目（holdout3）では、× はなかったが、どちらも満たさなかった**（○ は 12問中 6〜8）。**区分 A は、まだ「この企画として使ってよい」とは書かない**（[結果](results-2026-11.md)の「未見の問の3組目」）。
+- 足りないところを足した13回目では、20問で2つとも3回とも満たした。**未見の問の4組目（holdout4）では、○ は増えたが、どちらも満たさなかった**（厳しいほうの判定で ○ は Haiku 9・6・8、Luna 10・10・10）。**区分 A は、まだ「この企画として使ってよい」とは書かない**（[結果](results-2026-11.md)の「未見の問の4組目」）。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
@@ -147,6 +148,7 @@ Results are kept in `conformance/results-*.md`.
 - **On the unseen cases, only Haiku met the criteria in all 3 runs** (Luna and Flash had runs with too few ○; no ×). This is short of two families, so **group A is not yet described as "may be used" by the project** (item 6). The summary's error and gaps will be fixed and checked again on new unseen cases ([results](results-2026-11.md), "Unseen cases").
 - In round 11, after the summary was fixed, all three met the criteria in all 3 runs on the 20 cases. **On the second set of unseen cases (holdout2), no model met them** (Haiku had × on H13 in all 3 runs). The × on H13 came from a summary error (narrowed hours were passed on for a day with a whole-day temporary change); it was fixed, but the results count as they are. **Group A is not yet described as "may be used" by the project**. It will be checked again on the next unseen cases (holdout3) ([results](results-2026-11.md), "Second set of unseen cases").
 - In round 12, after the summary was fixed with a check against the spec rules, Haiku and Luna met the criteria in all 3 runs on the 20 cases. **On the third set of unseen cases (holdout3) there was no ×, but neither met them** (6 to 8 ○ of 12). **Group A is not yet described as "may be used" by the project** ([results](results-2026-11.md), "Third set of unseen cases").
+- In round 13, with the gaps filled, both met the criteria in all 3 runs on the 20 cases. **On the fourth set of unseen cases (holdout4) there were more ○, but neither met them** (stricter verdicts: Haiku 9, 6, 8 ○; Luna 10, 10, 10). **Group A is not yet described as "may be used" by the project** ([results](results-2026-11.md), "Fourth set of unseen cases").
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later
