@@ -11,6 +11,7 @@
 3. **広げる順番は、版の日付ではなく、問題集の結果で決める**。小さいモデルが育って基準を満たす機能が増えたら、「使ってよい」と書く機能を増やします（対応レベル V1 → V2 → V3。下のロードマップ）。また、読む側の手助けを減らしても満たせるようになったら、手助けを軽くします（段階2 → 段階1 → 段階0）。
 4. **医療の中身は、医療に携わる方に決めていただく**。救急の目安や問診票の中身に頼る機能は、医療者の確認が済むまでは「とりあえず」のままにします（[REVIEW.md](REVIEW.md)）。
 5. **確かめ直す**。モデルの版、読む側の決まり（§5）、まとめの中身、問題集のどれかが変わったら、解かせ直して結果を載せます。
+6. **対応レベルは、ほかの人の意見も聞きながら磨く**。患者さんへの効果が同じなら、AI が基準を満たしやすい形（ファイルの書き方・まとめ・決まりの要点・レベルの区切り方）を選びます。ただし、基準をゆるめたり、問題集の問だけに合わせたりはしません。安全に関わる問は外さず、未見の問で確かめます。
 
 ## 今の案（2026年11月）
 
@@ -86,6 +87,7 @@ Written on 13 November 2026. This is the author's policy, not a promise of dates
 3. **Results of the conformance set, not release dates, decide the order of growth**. As small models improve and meet the criteria for more features, more features are marked "may be used" (conformance levels V1 → V2 → V3; see the roadmap below). When they meet the criteria with less help from the reader, the help is reduced (level 2 → level 1 → level 0).
 4. **Medical content is for medical professionals to decide**. Features that depend on emergency signs or questionnaire content stay "provisional" until medical professionals have checked them ([REVIEW.md](REVIEW.md)).
 5. **Check again** whenever the model version, the reader rules (§5), the summary or the conformance set changes, and publish the results.
+6. **Refine the conformance levels with input from others**. Where the effect for patients is the same, choose the form that makes it easiest for AI to meet the criteria (how files are written, the summary, the key rules, how the levels are divided). But do not loosen the criteria or fit the form to the conformance cases alone. Keep the safety cases, and check on unseen cases.
 
 ### Current plan (November 2026)
 
