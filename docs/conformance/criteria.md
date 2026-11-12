@@ -28,14 +28,16 @@
 
 ## 機能の区分
 
-| 区分 | 機能 | 今の問題集 |
-|---|---|---|
-| A | 案内（診療時間・受付・臨時の情報・閉院や移転・当番・名簿との食い違い・救急の目安） | C01〜C20 |
-| B | 予約の入口（`endpoints`）を、患者さんに頼まれて代わりに使う | まだない（先に問を足す） |
-| C | 問診票の下書きを、患者さんと一緒に作る | C19 のみ（先に問を足す） |
-| D | 複数の医療機関の候補を、事実だけで並べる | まだない（先に問を足す） |
+| 区分 | 機能 | 今の問題集 | 対応レベル |
+|---|---|---|---|
+| A | 案内（診療時間・受付・臨時の情報・閉院や移転・当番・名簿との食い違い・救急の目安） | C01〜C20、未見の問 H01〜H12（一度使った） | V1 |
+| B | 予約の入口（`endpoints`）を、患者さんに頼まれて代わりに使う | まだない（先に問を足す） | V2 |
+| C | 問診票の下書きを、患者さんと一緒に作る | C19 のみ（先に問を足す） | V2 |
+| D | 複数の医療機関の候補を、事実だけで並べる | まだない（先に問を足す） | V3 |
 
 B〜D は、それぞれの問を足すまで**使わない**。足したあとは、下の基準を同じように当てる。
+
+対応レベル（V1・V2・V3）は、区分をまとめて、この企画として「使ってよい」と書く単位にしたもの。上のレベルは下のレベルを含む（V2 は区分 A〜C、V3 は A〜D と、ほかの言語・地域）。ファイルの形式の版（`specVersion`）とは別のもの。詳しくは [ROADMAP.md](../ROADMAP.md)。
 
 ## 基準
 
@@ -104,14 +106,16 @@ The same model gives different results depending on how much the reader app help
 
 ### Feature groups
 
-| Group | Feature | Cases today |
-|---|---|---|
-| A | Guidance (hours, reception, temporary changes, closed or moved, on-call duty, mismatches with the register, warning signs) | C01–C20 |
-| B | Using a booking entry point (`endpoints`) on the patient's behalf, when asked | None yet (add cases first) |
-| C | Drafting a questionnaire together with the patient | C19 only (add cases first) |
-| D | Listing several clinics as candidates, by facts only | None yet (add cases first) |
+| Group | Feature | Cases today | Conformance level |
+|---|---|---|---|
+| A | Guidance (hours, reception, temporary changes, closed or moved, on-call duty, mismatches with the register, warning signs) | C01–C20, unseen cases H01–H12 (used once) | V1 |
+| B | Using a booking entry point (`endpoints`) on the patient's behalf, when asked | None yet (add cases first) | V2 |
+| C | Drafting a questionnaire together with the patient | C19 only (add cases first) | V2 |
+| D | Listing several clinics as candidates, by facts only | None yet (add cases first) | V3 |
 
 Groups B–D are **not used** until their cases have been added. After that, the same criteria apply.
+
+Conformance levels (V1, V2, V3) bundle the groups into the units the project describes as "may be used". A higher level includes the lower ones (V2 covers groups A–C; V3 covers A–D plus other languages and regions). They are separate from the file format version (`specVersion`). See [ROADMAP.md](../ROADMAP.md).
 
 ### Criteria
 

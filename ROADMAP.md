@@ -8,7 +8,7 @@
 
 1. **小さいモデルを基準にする**。一般の人が使う AI は、サービスに組み込まれた軽いモデルであることが多いからです（2026年11月なら Haiku・Luna・Flash 相当）。
 2. **仕様書には、先に決めておくが、まだ使わない機能を書いてよい**。ただし、読む側がその機能を使い始めるのは、問題集（[`conformance/`](conformance/)）で基準（[`criteria.md`](conformance/criteria.md)）を満たしてからにします。
-3. **広げる順番は、版の日付ではなく、問題集の結果で決める**。小さいモデルが育って基準を満たす機能が増えたら、「使ってよい」と書く機能を増やします。また、読む側の手助けを減らしても満たせるようになったら、手助けを軽くします（段階2 → 段階1 → 段階0）。
+3. **広げる順番は、版の日付ではなく、問題集の結果で決める**。小さいモデルが育って基準を満たす機能が増えたら、「使ってよい」と書く機能を増やします（対応レベル V1 → V2 → V3。下のロードマップ）。また、読む側の手助けを減らしても満たせるようになったら、手助けを軽くします（段階2 → 段階1 → 段階0）。
 4. **医療の中身は、医療に携わる方に決めていただく**。救急の目安や問診票の中身に頼る機能は、医療者の確認が済むまでは「とりあえず」のままにします（[REVIEW.md](REVIEW.md)）。
 5. **確かめ直す**。モデルの版、読む側の決まり（§5）、まとめの中身、問題集のどれかが変わったら、解かせ直して結果を載せます。
 
@@ -18,24 +18,35 @@
 |---|---|
 | ファイルの形式 | v0.5（公開済み）。v0.6 で足す候補は [SPEC.md](SPEC.md) §10 にまとめてある |
 | 読む側の標準のやり方 | 段階2: ファイル ＋ 決まりの要点（[`rules-short.ja.txt`](conformance/rules-short.ja.txt)）＋ 今の状況のまとめ（[`src/brief.js`](src/brief.js)）。作り方は SPEC §8 |
-| 区分 A（案内） | 20問では、小さいモデル3系統が3回とも基準を満たした（9回目・10回目）。まとめを直すときに見ていない12問（未見の問）では、3回とも満たしたのは Haiku だけだった。**まだ「使ってよい」とは書かない**（[結果](conformance/results-2026-11.md)） |
-| 区分 B〜D | 予約の入口を代わりに使う・問診票を一緒に作る・候補を事実で並べる。問がまだないので**使わない** |
+| V1 案内（区分 A） | 20問では、小さいモデル3系統が3回とも基準を満たした（9回目・10回目）。まとめを直すときに見ていない12問（未見の問）では、3回とも満たしたのは Haiku だけだった。**まだ「使ってよい」とは書かない**（[結果](conformance/results-2026-11.md)） |
+| V2・V3（区分 B〜D） | 予約の入口を代わりに使う・問診票を一緒に作る・候補を事実で並べる。問がまだないので**使わない** |
 | 医療者の確認 | [REVIEW.md](REVIEW.md) でお願いしている。**まだ返事はない** |
 | 言語 | まとめの言い方の型と決まりの要点は日本語だけ |
 | 記録 | 渡した文・答え・判定は、すべて [`runs/2026-11/`](runs/2026-11/) に公開している |
 
-## ロードマップ（段ごと。日付は決めない）
+## ロードマップ: 対応レベル V1・V2・V3（日付は決めない）
 
-各段は「進む条件」を満たしたら進めます。条件を満たさないうちは、前の段のままにします。
+規格のどこまでを読む側が使ってよいかを、**対応レベル**（V1・V2・V3）で示します。各レベルは、規格の範囲と、それに対応する問題集の組です。小さいモデルがそのレベルの問題集で基準（[`criteria.md`](conformance/criteria.md)）を満たしたら、この企画として「V◯ を使ってよい」と書きます。
 
-| 段 | すること | 進む条件 |
-|---|---|---|
-| 1. 今 | 区分 A を段階2で。まとめの道具と問題集を公開した。未見の問（holdout1）で見つかったまとめの誤りを直し、新しい未見の問（holdout2）で確かめる。基準（9割・3回・安全の問の選び方）が妥当かを確かめる | 未見の問でも、小さいモデル2系統以上が基準を満たす（holdout1 では Haiku だけ） |
-| 2. 医療者の確認 | 救急の目安・問診票・安全の決まりを、医療に携わる方に見ていただく。1つの地域（医師会か自治体と診療所5〜10）で、置くと案内が良くなるかを測る | 医療者の意見を反映する。地域での試しの結果を載せる |
-| 3. 区分 B〜D の問 | 予約の入口を代わりに使う（B）、問診票を一緒に作る（C）、候補を事実で並べる（D）の問を作り、小さいモデルで解かせる | その区分で、小さいモデル2系統以上が段階2で基準を満たす（B は予約システムの側の確認も要る） |
-| 4. 手助けを軽く | 新しい小さいモデルで、段階1・段階0でも解かせる | 段階1（または0）で基準を満たせば、その段階も標準の選択肢にする |
-| 5. 言語と地域 | 英語のまとめ・問題集、ほかの地域プロファイル | その言語・地域の問で基準を満たす |
-| 6. 続ける仕組み | 判定の自動化、モデルが変わるたびの確かめ直し、結果の置き場所 | — |
+- 対応レベルは、**ファイルの形式の版（`specVersion`、今は 0.5）とは別のもの**です。V1 は「形式の 1.0」ではありません。各レベルに、使う形式の版の下限を書きます
+- 上のレベルは、下のレベルを含みます（V2 は V1 の問も満たす）
+- 読む側の手助けの段階（段階0・1・2）とは組にして書きます（例:「V1・段階2」）。一つのアプリが自分のモデルで満たしたときは、「このアプリは V1・段階2 に対応」と書いてかまいません
+
+| レベル | 規格の範囲 | 対応する問題集 | ほかに要ること | 今 |
+|---|---|---|---|---|
+| **V1 案内** | 形式 0.5 以上。診療時間・受付・対象を絞った時間・臨時の情報・閉院や移転・当番・名簿との食い違い・情報の古さ、救急の目安があれば 119番を先に（§5 の決まり。区分 A） | `cases.json`（C01〜C20）＋ 未見の問 | — | 20問では3系統が満たした。未見の問（holdout1）では Haiku だけ。まとめの誤りを直した（2026-11-13）ので、20問と新しい未見の問（holdout2）で確かめ直す。**まだ「使ってよい」とは書かない** |
+| **V2 手続き** | V1 ＋ 予約の入口を代わりに使う（`booking.platform`・`endpoints`。区分 B）、問診票を一緒に作る（`questionnaires`。区分 C） | B・C の問（まだない。C は C19 だけ）＋ 未見の問 | B は予約システムの側の確かめ。C は医療者による問診票と救急の目安の確認（[REVIEW.md](REVIEW.md)） | 問がないので**使わない** |
+| **V3 選ぶ手伝い** | V2 ＋ 地域の一覧から候補を事実で並べる（区分 D）、ほかの言語・ほかの地域プロファイル | D の問、各言語・地域の問 ＋ 未見の問 | 地域プロファイルを育てる人、その言語のまとめと決まりの要点 | 問がないので**使わない** |
+
+### どのレベルにもかかわること
+
+| こと | 中身 |
+|---|---|
+| 医療者の確認 | 救急の目安・問診票・安全の決まりを、医療に携わる方に見ていただく。それまでは、これらに頼る中身は「とりあえず」のまま |
+| 地域での試し | 1つの地域（医師会か自治体と診療所5〜10）で、置くと案内が良くなるかを測り、結果を載せる |
+| 手助けを軽く | 新しい小さいモデルで、段階1・段階0でも解かせる。満たせば、その段階も標準の選択肢にする |
+| 続ける仕組み | 判定の自動化、モデルが変わるたびの確かめ直し、結果の置き場所（今は [`runs/`](runs/)） |
+| 基準の見直し | 9割・3回・安全の問の選び方が妥当か。基準が拾わない誤り（答えの中の食い違い、まとめを写した事実の誤り）をどう見るか |
 
 ### きっかけと、すること
 
@@ -59,7 +70,7 @@
 - 問題集の基準が、答えの中の食い違いを拾わないことがある（例: 予防接種の新しい予約を止めている期間に、冒頭で「電話して予約してください」と書いてから、止めていると書く答えが ○ になった）
 - 判定役の AI によって、1〜3問ずつ判定が割れる。割れた問は作者の側で読んで決めている
 - 問・まとめ・判定の一部を同じ系統の AI（Claude）と作っている。未見の問は別の系統（Astra）に下書きさせた
-- まとめの誤り: 受付がその日の分を終えたあとにも「◯曜の午後は休診」の型を出す。`closedNote`・休診の期間・予約で送る項目がまだ分からないことを渡していない（未見の問で見つかった）
+- 未見の問で見つかったまとめの誤り（受付が終わったあとの「◯曜の午後は休診」など）は直した（2026-11-13）。直したまとめでは、まだ解かせ直していない
 - 問題集の基準が、まとめを写した事実の誤り（上の「金曜の午後は休診」）を拾わない
 
 ---
@@ -72,7 +83,7 @@ Written on 13 November 2026. This is the author's policy, not a promise of dates
 
 1. **Take small models as the baseline**, because most people use AI through light models built into other services (Haiku, Luna and Flash class, as of November 2026).
 2. **The spec may describe features in advance that are not used yet**. A reader starts using such a feature only after it meets the criteria ([`criteria.md`](conformance/criteria.md)) in the conformance set ([`conformance/`](conformance/)).
-3. **Results of the conformance set, not release dates, decide the order of growth**. As small models improve and meet the criteria for more features, more features are marked "may be used". When they meet the criteria with less help from the reader, the help is reduced (level 2 → level 1 → level 0).
+3. **Results of the conformance set, not release dates, decide the order of growth**. As small models improve and meet the criteria for more features, more features are marked "may be used" (conformance levels V1 → V2 → V3; see the roadmap below). When they meet the criteria with less help from the reader, the help is reduced (level 2 → level 1 → level 0).
 4. **Medical content is for medical professionals to decide**. Features that depend on emergency signs or questionnaire content stay "provisional" until medical professionals have checked them ([REVIEW.md](REVIEW.md)).
 5. **Check again** whenever the model version, the reader rules (§5), the summary or the conformance set changes, and publish the results.
 
@@ -82,24 +93,35 @@ Written on 13 November 2026. This is the author's policy, not a promise of dates
 |---|---|
 | File format | v0.5 (published). Candidates for v0.6 are listed in [SPEC.en.md](SPEC.en.md) §10 |
 | Standard reader approach | Level 2: the files + the key rules ([`rules-short.ja.txt`](conformance/rules-short.ja.txt)) + the current-situation summary ([`src/brief.js`](src/brief.js)). How it is made: SPEC §8 |
-| Group A (guidance) | On the 20 cases, small models from three families met the criteria in all 3 runs (rounds 9 and 10). On 12 cases not seen while changing the summary (unseen cases), only Haiku met them in all 3 runs. **Not yet described as "may be used"** ([results](conformance/results-2026-11.md)) |
-| Groups B to D | Using a booking endpoint on the patient's behalf, filling a questionnaire together, listing candidates by facts. No questions yet, so **not used** |
+| V1 Guidance (group A) | On the 20 cases, small models from three families met the criteria in all 3 runs (rounds 9 and 10). On 12 cases not seen while changing the summary (unseen cases), only Haiku met them in all 3 runs. **Not yet described as "may be used"** ([results](conformance/results-2026-11.md)) |
+| V2 and V3 (groups B to D) | Using a booking endpoint on the patient's behalf, filling a questionnaire together, listing candidates by facts. No questions yet, so **not used** |
 | Review by medical professionals | Requested in [REVIEW.md](REVIEW.md). **No reply yet** |
 | Language | The wording patterns and the key rules are in Japanese only |
 | Records | All prompts, answers and judgments are published in [`runs/2026-11/`](runs/2026-11/) |
 
-### Roadmap (stages, no dates)
+### Roadmap: conformance levels V1, V2, V3 (no dates)
 
-Each stage moves on when its condition is met. Until then, the previous stage stays.
+What readers may use from the spec is shown as **conformance levels** (V1, V2, V3). Each level pairs a part of the spec with the conformance cases that test it. When small models meet the criteria ([`criteria.md`](conformance/criteria.md)) on a level's cases, the project says "V(n) may be used".
 
-| Stage | What | Condition to move on |
-|---|---|---|
-| 1. Now | Group A at level 2. The summary tool and the conformance set are published. Fix the summary error found on the unseen cases (holdout1), then check on new unseen cases (holdout2). Check whether the criteria (90%, 3 runs, the choice of safety cases) are right | Small models from at least two families meet the criteria on unseen cases too (only Haiku on holdout1) |
-| 2. Medical review | Ask medical professionals to look at the emergency signs, questionnaires and safety rules. Measure in one region (a medical association or local government and 5 to 10 clinics) whether the files improve guidance | Reflect their feedback. Publish the results of the regional trial |
-| 3. Questions for groups B to D | Write cases for using a booking endpoint (B), filling a questionnaire together (C) and listing candidates by facts (D), and run small models on them | Small models from at least two families meet the criteria for that group at level 2 (B also needs a check from the booking-system side) |
-| 4. Less help | Run new small models at levels 1 and 0 as well | If they meet the criteria at level 1 (or 0), make that level a standard option too |
-| 5. Languages and regions | An English summary and conformance set; other regional profiles | The criteria are met on cases for that language or region |
-| 6. Keeping it going | Automated judging, re-checking whenever models change, a place for results | — |
+- Conformance levels are **separate from the file format version (`specVersion`, now 0.5)**. V1 is not "format 1.0". Each level states the minimum format version it uses
+- A higher level includes the lower ones (V2 must also meet the V1 cases)
+- Levels are stated together with the level of reader help (levels 0, 1, 2), for example "V1 at help level 2". An app that meets the criteria with its own model may say "this app supports V1 at help level 2"
+
+| Level | Part of the spec | Conformance cases | Also needed | Now |
+|---|---|---|---|---|
+| **V1 Guidance** | Format 0.5 or later. Hours, reception, narrowed hours, temporary notices, closed or moved, on-call duty, mismatches with the register, age of information, and 119 first when warning signs appear (the §5 rules; group A) | `cases.json` (C01–C20) + unseen cases | — | Three families met the criteria on the 20 cases. On the unseen cases (holdout1), only Haiku did. The summary errors were fixed (13 November 2026), so it will be checked again on the 20 cases and new unseen cases (holdout2). **Not yet described as "may be used"** |
+| **V2 Actions** | V1 + using a booking endpoint on the patient's behalf (`booking.platform`, `endpoints`; group B) and filling a questionnaire together (`questionnaires`; group C) | Cases for B and C (none yet; C has only C19) + unseen cases | For B, a check from the booking-system side. For C, review of the questionnaires and emergency signs by medical professionals ([REVIEW.md](REVIEW.md)) | No cases yet, so **not used** |
+| **V3 Helping to choose** | V2 + listing candidates from a regional list by facts (group D), other languages and other regional profiles | Cases for D and for each language or region + unseen cases | People to grow regional profiles; a summary and key rules in that language | No cases yet, so **not used** |
+
+#### Across all levels
+
+| Item | What |
+|---|---|
+| Medical review | Ask medical professionals to look at the emergency signs, questionnaires and safety rules. Until then, content that relies on them stays "provisional" |
+| Regional trial | Measure in one region (a medical association or local government and 5 to 10 clinics) whether the files improve guidance, and publish the results |
+| Less help | Run new small models at help levels 1 and 0 as well. If they meet the criteria, make that level a standard option too |
+| Keeping it going | Automated judging, re-checking whenever models change, a place for results (now [`runs/`](runs/)) |
+| Reviewing the criteria | Whether 90%, 3 runs and the choice of safety cases are right. How to treat errors the criteria do not catch (contradictions inside an answer, false facts copied from the summary) |
 
 #### Triggers
 
@@ -123,5 +145,5 @@ Each stage moves on when its condition is met. Until then, the previous stage st
 - The criteria sometimes miss a contradiction inside an answer (for example, during the period when new vaccination bookings are stopped, an answer that opens with "please call to book" and only then says bookings are stopped was marked ○)
 - Judges disagree on 1 to 3 cases per run. The author's side reads those answers and decides
 - Some of the cases, the summary and the judging were made with AI from the same family (Claude). The unseen cases were drafted by another family (Astra)
-- Summary errors: it gives the "(day) afternoon is closed" pattern even after the day's reception has ended. It does not pass on the `closedNote`, closure periods, or that the items to send for booking are not known yet (found on the unseen cases)
+- The summary errors found on the unseen cases (such as "(day) afternoon is closed" after reception has ended) were fixed on 13 November 2026. The fixed summary has not been run on models yet
 - The criteria do not catch false facts copied from the summary (the "Friday afternoon is closed" above)

@@ -52,7 +52,7 @@
 | `src/` | トップの原稿（`index.src.html`・英語版 `index.en.body.html`）、作成ツールの原稿（`generator.src.html`）、言語ごとのデータ（`locale.*.js`）、英語版の対訳表（`i18n/en.tsv`）、検査器（`validate.js`）、読む側の参考の道具（`brief.js`） |
 | `docs/` | 公開されるサイト（トップと作成ツール。**生成物。手で直さない**） |
 | [REVIEW.md](REVIEW.md) | **医療に携わる方へ**: ご確認いただきたい点（見る場所と問い） |
-| [ROADMAP.md](ROADMAP.md) | 方針（小さいモデルの発展に合わせて広げる）・今の案・ロードマップ |
+| [ROADMAP.md](ROADMAP.md) | 方針（小さいモデルの発展に合わせて広げる）・今の案・ロードマップ（対応レベル V1〜V3: 規格の範囲と、対応する問題集の組） |
 | [conformance/](conformance/) | 読む側の問題集・結果・使い始める基準。読む側の参考の道具は `src/brief.js`（今の状況のまとめ）と `tools/kit.mjs`（問題集の入力） |
 | [runs/](runs/) | 問題集を AI に解かせた記録（渡した文・答え・判定）。ほかの人が確かめ直せるように公開している |
 | [CHANGELOG.md](CHANGELOG.md) | 変更の記録 |
