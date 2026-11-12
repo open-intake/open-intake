@@ -378,6 +378,7 @@
         "§3d"
       ],
       "now": "2026-11-12T10:00:00+09:00",
+      "register": { "type": "phone", "value": "03-1111-1111" },
       "files": {
         "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json"
       },
@@ -409,6 +410,7 @@
         "§3d"
       ],
       "now": "2026-11-12T10:00:00+09:00",
+      "register": { "type": "closed", "date": "2026-09-30" },
       "files": {
         "https://example.com/clinic-intake.json": "conformance/files/clinic-intake.json"
       },

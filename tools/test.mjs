@@ -181,9 +181,11 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
 {
   const C = JSON.parse(fs.readFileSync("conformance/cases.json", "utf8")), ids = new Set();
   ok(Array.isArray(C.cases) && C.cases.length >= 20, "問題集に20問以上ある");
+  const H = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8"));
+  ok(Array.isArray(H.cases) && H.cases.length >= 12, "未見の問が12問以上ある");
   const lang = x => x && typeof x.ja === "string" && x.ja && typeof x.en === "string" && x.en;
-  for (const c of C.cases) {
-    ok(/^C\d{2}$/.test(c.id) && !ids.has(c.id), `問題 ${c.id} の id が重ならない`); ids.add(c.id);
+  for (const c of C.cases.concat(H.cases)) {
+    ok(/^[CH]\d{2}$/.test(c.id) && !ids.has(c.id), `問題 ${c.id} の id が重ならない`); ids.add(c.id);
     ok(!isNaN(Date.parse(c.now)) && lang(c.patient) && Array.isArray(c.must) && c.must.length && c.must.every(lang) && Array.isArray(c.mustNot) && c.mustNot.every(lang) && (c.context === undefined || lang(c.context)), `問題 ${c.id} の形（now・patient・must・mustNot は日英）`);
     for (const [u, f] of Object.entries(c.files || {})) {
       const there = fs.existsSync(f); ok(/^https:\/\//.test(u) && there, `問題 ${c.id} のファイル ${f} がある`);
@@ -192,6 +194,28 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
       ok(f.startsWith("conformance/files/") && !fs.readFileSync(f, "utf8").includes("架空"), `問題 ${c.id} の ${f} は問題集の中の写しで、「架空」と書いていない`);
     }
   }
+}
+
+// 読む側の参考の道具（src/brief.js）: 問題集の「今の状況のまとめ」が、記録した版（conformance/briefs/）と同じ
+// まとめの文を変えたら、briefs/ を作り直し、問題集を解かせ直す（conformance/criteria.md「確かめ直すとき」）
+{
+  const { brief } = require("../src/brief.js");
+  for (const file of ["conformance/cases.json", "conformance/cases-holdout.json"].filter(f => fs.existsSync(f))) {
+    const C = JSON.parse(fs.readFileSync(file, "utf8"));
+    for (const c of C.cases) {
+      ok(c.register === undefined || c.register === null || ["phone", "closed", "match"].includes(c.register.type), `問題 ${c.id} の register の形`);
+      const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = JSON.parse(fs.readFileSync(f, "utf8"));
+      let s = ""; try { s = brief(files, c.now, { register: c.register || null }); } catch (e) { s = "ERROR " + e.message; }
+      ok(s.startsWith("【読む側のアプリが") && s.includes("- 答えの書き方") || s.includes("- 状態:"), `問題 ${c.id} のまとめが作れる`, s.slice(0, 200));
+      const g = `conformance/briefs/${c.id}.txt`;
+      if (fs.existsSync(g)) ok(s === fs.readFileSync(g, "utf8"), `問題 ${c.id} のまとめが ${g} と同じ`);
+    }
+  }
+  // 祝日・曜日の計算（2026-11-23 は月曜の祝日、2027-01-11 は成人の日）
+  const one = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/clinic-intake.json", "utf8")) };
+  ok(brief(one, "2026-11-23T10:00:00+09:00").includes("11月23日（月・祝）"), "まとめの日付に、曜日と祝日が付く");
+  ok(brief(one, "2027-01-11T10:00:00+09:00").includes("1月11日（月・祝）"), "成人の日を祝日として扱う");
+  ok(brief(one, "2026-11-23T10:00:00+09:00", { holidays: [] }).includes("11月23日（月）"), "祝日の一覧はアプリが渡せる");
 }
 
 // 新しい版・知らないキーはエラーにしない

@@ -13,6 +13,8 @@
   - `patient`: 患者さんの言葉
   - `must`: 答えに必ず含むこと。`mustNot`: 答えに含んではいけないこと
   - `rules`: 当てはまる仕様書の箇所（`§5-20` は §5 の決まり20）
+- `cases-holdout.json`: 未見の問（12問）。まとめを直すときに見ていない問として、別の系統の AI に下書きさせた。2026年11月13日に一度、未見の問として使った
+- `rules-short.ja.txt`・`briefs/`: 手助けの段階1・2で AI に渡す決まりの要点と、各問の今の状況のまとめ（`src/brief.js` で作ったもの。テストで同じになることを確かめる）
 - `files/`: 問題で読むファイル。`examples/v0.5/`（と v0.4）の例の写しと、それを少し変えたもの（古い・移転・予約の入口・誘導の文・当番の食い違い）
 
 医療機関・電話番号・URL は、どれも架空のものです。ただし `files/` の中には「架空」と書いていません。書いておくと、読む AI が「実在しないので案内できない」と答えを控えてしまい、確かめたいことが確かめられないためです（2026年11月の結果）。
@@ -22,6 +24,8 @@
 1. 読む側の AI に、`files` のファイルと、`now`・`context` を渡し、`patient` の言葉で聞く
 2. 答えに `must` が全部あり、`mustNot` が1つもなければ合格
 3. 判定は人が行うか、別の AI に `must`・`mustNot` と答えを渡して行う。言い回しは問わず、中身が合っていればよい
+
+読む側の AI に渡す文は `node tools/kit.mjs <段階 0|1|2> <出力フォルダ> [問題のファイル]` で作れます（段階0: ファイルだけ、段階1: ＋決まりの要点、段階2: ＋今の状況のまとめ）。1問ごとに新しい会話で渡してください。
 
 問題集はテストの一部（`node tools/test.mjs`）で、ファイルの場所と形が正しいことを確かめています。答えの判定は自動ではしません。
 
@@ -51,6 +55,8 @@ A test set for **readers of Open Intake files** (a patient's AI or app) to check
   - `patient`: what the patient says
   - `must`: what the answer must contain. `mustNot`: what it must not contain
   - `rules`: the relevant parts of the specification (`§5-20` is rule 20 in §5)
+- `cases-holdout.json`: unseen questions (12). Drafted by another AI family as questions not seen while tuning the summary. Used once as unseen questions on 13 November 2026
+- `rules-short.ja.txt` and `briefs/`: the key rules given to the AI at assistance levels 1 and 2, and the current-situation summary for each case (made with `src/brief.js`; the tests check they stay the same)
 - `files/`: the files the cases read. Copies of the `examples/v0.5/` (and v0.4) examples, and slightly changed versions of them (out of date, moved, booking entry points, promotional text, on-call rosters that differ)
 
 All clinics, phone numbers and URLs are fictional. The files in `files/` do not say "fictional", though: when they did, readers declined to suggest the clinic as a real option, so the case could not check what it was meant to (November 2026 results).
@@ -60,6 +66,8 @@ All clinics, phone numbers and URLs are fictional. The files in `files/` do not 
 1. Give the reader the files in `files`, plus `now` and `context`, and ask in the words of `patient`
 2. It passes if the answer contains every `must` and no `mustNot`
 3. A person judges, or another AI given `must`, `mustNot` and the answer. Wording does not matter, only content
+
+The text to give a reader AI can be built with `node tools/kit.mjs <level 0|1|2> <out dir> [cases file]` (level 0: the files only, level 1: + the key rules, level 2: + the current-situation summary). Give each case in a new conversation.
 
 The set is part of the tests (`node tools/test.mjs`), which check that the file paths and shapes are correct. Answers are not judged automatically.
 

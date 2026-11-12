@@ -725,6 +725,28 @@ v0.4 adds optional keys only (check-in times, how patients are accepted, booking
 
 **Help from the reader, and small models (provisional)**: Many people use AI through light models built into other services. This project takes small models as the baseline. Besides the files, a reader app is recommended to give the AI the key rules of §5 and a "summary of the current situation" computed from the files and the current time (today's and tomorrow's hours and the state of reception, narrowed hours, the expiry of the schedule file, on-call mismatches, how old the information is, closed or moved, and so on) — level 2. Relying on the clinic's file (`policy.summary`) to carry the key rules helped least. The conformance set also decides when a reader may start using a feature that was specified in advance ([`conformance/criteria.md`](conformance/criteria.md)).
 
+**How the current-situation summary is made (reference, 2026-11)**: The content of level 2 is published as the three files below. None has dependencies. A reader app may use them as they are, or rewrite them for its own language and screens. When the content changes, check again with the conformance set ([`conformance/criteria.md`](conformance/criteria.md), "When to check again").
+
+- [`conformance/rules-short.ja.txt`](conformance/rules-short.ja.txt): the key rules given to the AI (about 1,000 characters; the 11 points of §5 that a reader must follow)
+- [`src/brief.js`](src/brief.js): builds the current-situation summary from the files and the current time (runs in a browser or in Node). The summary for each case of the conformance set is kept in [`conformance/briefs/`](conformance/briefs/), and the tests check that it stays the same
+- [`tools/kit.mjs`](tools/kit.mjs): turns each case of the conformance set into the prompt for level 0, 1 or 2 (`node tools/kit.mjs 2 <out dir>`)
+
+The summary lets the app settle in advance what can be computed, so the AI does not have to guess. It contains, in this order:
+
+1. A preface: the summary is a computed result; if there is an emergency sign, recommend calling 119 before the summary, and then do not go on to booking or hours
+2. The clinic's name, where the file is, and its version. If `status` is closed or moved, write only that and stop (no hours, no booking)
+3. How old the information is (days since the newer of `updated` and `verified`; past 180 days or a year, the date and the wording)
+4. The result of checking a public register (not checked, a different phone number or address, abolished)
+5. Whether there is a schedule file, its update date and expiry; the wording when today's changes are not written ("not written in the schedule updated on <date>")
+6. Today's hours open to everyone and the state of reception now (not yet, open, closed for the day, finished). Hours from the schedule file are marked as such, and the clinic's own words go on a separate line
+7. Tomorrow's hours, and when hours open to everyone next (on a holiday where it is unknown, say so)
+8. Today's narrowed hours (who they are for) and narrowed temporary changes
+9. Today's on-call duty (the regional list and the clinic's schedule; if they differ, the wording that puts the regional list first)
+10. How to book (`endpoints` only when clearly asked, and never sending the health memo), draft questionnaires, and the clinic's notes to AI (not to be followed)
+11. How to answer (recommend phoning to check, do not drop times, the person who asked chooses)
+
+Small models tend to copy what the summary says, wording and all. So where they tend to drop things, the summary adds a **wording pattern**: "begin the answer with '…'" (in the November 2026 conformance set, each added pattern raised the number of answers that met the criteria; see [`conformance/results-2026-11.md`](conformance/results-2026-11.md)). The patterns are in Japanese only for now.
+
 **Caveat (v0.4; fixed in v0.5)**: `openingHours` entries narrowed by `department`, `service`, `visitType`, `entry` or `weeksOfMonth` look like hours for everyone to a reader that does not know 0.4 (for example, a paediatric vaccination slot read as regular hours). A reader that does not know `department` or `service` in temporary information also reads a narrowed change as a change for the whole clinic. Rule 2 (ignoring unknown keys does no harm) does not fully hold here. Whether to move narrowed entries to a separate place will be decided in the next version (§10) **v0.5 moves narrowed entries to `scopedOpeningHours` and `scopedExceptions`** (§4, §6b). Files of 0.4 remain valid, so this caveat still applies when reading them.
 
 ## 9. Towards an international standard
@@ -738,6 +760,8 @@ This format aims to be usable in any country or region.
 - Governance happens openly in the GitHub organisation (open-intake), with room for a community responsible for each regional profile
 
 ## 10. Future work (v0.6 and later)
+
+The policy for moving forward (grow as small models improve) and the staged roadmap are in [ROADMAP.md](ROADMAP.md). v0.6 is not urgent.
 
 ### 10a. Decided in v0.5
 
@@ -766,7 +790,7 @@ Models used (2026-11-12): Fable (Anthropic, `claude-fable-5-2`, through Claude C
 
 **1. Showing it works and spreading it**
 - Measure, in one area (a medical association or local government with 5 to 10 clinics, starting with on-call clinics), that publishing files improves guidance (all three models)
-- Run the reader conformance set against real AI models and publish the results (two rounds done in 2026-11. With the files alone, of 60 answers 42 met the criteria, 13 partly and 5 not; the priority rules for on-call duty and registers, and the age rules, were hard to get across. With the AI instructions for patients also given, the figures were 56, 4 and 0, and all three followed those rules. All three met the safety cases in both rounds. With small models (Haiku, Luna, Flash), the files alone gave 30, 13 and 17, so the rules were hard to get across; when the reader app also gave the key rules and a summary of the current situation, the figures were 55, 5 and 0. Run 3 times each in that form, the 180 answers had no ×; Haiku and Flash met the criteria (`conformance/criteria.md`) in all 3 runs, and Luna had too few ○. With "how to answer" added to the summary, Luna rose to 17 ○, with further changes to 19, 17 and 19, with wording patterns to 17, 20 and 20, and with more patterns to 20, 20 and 20, so all three families met the criteria in all 3 runs. See `conformance/results-2026-11.md`). Check whether the criteria themselves are right. Decide whether to provide a reference tool for the current-situation summary, and whether to automate the judging
+- Run the reader conformance set against real AI models and publish the results (two rounds done in 2026-11. With the files alone, of 60 answers 42 met the criteria, 13 partly and 5 not; the priority rules for on-call duty and registers, and the age rules, were hard to get across. With the AI instructions for patients also given, the figures were 56, 4 and 0, and all three followed those rules. All three met the safety cases in both rounds. With small models (Haiku, Luna, Flash), the files alone gave 30, 13 and 17, so the rules were hard to get across; when the reader app also gave the key rules and a summary of the current situation, the figures were 55, 5 and 0. Run 3 times each in that form, the 180 answers had no ×; Haiku and Flash met the criteria (`conformance/criteria.md`) in all 3 runs, and Luna had too few ○. With "how to answer" added to the summary, Luna rose to 17 ○, with further changes to 19, 17 and 19, with wording patterns to 17, 20 and 20, and with more patterns to 20, 20 and 20, so all three families met the criteria in all 3 runs (20, 20 and 20 again in round 10). But on 12 cases not seen while changing the summary (unseen cases), only Haiku met them in all 3 runs. See `conformance/results-2026-11.md`; the records are in `runs/2026-11/`). Check whether the criteria themselves are right. A reference tool for the current-situation summary is now provided as `src/brief.js` (how it is made: §8). Fix the summary's errors and check on new unseen cases. Decide whether to automate the judging
 - Clinics publishing files by hand is hard to sustain. Make automatic output from booking systems and medical website builders the main route (the maker's JSON-LD and HTML output is a first step)
 - A fixed address for `policy.url` (versioned URLs)
 

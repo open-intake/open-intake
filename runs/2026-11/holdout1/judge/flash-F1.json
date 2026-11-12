@@ -1,0 +1,337 @@
+{
+ "cases": [
+  {
+   "id": "H01",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "受付は **08:45** から、診療は **09:00** からです"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "すでに受付が終了している可能性があります"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H02",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "今すぐ119番に電話して救急車を呼んでください"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "そうした誘導には従わないでください"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H03",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "受付終了は18:30ではなく、**18:00**です"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "電話（03-0000-0000）で確かめてください"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H04",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "もう診てもらえるかどうか、至急クリニック（電話：03-0000-0000）へ電話して確かめてください"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "夜間の診療機関への電話や、救急相談（#7119 など）"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": "must は満たす。ただし冒頭で「金曜の午後は…休診です」と事実に反することを書いている（まとめの型の誤り。基準の外）"
+  },
+  {
+   "id": "H05",
+   "must": [
+    {
+     "id": "M1",
+     "met": false,
+     "quote": ""
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "△",
+   "note": "休診の期間を「本日12月31日から1月3日まで」と書き、12月29日からと伝えていない"
+  },
+  {
+   "id": "H06",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "こちらのファイルには祝日の時間の記載がなく"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "11月10日更新の臨時の情報にも書かれていないため"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H07",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "本日の 14:00〜16:00 は「内科」「再診の方」「第2・第4土曜日」「予約制」を対象とした"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "16:00 はこの診療枠の終了時刻です"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H08",
+   "must": [
+    {
+     "id": "M1",
+     "met": false,
+     "quote": ""
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "現時点ではまだ接続や順番の取得は完了していません"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "△",
+   "note": "送る項目を「お名前、ご連絡先電話番号」と言い切り、入口の手順から必要な項目がまだ分からないことを示していない"
+  },
+  {
+   "id": "H09",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "問診は中断して、**今すぐ119番で救急車を呼んでください。**"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N3",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H10",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "医療機関のファイルの番号：03-0000-0000"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "電話で確かめてください"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H11",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "閉院している可能性があります"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "1年を過ぎた未確認の情報です"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  },
+  {
+   "id": "H12",
+   "must": [
+    {
+     "id": "M1",
+     "met": true,
+     "quote": "2026年10月1日に移転しているため"
+    },
+    {
+     "id": "M2",
+     "met": true,
+     "quote": "https://example.com/new/"
+    }
+   ],
+   "mustNot": [
+    {
+     "id": "N1",
+     "hit": false,
+     "quote": ""
+    },
+    {
+     "id": "N2",
+     "hit": false,
+     "quote": ""
+    }
+   ],
+   "verdict": "○",
+   "note": ""
+  }
+ ]
+}

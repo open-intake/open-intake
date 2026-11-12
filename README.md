@@ -10,7 +10,7 @@
 
 目的は、**医療機関と患者さんのマッチングをよくすること**です。医療機関の格付けや権威づけはしません。どこを受診するかを決めるのは患者さんです。
 
-状態: **v0.3 草案**（2026-11）。旧称: オープン問診票。ファイルの形式としては「**オープン受診案内 JSON**」と呼びます
+状態: **v0.5 草案**（2026-11）。次の版は急がず、小さいモデルの発展に合わせて広げていきます（[方針と今の案・ロードマップ](ROADMAP.md)）。旧称: オープン問診票。ファイルの形式としては「**オープン受診案内 JSON**」と呼びます
 
 情報は2つ以上のファイルに分けられます。ほぼ変わらない **固定の情報**（`clinic-intake.json`）と、受付の方が毎週〜毎日直す **臨時の情報**（`clinic-schedule.json`：臨時休診・担当医・当番・お知らせ）です。ファイルごとに編集する人を分けられ、臨時の情報には有効期限があります。
 
@@ -49,9 +49,12 @@
 | [examples/](examples/) | 各版の例（架空の医院） |
 | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)・[英語版](AI_INSTRUCTIONS.en.md) | AI と会話してファイルを作るための指示書（固定の情報） |
 | [AI_INSTRUCTIONS_SCHEDULE.md](AI_INSTRUCTIONS_SCHEDULE.md)・[英語版](AI_INSTRUCTIONS_SCHEDULE.en.md) | 臨時の情報（`clinic-schedule.json`）を AI と会話して作る・直すための指示書 |
-| `src/` | トップの原稿（`index.src.html`・英語版 `index.en.body.html`）、作成ツールの原稿（`generator.src.html`）、言語ごとのデータ（`locale.*.js`）、英語版の対訳表（`i18n/en.tsv`）、検査器（`validate.js`） |
+| `src/` | トップの原稿（`index.src.html`・英語版 `index.en.body.html`）、作成ツールの原稿（`generator.src.html`）、言語ごとのデータ（`locale.*.js`）、英語版の対訳表（`i18n/en.tsv`）、検査器（`validate.js`）、読む側の参考の道具（`brief.js`） |
 | `docs/` | 公開されるサイト（トップと作成ツール。**生成物。手で直さない**） |
 | [REVIEW.md](REVIEW.md) | **医療に携わる方へ**: ご確認いただきたい点（見る場所と問い） |
+| [ROADMAP.md](ROADMAP.md) | 方針（小さいモデルの発展に合わせて広げる）・今の案・ロードマップ |
+| [conformance/](conformance/) | 読む側の問題集・結果・使い始める基準。読む側の参考の道具は `src/brief.js`（今の状況のまとめ）と `tools/kit.mjs`（問題集の入力） |
+| [runs/](runs/) | 問題集を AI に解かせた記録（渡した文・答え・判定）。ほかの人が確かめ直せるように公開している |
 | [CHANGELOG.md](CHANGELOG.md) | 変更の記録 |
 
 ## 開発

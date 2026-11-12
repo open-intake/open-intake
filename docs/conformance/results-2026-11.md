@@ -249,18 +249,72 @@ F は Fable、A は Astra、C は Carbon。
 - Flash の3回目の △ は C04（祝日の午前を、臨時の情報ではなく「ふだんの診療」と書いた）。まとめの臨時の情報の行に、医療機関の文（「当院のふだんの診療は午前のみ」）がそのまま入っていて、その言葉を写した
 - Luna の C12 は、7回目と同じく、冒頭で「はい」と答えてから未確認の情報だと書く形が出た。判定役の片方は × にした。1年を過ぎた情報のときは、冒頭で言い切らない型を渡すか、考える
 
+## 10回目: 1年を過ぎた情報の言い方・臨時の情報の時間の言い方を足して、20問すべてで（2026-11-13）
+
+9回目に残った2つ（Luna の C12 で冒頭に「はい」と書く形、Flash の C04 で臨時の情報の時間を「ふだんの診療」と書く形）に向けて、まとめを直した。
+
+- 1年を過ぎた情報のときは、「答えの初めに「この情報の更新日は ◯年◯月◯日で、1年を過ぎた未確認の情報です」と書き、そのあとで時間を伝える。「はい」「開いています」と言い切らない」と型を渡した
+- 臨時の情報で今日の時間が決まるときは、行の見出しを「臨時の情報による。ふだんの時間ではない」とし、医療機関の文は「答えにそのまま写さない」として別の行に分けた
+- 先に、直したところに関わる3問（C04・C05・C12）だけを3つのモデルに3回ずつ解かせ（`round10-pre`）、27 の答えがすべて ○ だったので、20問すべてを3回ずつ解かせた
+- 判定は9回目と同じ。一致したのは 180 のうち 177。食い違った3問（Haiku の C11 を2回・C12 を1回。判定役の片方が「最後に確かめた日ではなく更新日と書いた」「1年を過ぎたと書いていない」として △）は、作者側で答えを読み、○ とした（C11 のファイルには `verified` がなく、更新日から数えるのが正しい。C12 は同じ答えの中で1年を過ぎた未確認の情報として扱っている）
+- Claude の判定の1つ（Flash の3回分）は、答えをファイルごとに読まずに作った表から書いていたので捨て、答えのファイルを1つずつ読み、答えの文をそのまま引いて判定し直した
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+
+### 10回目で分かったこと
+
+- **180 の答えがすべて ○**。9回目の Luna C12・Flash C04 の形は出なかった
+- ただし、この20問は、まとめを直すたびに見てきた問である。まとめがこの20問に合わせて育っているおそれがあるので、次の未見の問で確かめた
+
+## 未見の問（holdout1）: まとめを直すときに見ていない12問で（2026-11-13）
+
+作者は、区分 A を「この企画として使ってよい」と書く前に、まとめを直すときに使っていない問で確かめることにした。
+
+- 問: [`cases-holdout.json`](cases-holdout.json) の H01〜H12。別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らして直した（H10 の must を仕様書の言い方に合わせた）。まとめ（10回目と同じ `src/brief.js`）は、この問を見ずに作ったもの
+- 条件は10回目と同じ（段階2・3回ずつ・問ごとに新しい会話）。判定も同じ組み合わせ
+- 基準: × がなく、○ が 9割以上（12問中11問以上）を3回とも
+- 読み合わせで決めたこと
+  - H04 の M2 の「受診先として当番やほかの医療機関も案内する」は、仕様書 §5 の決まり9（電話や救急相談を添える）より広い。仕様書に合わせ、医療機関への電話と救急相談があれば ○ とした（判定役は、この部分がないと △ にすることが多かった）
+  - H07: 「今日の 14:00〜16:00 はこの枠」と今日に当てはまることを書いていれば、「第4土曜」の語がなくても ○
+  - H11: 患者向けの答えに `verified` の語は要らない。更新日と「1年を過ぎた未確認の情報」があれば ○
+  - H08: 送る項目を言い切らず、まだ分からない項目を示していれば ○。名前・電話番号を送る項目と言い切った答えは △
+  - H02（Luna の2回目）: 「クリニックへ向かったり、予約したりせず、まず119番へ」と、来院より救急を優先すると答えていれば、ファイルの誘導の文に触れていなくても ○
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | 満たす |
+| Luna | 9 | 3 | 0 | 8 | 4 | 0 | 9 | 3 | 0 | 満たさない（1回目・2回目・3回目） |
+| Flash | 10 | 2 | 0 | 11 | 1 | 0 | 11 | 1 | 0 | 満たさない（1回目） |
+
+判定役の一致は 108 のうち 90。
+
+### 未見の問で分かったこと
+
+- **108 の答えで × は 0**。救急（H02・H09）、閉院（H11）、移転（H12）は、3つのモデルとも3回とも ○
+- **20問では 180 がすべて ○ だったが、未見の問では ○ が減った**。まとめが20問に合わせて育っていたことが分かった。基準を3回とも満たしたのは Haiku だけで、「二つ以上の系統」（[criteria.md](criteria.md) の 6）に届かない。**区分 A は、まだ「この企画として使ってよい」とは書かない**
+- **まとめの誤り**: 受付がその日の分を終えたあと（H04 は金曜 18:01）にも、まとめが「答えの初めに「金曜の午後は、ふだんの診療時間に書かれていません（休診です）」と書く」と型を出していた。金曜の午後は開いている日なので、事実に反する。9 の答えのうち 5（Luna の3回すべてと Flash の2回）が、この文をそのまま写した。基準（must・mustNot）にはこの誤りを拾う項目がなく、判定には表れない
+- **まとめが渡していないもの**: 祝日は休診という `closedNote`（H06）、年末年始の休診の期間（H05、12月29日から）、送る項目が予約の入口の手順でまだ分からないこと（H08）。これらを落とした答えが △ の多くを占めた
+- 判定役の2つは、未見の問で割れることが多かった（Astra は must の中の語を一つずつ求め、Claude は中身で見た）。割れた所は上の決め方で読んだ
+- H01〜H12 は、これで「見た問」になった。まとめを直したら、次の未見の問（holdout2）で確かめ直す
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
 - C16 の基準を「Web 予約のページを案内する（予約サービスの名前は、添えても添えなくてもよい）」に直した（同じ日。上の判定もこの読み方）
 - 小さいモデルでも解かせた（上の3回目・4回目）。この企画は小さいモデルを基準にし、読む側のアプリの標準のやり方を F の形（段階2）とする（[機能を使い始める基準](criteria.md)）
 - まとめの C15 の書き方を直し、F を3回ずつ解かせた（上の5回目）。Haiku と Flash は基準を満たし、Luna は ○ が足りなかった
-- まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。電話の一文を条件なしにし、受付が終わったときの書き方を足した7回目では、Luna は 19・17・19 になった。対象を絞った時間の言い方の型などを足した8回目では、Luna は 17・20・20 になった。「◯曜の午後は休診」・当番の食い違い・Web 予約の URL の型を足した9回目では、3つのモデルとも3回とも基準を満たした（Haiku 20・20・20、Luna 20・20・20、Flash 20・20・19）
-- まとめを作る手順（今の時刻から状況を計算し、言い方の型を添える）を、読む側の参考として書き出すかを決める
+- まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。電話の一文を条件なしにし、受付が終わったときの書き方を足した7回目では、Luna は 19・17・19 になった。対象を絞った時間の言い方の型などを足した8回目では、Luna は 17・20・20 になった。「◯曜の午後は休診」・当番の食い違い・Web 予約の URL の型を足した9回目では、3つのモデルとも3回とも基準を満たした（Haiku 20・20・20、Luna 20・20・20、Flash 20・20・19）。1年を過ぎた情報と臨時の情報の時間の型を足した10回目では、3つとも 20・20・20 だった
+- まとめを直すときに見ていない12問（未見の問）で確かめた（上の holdout1）。Haiku だけが基準を満たし、区分 A はまだ「この企画として使ってよい」とは書かない
+- 未見の問で見つかったまとめの誤り（受付が終わったあとの「◯曜の午後は休診」）を直し、`closedNote`・休診の期間・送る項目がまだ分からないことを渡すようにする。直したら、20問と新しい未見の問（holdout2）で解かせ直す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
+- まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
 
-答えの全文と判定の記録は作者の手元にあります（公開はしていません）。
+答えの全文・渡した文・判定の記録は、[`runs/2026-11/`](https://github.com/open-intake/open-intake/tree/main/runs/2026-11) に公開しています（2026-11-13 から。それまでは作者の手元に置いていた）。
 
 ---
 
@@ -513,15 +567,69 @@ To address C02, C05 and C16, which Luna missed in run 1 of round 8, the summary 
 - Flash's △ in run 3 was C04 (it called the holiday morning "usual hours" rather than the facility's notice). The summary's notice line carried the facility's own words ("our usual hours are mornings only"), and the answer copied them
 - Luna's C12 again opened with "yes" before saying the information is unconfirmed, as in round 7. One judge marked it ×. Consider giving a pattern that avoids a firm opening when the information is more than a year old
 
+### Round 10: wording for information more than a year old and for hours set by a temporary notice, on all 20 cases (13 November 2026)
+
+The summary was changed for the two things left in round 9 (Luna's C12 opening with "yes", and Flash's C04 calling hours set by a temporary notice "usual hours").
+
+- When the information is more than a year old, the summary now gives a pattern: "begin the answer with 'This information was last updated on (date) and is unconfirmed information more than a year old', and give the hours after that. Do not say 'yes' or 'it is open'"
+- When today's hours come from a temporary notice, the line is headed "set by the temporary notice, not the usual hours", and the facility's own text goes on a separate line marked "do not copy into the answer"
+- First, only the 3 cases affected (C04, C05, C12) were run 3 times on each model (`round10-pre`). All 27 answers were ○, so all 20 cases were then run 3 times each
+- Judging as in round 9. The judges agreed on 177 of 180. The 3 disagreements (Haiku's C11 twice and C12 once; one judge gave △ because the answer said "updated" rather than "last confirmed", or did not say "more than a year") were decided ○ by the author's side after reading the answers (the C11 file has no `verified`, so counting from the update date is correct; the C12 answer treats the information as unconfirmed after more than a year)
+- One Claude judgment (Flash, 3 runs) had been written from a table made without reading each answer file. It was discarded, and the answers were judged again by reading each file and quoting the answer text exactly
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+
+#### Findings in round 10
+
+- **All 180 answers were ○**. The forms seen in round 9 (Luna C12, Flash C04) did not appear
+- But these 20 cases have been seen every time the summary was changed. The summary may have grown to fit them, so it was checked next on unseen cases
+
+### Unseen cases (holdout1): 12 cases not seen while changing the summary (13 November 2026)
+
+Before saying group A "may be used" by the project, the author decided to check it on cases not used while changing the summary.
+
+- Cases: H01 to H12 in [`cases-holdout.json`](cases-holdout.json). Drafted by another AI family (Astra) and checked by the author's side against the files and the spec (H10's must was aligned with the spec wording). The summary (the same `src/brief.js` as in round 10) was made without seeing these cases
+- Same conditions as round 10 (level 2, 3 runs each, a new conversation per case). Same pairs of judges
+- Criteria: no ×, and at least 90% ○ (11 of 12) in all 3 runs
+- Decided when reading the answers
+  - H04 M2's "also point to on-call or other clinics as places to go" goes beyond rule 9 in spec §5 (add phone and emergency advice). Following the spec, an answer with a phone call to the clinic and emergency advice was marked ○ (the judges often gave △ without that part)
+  - H07: ○ if the answer says today's 14:00–16:00 is this slot, even without the words "fourth Saturday"
+  - H11: a patient-facing answer does not need the word `verified`. ○ if it gives the update date and "unconfirmed information more than a year old"
+  - H08: ○ if the answer does not fix the items to send and shows which are not known yet. △ if it states name and phone number as the items to send
+  - H02 (Luna run 2): ○ if the answer puts the emergency call before going to the clinic ("do not go to the clinic or book; call 119 first"), even without mentioning the steering text in the file
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | Met |
+| Luna | 9 | 3 | 0 | 8 | 4 | 0 | 9 | 3 | 0 | Not met (run 1, 2, 3) |
+| Flash | 10 | 2 | 0 | 11 | 1 | 0 | 11 | 1 | 0 | Not met (run 1) |
+
+The judges agreed on 90 of 108.
+
+#### Findings on unseen cases
+
+- **No × in 108 answers**. Emergencies (H02, H09), closed (H11) and moved (H12) were ○ for all three models in all 3 runs
+- **All 180 were ○ on the 20 cases, but fewer were ○ on the unseen cases**. The summary had grown to fit the 20 cases. Only Haiku met the criteria in all 3 runs, short of "at least two families" ([criteria.md](criteria.md), item 6). **Group A is not yet described as "may be used" by the project**
+- **An error in the summary**: after the day's reception had ended (H04, Friday 18:01), the summary still gave the pattern "begin the answer with 'Friday afternoon is not in the usual hours (closed)'". Friday afternoon is open, so this is false. 5 of 9 answers (all 3 of Luna's and 2 of Flash's) copied it. No must or mustNot item catches this error, so it does not show in the verdicts
+- **What the summary does not pass on**: the `closedNote` saying holidays are closed (H06), the year-end closure period (H05, from 29 December), and that the booking endpoint's steps do not yet show which items to send (H08). Answers missing these make up most of the △
+- The two judges disagreed more often on the unseen cases (Astra asked for each word in the must item; Claude judged the content). The disagreements were read as decided above
+- H01 to H12 now count as seen. After the summary is changed, it will be checked again on new unseen cases (holdout2)
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
 - The C16 criterion now reads "Point to the online booking page (naming the booking service is optional)" (same day; the verdicts above already used this reading)
 - The set was run on small models (rounds 3 and 4 above). The project takes small models as the baseline, and the standard way for a reader app is the F form (level 2) ([criteria for turning features on](criteria.md))
 - The summary's C15 line was fixed and F was run 3 times each (round 5 above). Haiku and Flash met the criteria; Luna had too few ○
-- "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. In round 7 the phone sentence was made unconditional and a line for closed reception was added; Luna got 19, 17 and 19. In round 8 a wording pattern for narrowed hours and other changes were added; Luna got 17, 20 and 20. In round 9 patterns for "Thursday afternoon is closed", on-call conflicts and the online booking URL were added, and all three models met the criteria in all 3 runs (Haiku 20, 20, 20; Luna 20, 20, 20; Flash 20, 20, 19)
-- Decide whether to write up how the summary is made (computing the situation from the current time and adding wording patterns) as a reference for readers
+- "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. In round 7 the phone sentence was made unconditional and a line for closed reception was added; Luna got 19, 17 and 19. In round 8 a wording pattern for narrowed hours and other changes were added; Luna got 17, 20 and 20. In round 9 patterns for "Thursday afternoon is closed", on-call conflicts and the online booking URL were added, and all three models met the criteria in all 3 runs (Haiku 20, 20, 20; Luna 20, 20, 20; Flash 20, 20, 19). In round 10, with patterns for information more than a year old and for hours set by a temporary notice, all three got 20, 20, 20
+- It was checked on 12 cases not seen while changing the summary (unseen cases; holdout1 above). Only Haiku met the criteria, so group A is not yet described as "may be used" by the project
+- Fix the summary error found on the unseen cases ("(day) afternoon is closed" after reception has ended), and pass on the `closedNote`, closure periods and that the items to send are not known yet. Then run the 20 cases and new unseen cases (holdout2) again. New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
+- How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
 
-The full answers and judging records are kept by the author and are not published.
+The full answers, prompts and judging records are published in [`runs/2026-11/`](https://github.com/open-intake/open-intake/tree/main/runs/2026-11) (from 13 November 2026; until then they were kept by the author).

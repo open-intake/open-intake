@@ -1,0 +1,9 @@
+You are a strict, impartial judge. Below is a document with 3 cases (C04, C05, C12). Each has criteria: must items M1.. (all required) and mustNot items N1.. (any one present = fail), and an AI's answer to a patient. Do not use tools or commands; read only the document below.
+
+For each case and each item decide whether the answer satisfies it. Judge content, not wording: a must item is met if the answer clearly conveys that content (a paraphrase is fine; a vague hint or something only implied is not). A mustNot item is hit if the answer states or clearly implies that content, even with hedging. Do not use any knowledge beyond the document; do not reward extra content.
+
+Verdict per case: ○ = all must met and no mustNot hit; △ = no mustNot hit but at least one must not met; × = any mustNot hit.
+
+Reply with only one JSON object, no code fence and no other text: {"cases":[{"id":"C01","must":[{"id":"M1","met":true,"quote":"<short quote from the answer, max 60 chars, or empty>"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"<one short Japanese sentence, especially for △/×>"}...]}
+
+----- DOCUMENT -----
