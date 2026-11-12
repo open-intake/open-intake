@@ -27,7 +27,7 @@
 
 ## 結果
 
-- [2026年11月: 3つの AI（Fable・Astra・Carbon）で解いた結果](results-2026-11.md)
+- [2026年11月: 3つの AI（Fable・Astra・Carbon）で、ファイルだけの条件と指示書つきの条件で解いた結果](results-2026-11.md)
 
 ## 問題を足すとき
 
@@ -64,7 +64,7 @@ The set is part of the tests (`node tools/test.mjs`), which check that the file 
 
 ### Results
 
-- [November 2026: results with three AI models (Fable, Astra, Carbon)](results-2026-11.md)
+- [November 2026: results with three AI models (Fable, Astra, Carbon), with the files alone and with the AI instructions](results-2026-11.md)
 
 ### Adding cases
 

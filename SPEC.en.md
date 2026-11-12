@@ -764,7 +764,7 @@ Models used (2026-11-12): Fable (Anthropic, `claude-fable-5-2`, through Claude C
 
 **1. Showing it works and spreading it**
 - Measure, in one area (a medical association or local government with 5 to 10 clinics, starting with on-call clinics), that publishing files improves guidance (all three models)
-- Run the reader conformance set against real AI models and publish the results (first round done in 2026-11, without the specification: of 60 answers, 44 met the criteria, 14 partly and 2 not. All three met the safety cases. Priority rules for on-call duty and registers, and the age rules, were hard to get across from the files alone. See `conformance/results-2026-11.md`). Compare with the specification or AI instructions given, and decide whether to automate the judging
+- Run the reader conformance set against real AI models and publish the results (two rounds done in 2026-11. With the files alone, of 60 answers 42 met the criteria, 13 partly and 5 not; the priority rules for on-call duty and registers, and the age rules, were hard to get across. With the AI instructions for patients also given, the figures were 56, 4 and 0, and all three followed those rules. All three met the safety cases in both rounds. See `conformance/results-2026-11.md`). Decide how to get the rules to readers without the instructions, and whether to automate the judging
 - Clinics publishing files by hand is hard to sustain. Make automatic output from booking systems and medical website builders the main route (the maker's JSON-LD and HTML output is a first step)
 - A fixed address for `policy.url` (versioned URLs)
 
