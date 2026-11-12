@@ -178,13 +178,37 @@ F は Fable、A は Astra、C は Carbon。
 - Haiku の C01・C03・C18 で、片方の判定役が × にした。どれも基準には反しないが、「今から受診できます」（午後の受付の行で）・「急いで向かうことはおすすめしません」・119番のあとに予約の情報を長く添える、といった書き方が、読み違えを招きうる
 - Luna の答えは、5回目より少し長くなった（同じ数え方で約 1.1 倍）
 
+## 7回目: 電話の一文を条件なしに、受付が終わったときの書き方を足して（同じ日）
+
+6回目で Luna が3回とも落とした C03・C15 に向けて、まとめを直し、3つのモデルとも3回ずつ解かせ直した。
+
+- 「答えの書き方」の電話の一文を、どの答えにも当てはまる形にした（「どの答えにも、行く前に電話で確かめられると添える（時間を聞かれていないときも）」）
+- 今日の受付が終わっているときに、「次に受けられる診療と受付の時間と、急ぐとき・悪くなるときは電話や救急相談を使えることを、両方書く」の行を足した
+- 情報が古いときは、答えにその日付と、180日（または1年）を過ぎていることを書く、と足した
+- 判定は6回目と同じ。一致したのは 180 のうち 176。食い違った4問は、作者側で答えを読み合わせて決めた（Haiku C18 は ○: 病名を挙げていない。Luna C02 は △: 木曜の午後が休診だと言っていない。Luna C12 は ○: 冒頭は「はい」だが、1年を過ぎた未確認の情報として電話で確かめるよう勧めている。Luna C15 は △: 「電話で確認できます」で、勧めていない）
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 19 | 1 | 0 | 20 | 0 | 0 | 満たす |
+| Luna | 19 | 1 | 0 | 17 | 3 | 0 | 19 | 1 | 0 | 2回目が足りない |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+
+### 7回目で分かったこと
+
+- **× は 180 のうち 0**。Haiku と Flash は3回とも基準を満たした（Flash は6回目に続いて 60 問すべて ○）
+- **Luna は、初めて 18 を超える回が出た（19・17・19）が、3回とも満たすには届かなかった**
+  - C03 と C15 は、6回目は3回とも △ だったが、7回目は1回ずつになった
+  - いちばん残ったのは C01（14時台が小児科の枠であること）で、3回のうち2回抜けた
+  - C15 の △ は「電話で確認できます」という書き方で、まとめの「確かめられると添える」をそのまま写した形だった。まとめの言い方が、答えの言い方を弱くしうる
+- Haiku の C18（突然の激しい頭痛）は、119番を先に伝えたあとで、予約の方法や時間を長く添える答えが続いている。基準には反しないが、判定役の片方は × にした
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
 - C16 の基準を「Web 予約のページを案内する（予約サービスの名前は、添えても添えなくてもよい）」に直した（同じ日。上の判定もこの読み方）
 - 小さいモデルでも解かせた（上の3回目・4回目）。この企画は小さいモデルを基準にし、読む側のアプリの標準のやり方を F の形（段階2）とする（[機能を使い始める基準](criteria.md)）
 - まとめの C15 の書き方を直し、F を3回ずつ解かせた（上の5回目）。Haiku と Flash は基準を満たし、Luna は ○ が足りなかった
-- まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。次は、電話で確かめる一文を条件なしにし、受付が終わったときは「次の時間」と「急ぐときの電話・救急相談」を両方書くよう、まとめに書く
+- まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。電話の一文を条件なしにし、受付が終わったときの書き方を足した7回目では、Luna は 19・17・19 になった。次は、C01（対象を絞った時間）の書き方、電話は「勧める」と書くこと、救急の目安があるときは予約の案内を続けないことを、まとめに足す
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
 
@@ -370,13 +394,37 @@ In round 5 Luna dropped details, so the current-situation summary now says plain
 - In Haiku C01, C03 and C18, one judge marked ×. None goes against the criteria, but wording such as "you can be seen from now" (in the line on afternoon reception), "I do not recommend hurrying there", and long booking details after the 119 advice could be misread
 - Luna's answers were a little longer than in round 5 (about 1.1 times, counted the same way)
 
+### Round 7: the phone sentence made unconditional, and what to write when reception has closed (same day)
+
+To address C03 and C15, which Luna missed in all 3 runs of round 6, the summary was changed and all three models were run 3 times each again.
+
+- The phone sentence in "how to answer" now applies to every answer ("in every answer, add that the patient can phone to check before going, even when not asked about times")
+- When today's reception has closed, a line now says: "write both the next session and reception hours, and that the patient can phone or call the emergency advice line when it is urgent or getting worse"
+- When the information is old, the answer must give the date and say that 180 days (or a year) have passed
+- Judging as in round 6. The judges agreed on 176 of 180. The 4 disagreements were decided by the author's side after reading the answers (Haiku C18 ○: it names no illness. Luna C02 △: it does not say Thursday afternoon is closed. Luna C12 ○: it opens with "yes", but treats the information as unconfirmed after more than a year and recommends phoning. Luna C15 △: "you can check by phone" does not recommend it)
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 19 | 1 | 0 | 20 | 0 | 0 | Met |
+| Luna | 19 | 1 | 0 | 17 | 3 | 0 | 19 | 1 | 0 | Run 2 too few |
+| Flash | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+
+#### Findings in round 7
+
+- **No × in 180 answers**. Haiku and Flash met the criteria in all 3 runs (Flash got ○ on all 60 again)
+- **Luna reached more than 18 for the first time (19, 17, 19), but not in all 3 runs**
+  - C03 and C15 were △ in all 3 runs of round 6, and in 1 run each in round 7
+  - The main remaining miss is C01 (the 14:00 hour is the paediatric slot), missing in 2 of 3 runs
+  - The C15 △ said "you can check by phone", copying the summary's "add that the patient can phone to check". The wording of the summary can weaken the wording of the answer
+- In Haiku C18 (a sudden severe headache), answers still add long booking details after first saying to call 119. This does not go against the criteria, but one judge marked it ×
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
 - The C16 criterion now reads "Point to the online booking page (naming the booking service is optional)" (same day; the verdicts above already used this reading)
 - The set was run on small models (rounds 3 and 4 above). The project takes small models as the baseline, and the standard way for a reader app is the F form (level 2) ([criteria for turning features on](criteria.md))
 - The summary's C15 line was fixed and F was run 3 times each (round 5 above). Haiku and Flash met the criteria; Luna had too few ○
-- "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. Next, make the "phone to check" sentence unconditional, and have the summary say that when reception has closed the answer gives both the next hours and the advice to phone or call the emergency line when urgent
+- "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. In round 7 the phone sentence was made unconditional and a line for closed reception was added; Luna got 19, 17 and 19. Next, add to the summary how to write narrowed hours (C01), that the answer should recommend phoning, and that booking details should not follow when there are warning signs
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
 
