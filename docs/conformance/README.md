@@ -27,7 +27,8 @@
 
 ## 結果
 
-- [2026年11月: 3つの AI（Fable・Astra・Carbon）で、ファイルだけの条件と指示書つきの条件で解いた結果](results-2026-11.md)
+- [2026年11月: 大きい AI（Fable・Astra・Carbon）と小さい AI（Haiku・Luna・Flash）で、ファイルだけ・指示書つき・読む側の手助けつきの条件で解いた結果](results-2026-11.md)
+- [機能を使い始める基準（とりあえずの案）](criteria.md): 先に決めておいた機能を、読む側が使い始めてよいかを、この問題集で決める
 
 ## 問題を足すとき
 
@@ -64,7 +65,8 @@ The set is part of the tests (`node tools/test.mjs`), which check that the file 
 
 ### Results
 
-- [November 2026: results with three AI models (Fable, Astra, Carbon), with the files alone and with the AI instructions](results-2026-11.md)
+- [November 2026: results with large models (Fable, Astra, Carbon) and small models (Haiku, Luna, Flash), with the files alone, with the AI instructions, and with help from the reader app](results-2026-11.md)
+- [Criteria for turning features on (provisional)](criteria.md): this set decides when a reader may start using a feature that was specified in advance
 
 ### Adding cases
 
