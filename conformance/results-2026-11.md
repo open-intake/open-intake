@@ -345,6 +345,27 @@ Claude の判定だけで数えると、Haiku は 10・10・10 ○（3回とも 
 - Luna は holdout1 より ○ が少なかった（6〜7）。Flash も、Astra の判定では 4〜5 だった
 - H13〜H24 は、これで「見た問」になった。まとめを直したら、次の未見の問（holdout3）で確かめ直す
 
+## 12回目: まとめを仕様書の決まりと照らす検査で直して、20問すべてで（2026-11-13）
+
+まとめ（`src/brief.js`）を、仕様書の決まりから別に組んだ計算と照らす検査（[`tools/check-brief.mjs`](../tools/check-brief.mjs)、AI を使わない）を足し、見つかった誤りを直した（[CHANGELOG](../CHANGELOG.md)）。20問のまとめのうち18問が変わった。いちばん多く効いたのは、書かれていない受付の始まりを、診療の始まりで埋めていた誤りである（午後の行は `reception.closes` だけなのに「受付 15:00〜18:00」と渡していた。今は「受付 18:00 まで（受付の始まりは書かれていない）」）。このまとめで、20問すべてを3回ずつ解かせた。
+
+- **答えるモデル**: Haiku と Luna。Flash は、動かす道具（agy）が使えなくなったので外した（holdout2 の「道具のエラー」と同じ原因）。基準の「二つ以上の系統」には、Anthropic と OpenAI の2系統で届く
+- **判定役**: Haiku は Claude と Astra。Luna は Claude と Fable（作者が決めた）。Fable は Claude と同じ Anthropic の AI で、Luna とは系統が違う。2つの判定役は、互いの判定を見ずに判定した
+- 一致したのは 120 のうち 120
+- Haiku の3回目の C03 は △（午前の受付が 12:00 で締め切ったことは伝えたが、今日の診療が 12:30 まで続くことを書いていない。判定役は2つとも △）
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+
+### 12回目で分かったこと
+
+- まとめを直しても、20問では2つのモデルとも3回とも基準を満たした
+- **書かれていない時刻を写さなくなった**: 答えのうち「受付は 15:00 から」のように、ファイルにない受付の始まりを書いたものは、11回目では 120 のうち 32（Haiku 20・Luna 12）、12回目では 120 のうち 0 だった。基準（must・mustNot）はこの誤りを拾っていなかったので、11回目の判定には出ていない。基準が拾わない誤りを、検査で先に減らせることが分かった
+- 基準が拾わない誤りは、まだ残る。Luna の2回目の C02 は、臨時の情報の更新日を「11月19日」と書いた（正しくは11月10日。どちらの判定役も気づいたが、基準に当たる項目がない）
+- この20問は見てきた問なので、次の未見の問（holdout3）で確かめ直す
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
@@ -354,6 +375,7 @@ Claude の判定だけで数えると、Haiku は 10・10・10 ○（3回とも 
 - まとめに「答えの書き方」を足し、3回ずつ解かせ直した（上の6回目）。Luna は 17 に上がったが足りなかった。電話の一文を条件なしにし、受付が終わったときの書き方を足した7回目では、Luna は 19・17・19 になった。対象を絞った時間の言い方の型などを足した8回目では、Luna は 17・20・20 になった。「◯曜の午後は休診」・当番の食い違い・Web 予約の URL の型を足した9回目では、3つのモデルとも3回とも基準を満たした（Haiku 20・20・20、Luna 20・20・20、Flash 20・20・19）。1年を過ぎた情報と臨時の情報の時間の型を足した10回目では、3つとも 20・20・20 だった
 - まとめを直すときに見ていない12問（未見の問）で確かめた（上の holdout1）。Haiku だけが基準を満たし、区分 A はまだ「この企画として使ってよい」とは書かない
 - 未見の問で見つかったまとめの誤り（受付が終わったあとの「◯曜の午後は休診」）を直し、`closedNote`・休診の期間・送る項目がまだ分からないことを渡すようにした。20問（上の11回目）では3つとも基準を満たし、新しい未見の問（上の holdout2）では、どれも満たさなかった。holdout2 で見つかった誤り（全体の臨時の変更がある日に、対象を絞った時間を渡していた）も直した
+- まとめを仕様書の決まりと照らす検査を足し、見つかった誤りを直した。20問（上の12回目）では Haiku と Luna が基準を満たした
 - 次は、まとめが渡していないこと（H15・H20・H21・H23 の △）を足すかを考え、20問と新しい未見の問（holdout3）で確かめ直す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
@@ -708,6 +730,27 @@ Counted with Claude's verdicts only, Haiku had 10, 10 and 10 ○ (H13 was × in 
 - Luna had fewer ○ than in holdout1 (6 to 7). Flash also had 4 to 5 under Astra's verdicts
 - H13 to H24 now count as seen. After the summary is changed, it will be checked again on new unseen cases (holdout3)
 
+### Round 12: the summary fixed with a check against the spec rules, on all 20 cases (13 November 2026)
+
+A check of the summary (`src/brief.js`) against a separate computation written from the spec rules ([`tools/check-brief.mjs`](../tools/check-brief.mjs), no AI involved) was added, and the errors it found were fixed ([CHANGELOG](../CHANGELOG.md)). The summary changed for 18 of the 20 cases. The fix with the widest effect: a reception start that was not given had been filled in with the opening time (the afternoon row gives only `reception.closes`, yet the summary said "reception 15:00–18:00"; it now says "reception until 18:00 (start not given)"). All 20 cases were run 3 times each with this summary.
+
+- **Answering models**: Haiku and Luna. Flash was dropped because the tool that runs it (agy) can no longer be used (the same cause as the "tool error" in holdout2). Anthropic and OpenAI still make the "two or more families" of the criteria
+- **Judges**: Claude and Astra for Haiku. Claude and Fable for Luna (decided by the author). Fable is an Anthropic AI like Claude, and a different family from Luna. The two judges did not see each other's verdicts
+- The judges agreed on 120 of 120
+- Haiku run 3, C03 is △ (it said morning reception closed at 12:00 but not that today's consultations go on until 12:30; both judges gave △)
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | Met |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+
+#### Findings in round 12
+
+- After the fixes, both models still met the criteria in all 3 runs on the 20 cases
+- **Times that are not given are no longer copied**: answers that stated a reception start not in the file, such as "reception from 15:00", were 32 of 120 in round 11 (Haiku 20, Luna 12) and 0 of 120 in round 12. The criteria (must and mustNot) did not catch this error, so it did not show in the round 11 verdicts. Errors the criteria miss can be reduced ahead of time by the check
+- Errors the criteria miss remain. Luna run 2, C02 gave the temporary notice's update date as 19 November (it is 10 November; both judges noticed, but no criterion covers it)
+- These 20 cases have been seen, so the summary will be checked again on new unseen cases (holdout3)
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
@@ -717,6 +760,7 @@ Counted with Claude's verdicts only, Haiku had 10, 10 and 10 ○ (H13 was × in 
 - "How to answer" was added to the summary and all were run 3 times again (round 6 above). Luna rose to 17 but fell short. In round 7 the phone sentence was made unconditional and a line for closed reception was added; Luna got 19, 17 and 19. In round 8 a wording pattern for narrowed hours and other changes were added; Luna got 17, 20 and 20. In round 9 patterns for "Thursday afternoon is closed", on-call conflicts and the online booking URL were added, and all three models met the criteria in all 3 runs (Haiku 20, 20, 20; Luna 20, 20, 20; Flash 20, 20, 19). In round 10, with patterns for information more than a year old and for hours set by a temporary notice, all three got 20, 20, 20
 - It was checked on 12 cases not seen while changing the summary (unseen cases; holdout1 above). Only Haiku met the criteria, so group A is not yet described as "may be used" by the project
 - The summary error found on the unseen cases ("(day) afternoon is closed" after reception has ended) was fixed, and the `closedNote`, closure periods and that the items to send are not known yet are now passed on. On the 20 cases (round 11 above) all three met the criteria; on new unseen cases (holdout2 above) none did. The error found in holdout2 (narrowed hours passed on for a day with a whole-day temporary change) was also fixed
+- A check of the summary against the spec rules was added and the errors it found were fixed. On the 20 cases (round 12 above), Haiku and Luna met the criteria
 - Next, consider passing on what the summary leaves out (the △ on H15, H20, H21 and H23), then check again on the 20 cases and new unseen cases (holdout3). New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)

@@ -20,6 +20,7 @@
 | `holdout1/` | 未見の問 | まとめを直すときに見ていない12問（[`cases-holdout.json`](../../conformance/cases-holdout.json) の H01〜H12）。1回だけ使った |
 | `round11/` | 11回目 | holdout1 で見つかったまとめの誤りを直して、20問すべてを3回ずつ |
 | `holdout2/` | 未見の問の2組目 | 11回目のまとめで、見ていない12問（H13〜H24）。1回だけ使った。Flash の3回目の H20・H21・H24 は、道具のエラーで答えがない（空のファイル）。Luna は2つ目の判定役が使えず、`judge2/` にない |
+| `round12/` | 12回目 | まとめを仕様書の決まりと照らす検査で直して、20問すべてを3回ずつ。Haiku と Luna だけ（Flash は道具が使えなくなった）。Luna の `judge2/` は Fable の判定 |
 
 各回のフォルダの中:
 
@@ -65,6 +66,7 @@ Published from 13 November 2026. Until then the results said "the full answers a
 | `holdout1/` | Unseen cases | 12 cases not seen while tuning the summary ([`cases-holdout.json`](../../conformance/cases-holdout.json), H01–H12). Used once |
 | `round11/` | Round 11 | All 20 cases, 3 runs each, after fixing the summary errors found in holdout1 |
 | `holdout2/` | Second set of unseen cases | 12 cases not seen (H13–H24), with the round 11 summary. Used once. For Flash run 3, H20, H21 and H24 have no answer because of a tool error (empty files). Luna has no `judge2/` files because its second judge could not be used |
+| `round12/` | Round 12 | All 20 cases, 3 runs each, after fixing the summary with a check against the spec rules. Haiku and Luna only (the tool for Flash can no longer be used). Luna's `judge2/` holds Fable's verdicts |
 
 In each round folder:
 
