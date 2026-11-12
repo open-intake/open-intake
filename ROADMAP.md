@@ -35,7 +35,7 @@
 
 | レベル | 規格の範囲 | 対応する問題集 | ほかに要ること | 今 |
 |---|---|---|---|---|
-| **V1 案内** | 形式 0.5 以上。診療時間・受付・対象を絞った時間・臨時の情報・閉院や移転・当番・名簿との食い違い・情報の古さ、救急の目安があれば 119番を先に（§5 の決まり。区分 A） | `cases.json`（C01〜C20）＋ 未見の問 | — | 20問では3系統が満たした（11回目まで）。未見の問では、1組目（holdout1）は Haiku だけ、2組目（holdout2）はどのモデルも満たさなかった。2組目で見つかったまとめの誤り（全体の臨時の変更がある日の、対象を絞った時間）を直したので、次の未見の問（holdout3）で確かめ直す。**まだ「使ってよい」とは書かない** |
+| **V1 案内** | 形式 0.5 以上。診療時間・受付・対象を絞った時間・臨時の情報・閉院や移転・当番・名簿との食い違い・情報の古さ、救急の目安があれば 119番を先に（§5 の決まり。区分 A） | `cases.json`（C01〜C20）＋ 未見の問 | — | 20問では3系統が満たした（11回目まで）。未見の問では、1組目（holdout1）は Haiku だけ、2組目（holdout2）はどのモデルも満たさなかった。2組目で見つかったまとめの誤り（全体の臨時の変更がある日の、対象を絞った時間）を直した。そのあと、まとめを仕様書の決まりと照らす検査（[`tools/check-brief.mjs`](tools/check-brief.mjs)、AI を使わない）を足し、受付の時刻を診療の時刻で埋めていた誤りなども直した。まとめが変わったので、20問を解かせ直してから、次の未見の問（holdout3）で確かめ直す。**まだ「使ってよい」とは書かない** |
 | **V2 手続き** | V1 ＋ 予約の入口を代わりに使う（`booking.platform`・`endpoints`。区分 B）、問診票を一緒に作る（`questionnaires`。区分 C） | B・C の問（まだない。C は C19 だけ）＋ 未見の問 | B は予約システムの側の確かめ。C は医療者による問診票と救急の目安の確認（[REVIEW.md](REVIEW.md)） | 問がないので**使わない** |
 | **V3 選ぶ手伝い** | V2 ＋ 地域の一覧から候補を事実で並べる（区分 D）、ほかの言語・ほかの地域プロファイル | D の問、各言語・地域の問 ＋ 未見の問 | 地域プロファイルを育てる人、その言語のまとめと決まりの要点 | 問がないので**使わない** |
 
@@ -46,7 +46,7 @@
 | 医療者の確認 | 救急の目安・問診票・安全の決まりを、医療に携わる方に見ていただく。それまでは、これらに頼る中身は「とりあえず」のまま |
 | 地域での試し | 1つの地域（医師会か自治体と診療所5〜10）で、置くと案内が良くなるかを測り、結果を載せる |
 | 手助けを軽く | 新しい小さいモデルで、段階1・段階0でも解かせる。満たせば、その段階も標準の選択肢にする |
-| 続ける仕組み | 判定の自動化、モデルが変わるたびの確かめ直し、結果の置き場所（今は [`runs/`](runs/)） |
+| 続ける仕組み | まとめを仕様書の決まりと照らす検査（[`tools/check-brief.mjs`](tools/check-brief.mjs)。テストで回す）、判定の自動化、モデルが変わるたびの確かめ直し、結果の置き場所（今は [`runs/`](runs/)） |
 | 基準の見直し | 9割・3回・安全の問の選び方が妥当か。基準が拾わない誤り（答えの中の食い違い、まとめを写した事実の誤り）をどう見るか |
 
 ### きっかけと、すること
@@ -111,7 +111,7 @@ What readers may use from the spec is shown as **conformance levels** (V1, V2, V
 
 | Level | Part of the spec | Conformance cases | Also needed | Now |
 |---|---|---|---|---|
-| **V1 Guidance** | Format 0.5 or later. Hours, reception, narrowed hours, temporary notices, closed or moved, on-call duty, mismatches with the register, age of information, and 119 first when warning signs appear (the §5 rules; group A) | `cases.json` (C01–C20) + unseen cases | — | Three families met the criteria on the 20 cases (up to round 11). On the unseen cases, only Haiku did on the first set (holdout1), and no model did on the second set (holdout2). The summary error found in the second set (narrowed hours on a day with a whole-day temporary change) was fixed, so it will be checked again on the next unseen cases (holdout3). **Not yet described as "may be used"** |
+| **V1 Guidance** | Format 0.5 or later. Hours, reception, narrowed hours, temporary notices, closed or moved, on-call duty, mismatches with the register, age of information, and 119 first when warning signs appear (the §5 rules; group A) | `cases.json` (C01–C20) + unseen cases | — | Three families met the criteria on the 20 cases (up to round 11). On the unseen cases, only Haiku did on the first set (holdout1), and no model did on the second set (holdout2). The summary error found in the second set (narrowed hours on a day with a whole-day temporary change) was fixed. After that, a check of the summary against the spec rules ([`tools/check-brief.mjs`](tools/check-brief.mjs), no AI involved) was added, and further errors were fixed, such as filling in reception times with the opening times. Because the summary changed, the 20 cases will be run again, and then checked on the next unseen cases (holdout3). **Not yet described as "may be used"** |
 | **V2 Actions** | V1 + using a booking endpoint on the patient's behalf (`booking.platform`, `endpoints`; group B) and filling a questionnaire together (`questionnaires`; group C) | Cases for B and C (none yet; C has only C19) + unseen cases | For B, a check from the booking-system side. For C, review of the questionnaires and emergency signs by medical professionals ([REVIEW.md](REVIEW.md)) | No cases yet, so **not used** |
 | **V3 Helping to choose** | V2 + listing candidates from a regional list by facts (group D), other languages and other regional profiles | Cases for D and for each language or region + unseen cases | People to grow regional profiles; a summary and key rules in that language | No cases yet, so **not used** |
 
@@ -122,7 +122,7 @@ What readers may use from the spec is shown as **conformance levels** (V1, V2, V
 | Medical review | Ask medical professionals to look at the emergency signs, questionnaires and safety rules. Until then, content that relies on them stays "provisional" |
 | Regional trial | Measure in one region (a medical association or local government and 5 to 10 clinics) whether the files improve guidance, and publish the results |
 | Less help | Run new small models at help levels 1 and 0 as well. If they meet the criteria, make that level a standard option too |
-| Keeping it going | Automated judging, re-checking whenever models change, a place for results (now [`runs/`](runs/)) |
+| Keeping it going | A check of the summary against the spec rules ([`tools/check-brief.mjs`](tools/check-brief.mjs), run by the tests), automated judging, re-checking whenever models change, a place for results (now [`runs/`](runs/)) |
 | Reviewing the criteria | Whether 90%, 3 runs and the choice of safety cases are right. How to treat errors the criteria do not catch (contradictions inside an answer, false facts copied from the summary) |
 
 #### Triggers

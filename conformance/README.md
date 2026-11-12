@@ -13,8 +13,8 @@
   - `patient`: 患者さんの言葉
   - `must`: 答えに必ず含むこと。`mustNot`: 答えに含んではいけないこと
   - `rules`: 当てはまる仕様書の箇所（`§5-20` は §5 の決まり20）
-- `cases-holdout.json`: 未見の問（12問）。まとめを直すときに見ていない問として、別の系統の AI に下書きさせた。2026年11月13日に一度、未見の問として使った
-- `rules-short.ja.txt`・`briefs/`: 手助けの段階1・2で AI に渡す決まりの要点と、各問の今の状況のまとめ（`src/brief.js` で作ったもの。テストで同じになることを確かめる）
+- `cases-holdout.json`: 未見の問（2組・24問。H01〜H12 と H13〜H24）。まとめを直すときに見ていない問として、別の系統の AI に下書きさせた。どちらの組も2026年11月13日に一度、未見の問として使った
+- `rules-short.ja.txt`・`briefs/`: 手助けの段階1・2で AI に渡す決まりの要点と、各問の今の状況のまとめ（`src/brief.js` で作ったもの。テストで同じになることを確かめる。まとめの中身は、`tools/check-brief.mjs` で仕様書の決まりと照らす）
 - `files/`: 問題で読むファイル。`examples/v0.5/`（と v0.4）の例の写しと、それを少し変えたもの（古い・移転・予約の入口・誘導の文・当番の食い違い）
 
 医療機関・電話番号・URL は、どれも架空のものです。ただし `files/` の中には「架空」と書いていません。書いておくと、読む AI が「実在しないので案内できない」と答えを控えてしまい、確かめたいことが確かめられないためです（2026年11月の結果）。
@@ -55,8 +55,8 @@ A test set for **readers of Open Intake files** (a patient's AI or app) to check
   - `patient`: what the patient says
   - `must`: what the answer must contain. `mustNot`: what it must not contain
   - `rules`: the relevant parts of the specification (`§5-20` is rule 20 in §5)
-- `cases-holdout.json`: unseen questions (12). Drafted by another AI family as questions not seen while tuning the summary. Used once as unseen questions on 13 November 2026
-- `rules-short.ja.txt` and `briefs/`: the key rules given to the AI at assistance levels 1 and 2, and the current-situation summary for each case (made with `src/brief.js`; the tests check they stay the same)
+- `cases-holdout.json`: unseen questions (2 sets, 24 cases: H01–H12 and H13–H24). Drafted by another AI family as questions not seen while tuning the summary. Each set was used once as unseen questions on 13 November 2026
+- `rules-short.ja.txt` and `briefs/`: the key rules given to the AI at assistance levels 1 and 2, and the current-situation summary for each case (made with `src/brief.js`; the tests check they stay the same. `tools/check-brief.mjs` checks the content of the summary against the spec rules)
 - `files/`: the files the cases read. Copies of the `examples/v0.5/` (and v0.4) examples, and slightly changed versions of them (out of date, moved, booking entry points, promotional text, on-call rosters that differ)
 
 All clinics, phone numbers and URLs are fictional. The files in `files/` do not say "fictional", though: when they did, readers declined to suggest the clinic as a real option, so the case could not check what it was meant to (November 2026 results).

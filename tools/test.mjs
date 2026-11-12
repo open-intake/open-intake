@@ -231,6 +231,22 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   ok(d12.includes("- 今日の対象を絞った時間: 14:00〜16:00"), "臨時の変更がない第2土曜は、対象を絞った時間を渡す");
   const ep = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/endpoints.json", "utf8")) };
   ok(brief(ep, "2026-11-30T09:25:00+09:00").includes("送る項目は、入口の手順を読むまで分からない"), "予約の入口で送る項目がまだ分からないことを渡す");
+  // 受付の始まり・締め切りが書かれていないときは、診療の時刻で埋めない（SPEC §4）
+  const tue = brief(one, "2026-11-17T14:00:00+09:00"), d18 = brief(two, "2026-12-18T12:40:00+09:00");
+  ok(tue.includes("受付 18:00 まで（受付の始まりは書かれていない）") && !tue.includes("受付 15:00〜"), "受付の始まりが書かれていない行に、始まりの時刻を書かない");
+  ok(!d18.includes("12:30 で締め切りました") && d18.includes("今日の全員向けの診療は 12:30 で終わりました"), "受付の締め切りが書かれていない臨時の変更で「締め切りました」と書かせない");
+}
+
+// まとめを、仕様書の決まりから別に組んだ計算と照らす（tools/check-brief.mjs。AI を使わない）
+// 問題集のファイルと、作った医療機関のファイルで、2026年11月〜2027年2月の日付と、時刻の境目を総当たりにする
+{
+  const { sweep, makeClinic } = await import("./check-brief.mjs");
+  const read = f => JSON.parse(fs.readFileSync(f, "utf8"));
+  const sets = ["clinic-intake.json", "v0.4-clinic-intake.json"].map(m => ({ "https://example.com/clinic-intake.json": read(`conformance/files/${m}`), "https://example.com/clinic-schedule.json": read("conformance/files/clinic-schedule.json") }));
+  for (let i = 0; i < 12; i++) sets.push(makeClinic(900 + i));
+  let n = 0; const found = [];
+  for (const f of sets) { const r = sweep(f, "2026-11-01", "2027-02-28"); n += r.n; for (const [k, v] of r.found) found.push(`${k}: ${v.example}`); }
+  ok(found.length === 0, `まとめが仕様書の決まりからの計算と合う（${n} 組）`, found.slice(0, 5).join(" | "));
 }
 
 // 新しい版・知らないキーはエラーにしない
