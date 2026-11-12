@@ -289,7 +289,7 @@ text: "複数選べる"	text: "Multiple answers"
 `有効: ${str(o.validUntil)} まで`	`Valid until ${str(o.validUntil)}`
 "毎週 "	"Weekly "
 `（${span(x.from, x.to)}）`	` (${span(x.from, x.to)})`
-"臨時の予定はありません。"	"No temporary arrangements."
+"臨時の予定は書かれていません。"	"No temporary arrangements are listed."
 "この JSON は表示できませんでした: "	"This JSON could not be displayed: "
 "エラーも注意もありません。"	"No errors or warnings."
 `エラー ${res.E.length} 件${res.W.length ? `・注意 ${res.W.length} 件` : ""}。直すと公開できる形になります。`	`${res.E.length} error(s)${res.W.length ? `, ${res.W.length} warning(s)` : ""}. Fix them to make the file ready to publish.`
@@ -393,7 +393,7 @@ ${label}: kind は holiday（休日の当番）・night（夜間の当番）・o
 診療時間 ${i+1} 行目: 始まり（${h.opens}）が終わり（${h.closes}）より後になっています。	Opening hours row ${i+1}: the start (${h.opens}) is after the end (${h.closes}).
 ファイルの一覧 ${i+1}: 医療機関のサイトと別のサイトにあります。AI が正規のファイルと確かめにくくなります。	File ${i+1}: it is on a different site from the clinic's website, which makes it harder for AI to confirm it is official.
 ${label}: 表示の条件が、それより前にない質問（${ew?.question || "空"}）を指しています。	${label}: the condition refers to a question that is not earlier in the list (${ew?.question || "empty"}).
-臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定はない」と AI に伝わります。	There is no temporary information. Even with nothing scheduled, publishing this file tells AI there are no temporary arrangements.
+臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定は書かれていない」と、更新した日とともに AI に伝わります。急な休診は、その日のうちに足してください。	There is no temporary information. Even with nothing scheduled, publishing this file tells AI, with the update date, that no temporary arrangements are listed. Add sudden closures on the same day.
 救急の目安（redFlags）がまだ空です。公的な資料から書き写すまで、このプロファイルは下書きのままにしてください。	The emergency warning signs (redFlags) are still empty. Keep this profile as a draft until they are transcribed from an official source.
 ファイルの一覧 ${i+1}: 役割「${f.role}」は、この検査器が知らないものです（読む側は無視します）。	File ${i+1}: role "${f.role}" is not known to this checker (readers will ignore it).
 国（addressCountry）は ISO 3166-1 の2文字の大文字にしてください（例: JP）。	Country (addressCountry) must be a two-letter upper-case ISO 3166-1 code (e.g. JP).

@@ -471,7 +471,7 @@ JSON のあとに、次の2行を添える:
 - `doctorSchedule` は、`department` か `name` の少なくとも一方と、`days`（毎週の曜日）か `date`（特定の日）のどちらかが必須。`opens` は `closes` より前。曜日は `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`、祝日は `PH`
 - `onCall` の `kind` は `holiday`（休日）・`night`（夜間）・`other` のどれか
 - `notices` の `text` は200字まで
-- 何もない項目は、空の配列 `[]` にするか、キーごと省く。予定が何もないときも、ファイルは出す（「臨時の予定はない」と AI に伝わる）
+- 何もない項目は、空の配列 `[]` にするか、キーごと省く。予定が何もないときも、ファイルは出す（「臨時の予定は書かれていない」と、更新した日とともに AI に伝わる）
 
 ### 出力の前の自己点検
 
@@ -832,7 +832,7 @@ function validateSchedule(o) {
     old(x.to, w, label);
   });
   if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
-    warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定はない」と AI に伝わります。", "$");
+    warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定は書かれていない」と、更新した日とともに AI に伝わります。急な休診は、その日のうちに足してください。", "$");
   return { E, W };
 }
 
@@ -1712,7 +1712,7 @@ function viewSchedule(o) {
     block("担当医の予定", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("　") }), "　" + (x.date ? x.date : "毎週 " + days(x.days)) + "　" + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date || x.to))))),
     block("当番", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "　" + (KIND_JA[x.kind] || str(x.kind)) + "　" + hm(x.opens, x.closes), x.department && h("span", { text: "　" + x.department }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date))))),
     block("お知らせ", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), past(x.to))))),
-    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "臨時の予定はありません。" })
+    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "臨時の予定は書かれていません。" })
   ];
 }
 function renderView(el, o) {

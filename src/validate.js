@@ -282,7 +282,7 @@ function validateSchedule(o) {
     old(x.to, w, label);
   });
   if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
-    warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定はない」と AI に伝わります。", "$");
+    warn("W10", "臨時の情報が1つもありません。予定がないときも、このファイルを置いておけば「臨時の予定は書かれていない」と、更新した日とともに AI に伝わります。急な休診は、その日のうちに足してください。", "$");
   return { E, W };
 }
 

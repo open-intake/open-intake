@@ -453,7 +453,7 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 - `doctorSchedule` needs at least one of `department` or `name`, and either `days` (weekly) or `date` (a specific day). `opens` must be before `closes`. Days are `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, and `PH` for public holidays
 - `onCall.kind` is one of `holiday`, `night` or `other`
 - `notices.text` is up to 200 characters
-- Leave empty sections as `[]` or omit the key. Even with nothing scheduled, still output the file (it tells AI there is no temporary information)
+- Leave empty sections as `[]` or omit the key. Even with nothing scheduled, still output the file (it tells AI, with the update date, that no temporary arrangements are listed)
 
 ### Self-check before output
 
@@ -809,7 +809,7 @@ function validateSchedule(o) {
     old(x.to, w, label);
   });
   if (!list("exceptions").length && !list("doctorSchedule").length && !list("onCall").length && !list("notices").length)
-    warn("W10", "There is no temporary information. Even with nothing scheduled, publishing this file tells AI there are no temporary arrangements.", "$");
+    warn("W10", "There is no temporary information. Even with nothing scheduled, publishing this file tells AI, with the update date, that no temporary arrangements are listed. Add sudden closures on the same day.", "$");
   return { E, W };
 }
 
@@ -1708,7 +1708,7 @@ function viewSchedule(o) {
     block("Doctors' schedule", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("  ") }), "  " + (x.date ? x.date : "Weekly " + days(x.days)) + "  " + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date || x.to))))),
     block("On-call duty", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "  " + (KIND_JA[x.kind] || str(x.kind)) + "  " + hm(x.opens, x.closes), x.department && h("span", { text: "  " + x.department }), x.note && h("span", { class: "sub", text: " (" + x.note + ")" }), past(x.date))))),
     block("Notices", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: ` (${span(x.from, x.to)})` }), past(x.to))))),
-    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "No temporary arrangements." })
+    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "No temporary arrangements are listed." })
   ];
 }
 function renderView(el, o) {

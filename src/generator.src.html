@@ -968,7 +968,7 @@ function viewSchedule(o) {
     block("担当医の予定", list(arr(o.doctorSchedule).map(x => h("span", {}, h("strong", { text: [x.department, x.name].filter(Boolean).join("　") }), "　" + (x.date ? x.date : "毎週 " + days(x.days)) + "　" + hm(x.opens, x.closes), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date || x.to))))),
     block("当番", list(arr(o.onCall).map(x => h("span", {}, h("strong", { text: str(x.date) }), "　" + (KIND_JA[x.kind] || str(x.kind)) + "　" + hm(x.opens, x.closes), x.department && h("span", { text: "　" + x.department }), x.note && h("span", { class: "sub", text: "（" + x.note + "）" }), past(x.date))))),
     block("お知らせ", list(arr(o.notices).map(x => h("span", {}, str(x.text), (x.from || x.to) && h("span", { class: "sub", text: `（${span(x.from, x.to)}）` }), past(x.to))))),
-    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "臨時の予定はありません。" })
+    !arr(o.exceptions).length && !arr(o.doctorSchedule).length && !arr(o.onCall).length && !arr(o.notices).length && h("p", { class: "sub", text: "臨時の予定は書かれていません。" })
   ];
 }
 function renderView(el, o) {

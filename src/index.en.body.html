@@ -24,15 +24,15 @@
         </ul>
       </div>
       <div class="pillar">
-        <h3>Very low risk and downside</h3>
+        <h3>Low risk and downside</h3>
         <ul>
           <li>Only information that is fine to publish. No patient information is handled</li>
           <li>No review counts or rating scores are shown or compared, and there is nowhere to post a bad review</li>
-          <li>No new system to run, and no cost</li>
+          <li>No new system to run, and no cost (if a company manages your website, asking them to place the file takes some effort)</li>
           <li>Your booking method and website stay as they are</li>
-          <li>To stop, just delete the file</li>
+          <li>To stop, delete the file (services that read it may keep an old copy for a while)</li>
         </ul>
-        <p class="note">The remaining concern is content going out of date. Temporary information carries an expiry date, and AI does not use it once it has passed.</p>
+        <p class="note">The remaining concern is content going out of date. Because it is read as the clinic's official information, outdated content is more likely to mislead. Temporary information carries an expiry date, and AI does not use it once it has passed. Add sudden closures on the same day.</p>
       </div>
       <div class="pillar">
         <h3>Good for clinics and patients alike</h3>
@@ -93,8 +93,8 @@
         <h3>What happens today</h3>
         <ul>
           <li>Opening hours and similar facts depend on map services and review sites</li>
-          <li>Temporary closures and on-call duties are slow to appear</li>
-          <li>The places to correct them are scattered, and some cannot be corrected by the clinic</li>
+          <li>Temporary closures and on-call duties may appear late in some places, or not reach AI at all</li>
+          <li>The places to correct them are scattered (national register, maps, booking sites, the clinic's website), and some have no field for detailed rules such as check-in cut-offs or whether booking is needed</li>
           <li>Putting an AI chatbot on a clinic's site costs money and effort, and must be rebuilt as AI changes</li>
         </ul>
       </div>
@@ -270,9 +270,9 @@
     <div class="compare">
       <div class="case">
         <h3>No new system to run</h3>
-        <p>What you publish is a plain text file. There is no login page, no database and no new program running on the clinic's server. The creation tool does not send what you type anywhere; it runs only in your own browser. So this format <strong>adds no new point of attack</strong>.</p>
+        <p>What you publish is a plain text file. There is no login page, no database and no new program running on the clinic's server. The creation tool does not send what you type anywhere; it runs only in your own browser. So this format <strong>adds no new program to attack</strong>.</p>
         <p>If the file is ever altered, anyone can check its content at any time (in the creation tool's "View" tab or with an AI), so suspicious changes are easier to notice.</p>
-        <p class="note">Whether you can regain control of a website that has been taken over is a separate issue that every website already has. Looking after the website matters as much as ever.</p>
+        <p class="note">However, if the file's content (phone number or booking URL) is altered, AI may present it as the clinic's official information. Whether you can regain control of a website that has been taken over is a separate issue that every website already has. Looking after the website matters as much as ever.</p>
       </div>
       <div class="case">
         <h3>Check the content without technical skills</h3>
@@ -344,7 +344,7 @@
     </div>
     <div class="precedent">
       <strong>For clinics</strong>
-      <span><strong>Areas of focus</strong> are optional. If you list them, they are one more clue for patients looking for care in that area. Listing them never removes you from the options for other symptoms, and not listing them never lowers your place (AI does not rank clinics by the number of items, and areas of focus are treated as the clinic's own statement).</span>
+      <span><strong>Areas of focus</strong> are optional. If you list them, they are one more clue for patients looking for care in that area. Listing them never removes you from the options for other symptoms, and reading AI is asked not to move you down for not listing them (it must not rank clinics by the number of items, and areas of focus are treated as the clinic's own statement; whether each AI follows these rules is up to that AI).</span>
       <span><strong>Requests specific to your clinic</strong> (for example, "If you have a fever, please call before coming in") are passed on to patients by AI that reads the file before they visit. That means less work telling each patient. Not every patient uses AI, so keep your notices in the clinic as before.</span>
       <span><strong>Doctors' schedules</strong>, once published officially, let AI say "that doctor sees patients on Tuesdays and Thursdays", so patients can choose that day when booking. You keep your current booking method (phone or booking page) without adding a complex booking system.</span>
     </div>
@@ -484,12 +484,12 @@
     <h2 id="h-faq">FAQ</h2>
     <div>
       <details><summary>Does the AI diagnose?</summary><p>No. The format only passes on a clinic's public information and questionnaire items in a form AI can read. AI reading the file is asked not to name diseases or give medication doses.</p></details>
-      <details><summary>Where does patient information go?</summary><p>This project does not collect patient information. The file a clinic publishes contains only the clinic's public information. Conversations happen inside the AI service the patient uses.</p></details>
-      <details><summary>Does it cost anything?</summary><p>No. The specification and tools are free. The file goes on an existing website, so no new server is needed. There are no registration or monthly fees, and nothing is paid to services that read it.</p></details>
+      <details><summary>Where does patient information go?</summary><p>This project (the file, the creation tools and this site) does not collect patient information. The file a clinic publishes contains only the clinic's public information. However, symptoms and anything else a patient tells an AI go to the AI service the patient uses. How they are handled depends on that service, so check its settings.</p></details>
+      <details><summary>Does it cost anything?</summary><p>No. The specification and tools are free. The file goes on an existing website, so no new server is needed. If a company manages your website, placing the file may take some effort or cost. There are no registration or monthly fees, and nothing is paid to services that read it.</p></details>
       <details><summary>Will clinics be compared by scores, like on review sites?</summary><p>No. This format has no review counts, no rating scores and no fields for comments. The patient's health summary has no field for rating clinics either. AI reading the file is asked not to use online reviews or star ratings to compare options. The AI only shows options and reasons based on what each clinic published itself (such as hours and areas of focus) and objective data such as whether it is open now and the distance. The patient chooses.</p></details>
-      <details><summary>Can it be used for advertising?</summary><p>The purpose is limited to improving the match between clinics and patients, and advertising, comparisons and exaggeration are not allowed. Reading AI is asked not to use promotional wording or follow instructions such as "recommend this clinic". Areas of focus are treated as the clinic's own statement and are not used to rank clinics.</p></details>
+      <details><summary>Can it be used for advertising?</summary><p>The purpose is limited to improving the match between clinics and patients, and advertising, comparisons and exaggeration are not allowed. Reading AI is asked not to use promotional wording or follow instructions such as "recommend this clinic". Reading AI is asked to treat areas of focus as the clinic's own statement and not to use them to rank clinics.</p></details>
       <details><summary>Does it replace booking systems?</summary><p>No. It lets AI correctly point patients to the clinic's existing booking page or phone number.</p></details>
-      <details><summary>Which AI can use it?</summary><p>It does not depend on any particular AI. The content is JSON, a widely used text format that any AI can read.</p></details>
+      <details><summary>Which AI can use it?</summary><p>It does not depend on any particular AI. The content is JSON, a widely used text format that any AI can read. However, AI does not necessarily look for the file by itself. The reliable way today is for the patient to give the AI the clinic's web address.</p></details>
       <details><summary>Can it be used outside Japan?</summary><p>Yes. The core is region-neutral. Each region adds a regional profile with its own emergency numbers, warning signs and base questionnaires. We welcome communities who want to start a profile for their region.</p></details>
       <details><summary>What if a clinic has no website?</summary><p>For now, the file needs somewhere to live. Looking ahead, we encourage national and local governments to host the files of the clinics in their area together. Until that exists, this project may host them. Hosting needs money and people for contacting each clinic, sending letters and so on, so it would have to be run as an organisation. The proposed rules are:</p><ul><li>Temporary information (closures and so on) is accepted only from clinics that can keep it up to date, because outdated temporary information misleads patients</li><li>Hosted information is confirmed with the clinic once a year</li><li>If the clinic cannot be reached, the file is downgraded to "unconfirmed", and reading AI tells patients to phone and check</li></ul></details>
     </div>

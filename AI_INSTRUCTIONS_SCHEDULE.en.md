@@ -100,7 +100,7 @@ Ask about one topic at a time. If there is nothing, accept "none" and move on.
 - `doctorSchedule` needs at least one of `department` or `name`, and either `days` (weekly) or `date` (a specific day). `opens` must be before `closes`. Days are `Mo` `Tu` `We` `Th` `Fr` `Sa` `Su`, and `PH` for public holidays
 - `onCall.kind` is one of `holiday`, `night` or `other`
 - `notices.text` is up to 200 characters
-- Leave empty sections as `[]` or omit the key. Even with nothing scheduled, still output the file (it tells AI there is no temporary information)
+- Leave empty sections as `[]` or omit the key. Even with nothing scheduled, still output the file (it tells AI, with the update date, that no temporary arrangements are listed)
 
 ### Self-check before output
 
