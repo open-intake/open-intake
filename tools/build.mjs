@@ -94,6 +94,7 @@ const copyTree = (from, to) => { for (const e of fs.readdirSync(from, { withFile
 copyTree("schema", "docs/schema");
 copyTree("examples", "docs/examples");
 copyTree("profiles", "docs/profiles");
+copyTree("conformance", "docs/conformance");
 
 let stale = [];
 for (const [f, text] of outputs) {

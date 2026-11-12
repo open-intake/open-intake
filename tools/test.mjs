@@ -177,6 +177,21 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   d = s5(); delete d.scopedExceptions[0].department; delete d.scopedExceptions[0].service; ok(wc(d).includes("W23"), "絞っていない変更を scopedExceptions に置くと W23"); }
 { const d = JSON.parse(fs.readFileSync("examples/v0.5/clinic-directory.json", "utf8")); delete d.publisher.url; ok(validate(d).W.some(w => w.code === "W25"), "地域の一覧に発行者のサイトがなければ W25"); }
 
+// 読む側の問題集（conformance/。v0.5）: 形と、ファイルの場所・中身が正しいか（答えの判定はしない）
+{
+  const C = JSON.parse(fs.readFileSync("conformance/cases.json", "utf8")), ids = new Set();
+  ok(Array.isArray(C.cases) && C.cases.length >= 20, "問題集に20問以上ある");
+  const lang = x => x && typeof x.ja === "string" && x.ja && typeof x.en === "string" && x.en;
+  for (const c of C.cases) {
+    ok(/^C\d{2}$/.test(c.id) && !ids.has(c.id), `問題 ${c.id} の id が重ならない`); ids.add(c.id);
+    ok(!isNaN(Date.parse(c.now)) && lang(c.patient) && Array.isArray(c.must) && c.must.length && c.must.every(lang) && Array.isArray(c.mustNot) && c.mustNot.every(lang) && (c.context === undefined || lang(c.context)), `問題 ${c.id} の形（now・patient・must・mustNot は日英）`);
+    for (const [u, f] of Object.entries(c.files || {})) {
+      const there = fs.existsSync(f); ok(/^https:\/\//.test(u) && there, `問題 ${c.id} のファイル ${f} がある`);
+      if (there) { const r = validate(JSON.parse(fs.readFileSync(f, "utf8"))); ok(r.E.length === 0, `問題 ${c.id} の ${f} がエラーなしで通る`, JSON.stringify(r.E)); }
+    }
+  }
+}
+
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }

@@ -810,6 +810,8 @@ v0.4 で足したのは任意のキーだけである（受付の時間・受け
 
 **v0.5 で足したもの**: `scopedOpeningHours`・`scopedExceptions`（対象を絞った行の置き場所）、`verified`（確かめた日）、`status`（閉院・移転・案内の終了）、`booking[].platform`・`endpoints`（予約の基盤の入口）、`profile.updated`・`sha256`。どれも任意のキーなので小さい版上げとし、0.1〜0.4 のファイルはそのまま有効である。必須の `openingHours`・`booking` を空にしてよい場合（`scopedOpeningHours` があるとき・`status` があるとき）を足したが、古い読み手には「わからない」と見えるだけで、危ない側には読み違えない。
 
+**読む側の問題集（v0.5 から）**: 読む側が §5 の決まりどおりに答えるかを確かめる問題を、[`conformance/`](conformance/) に置く。時刻・ファイル・患者さんの言葉と、答えに含むこと（`must`）・含んではいけないこと（`mustNot`）の組で、判定は人か別の AI が行う。
+
 **注意（v0.4。v0.5 で直した）**: `department`・`service`・`visitType`・`entry`・`weeksOfMonth` で対象を絞った `openingHours` の行は、0.4 を知らない読み手には全員向けの診療時間に見える（例: 小児科の予防接種の予約の枠を、ふつうの診療時間と読む）。臨時の情報の `department`・`service` を知らない読み手も、絞った変更を全体の変更と読む。決まり2（知らないキーを無視しても壊れない）が、この部分では完全には成り立たない。**v0.5 で、絞った行を `scopedOpeningHours`・`scopedExceptions` に分けた**（§4・§6b）。0.4 のファイルは今も有効なので、0.4 のファイルを読むときは、この注意が残る
 
 ## 9. 国際的な規格に向けて
