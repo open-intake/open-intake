@@ -735,12 +735,64 @@ This format aims to be usable in any country or region.
 - International registration of `/.well-known/open-intake.json` (IANA) is future work
 - Governance happens openly in the GitHub organisation (open-intake), with room for a community responsible for each regional profile
 
-## 10. Future work (v0.5 and later)
+## 10. Future work (v0.6 and later)
 
-- **Review of position and growth (three AI models, 2026-11)**: three AI models from different families (Fable, Astra and Carbon) each assessed, independently, whether this design fits the social, medical and internet systems around it and whether it can keep growing over 5 to 10 years. They did not check the medical content; review by doctors and lawyers is still needed. All three said the core should stay: facts written by the clinic itself, temporary information with an expiry, "not stated means unknown", and no reviews or patient data. They agreed on these points: (1) nothing yet ensures that AI readers find the files, prefer them and follow the rules. Show, by measuring in one area (a medical association or local government plus 5 to 10 clinics, starting with on-call rosters), that publishing improves the answers, and build a test set for readers. (2) Clinics placing files by hand and fixing them the same day is hard to sustain. Make automatic output from booking systems and clinic website builders the main route, and produce schema.org JSON-LD and a human-readable page from the same input. (3) Being on the same site, or `identifiers`, does not prove identity (for example, an expired domain bought by someone else). Consider treating a file as verified only when it can be traced from the website address in the national register or from a local government or medical association directory. (4) Decide, together with the doctors' review, whether to stop copying warning signs into every clinic's file (E7) and refer to the regional profile instead. Separate questionnaires and the health memo from the core as optional parts. (5) Do not let a valid temporary file with no closure be read as "no closures". Give the usual file a "last confirmed" date separate from `updated`, and decide whether to use a shorter limit than one year. (6) A field in `booking` for a booking platform or an API or MCP endpoint, for when AI books on the patient's behalf. (7) A marker for closure or withdrawal, and stable addresses for `policy.url` and regional profiles (URLs per version, hashes). (8) Stop adding fields for now and do (1) to (4) first. For now, do not hurry to add profiles for other countries, propose a FHIR implementation guide, register with IANA, expand beyond healthcare or extend the health memo. The author keeps the full answers
-- **Splitting the common core from regional profiles (survey abroad, 2026-11)**: we checked the booking and check-in information of 40 clinics in 8 countries. Check-in cut-offs, hours by department or service, how patients are taken, booking-line hours, a link to the current queue and nth-week rules work in common with Japan. Missing from 0.4: (1) **whether new patients are accepted, or only registered patients** (a separate axis from first and return visits; 21 of 40 differed for new patients or first and return visits, and 9 had registration or catchment rules), (2) when booking slots open, how far ahead bookings are taken, and how they are confirmed, (3) appointments and walk-ins in the same hours, or "phone first to be triaged", (4) regional after-hours services, kept separate from the clinic's own on-call duty, (5) time zone and the region for public holidays. Regional profiles hold the detailed `service` values, how first and return visits are defined, insurance and payment schemes, after-hours numbers and the holiday calendar. No region needed a field of its own (common structure, regional vocabulary and `note` were enough)
-- **Where narrowed entries belong (from the v0.4 design review)**: entries narrowed by department, service, first or return visit, how patients are accepted or week of the month are misread by readers that do not know 0.4 (§8). Decide whether to move narrowed entries and narrowed temporary changes to new keys. At the same time, consider splitting the meanings of `entry: "none"` (no outpatients at this time, new bookings paused, no new patients), how to record one doctor's absence (separately from `doctorSchedule`?), how to record paused bookings, per-time-band check-in in `exceptions`, the last week of the month ("last Saturday"), time zones, and a field for "phone before coming". From the second review (Astra), also consider deciding precedence by which conditions contain which rather than by how many fields are set, giving booking channels (`booking`) a department and service, defining exactly what a temporary change replaces (including check-in times and how patients are taken), and distinguishing working, absent and covering in `doctorSchedule`. From the third review (Carbon), also consider having the maker add a plain summary to `note` for readers that do not know 0.4, fields for "phone before coming" (for example with a fever) and for whether a referral letter is required, a day-of-week filter for `exceptions` periods, and hours that cross midnight
-- **A home for clinics without a website (plan; one possible direction)**: encourage national and local governments to host the files of the clinics in their area together. Until that exists, this project may host them. Hosting, however, needs money and people for contacting each clinic, sending letters and so on, so it would have to be **run as an organisation**, not as one person's project. Proposed rules for hosting: (1) **accept temporary information only from clinics that can keep it up to date**; otherwise do not accept it (outdated temporary information harms patients more than none). (2) **Confirm the content with the clinic at least once a year.** (3) **If the clinic cannot be reached, downgrade the file to "unconfirmed"**; reading AI then says "this information has not been confirmed; please phone to check". Also decide how to confirm that a hosting request really comes from the clinic (to prevent impersonation), how this relates to the rule that files live on the clinic's own site (§3b, W12), and how to mark a file as unconfirmed. In the review above, all three AI models were wary of this project hosting files: identity checks, mail and responsibility for stale data would fall on one person, and clinics without a website could be covered by national register data and local government or medical association directories. This item stays as one possible direction; whether to actually host files will be considered once there is a prospect of running it as an organisation
+### 10a. Decided in v0.5
+
+From the assessment by three AI models (Fable, Astra and Carbon, 2026-11), the v0.4 design review and the survey abroad, v0.5 added:
+
+- Where narrowed entries go: `scopedOpeningHours` and `scopedExceptions` (§4, §6b)
+- Checking identity: compare with public registers and local government or medical association lists; use a file that is not linked with a note saying so (§3d, rules 21 and 22)
+- Date checked: `verified`, with the out-of-date threshold now 180 days (§3, rule 4)
+- Booking platforms and entry points: `booking[].platform` and `endpoints`, with entry points used only when the patient clearly asks (§4, rule 23)
+- Closed, moved or no longer published: `status`. If a closed clinic's site stays online, the register wins, and a file last confirmed more than a year ago is unconfirmed (§3d, rules 20 and 21)
+- Versioned copies of profiles, and `updated` and `sha256` in the reference (§4d)
+- The regional directory wins for on-call duties (rule 24), up to 15 `handles` (W24), and `/clinic-intake.json` as the authoritative location (§3c)
+- In the maker: a day-by-day check table and output for websites (schema.org JSON-LD and HTML)
+- The reader conformance set (`conformance/`, §8)
+
+Left undecided:
+
+- **Whether to keep copying the emergency warning signs into each file (E7) or refer to the regional profile instead**: whether a country or region has clear guidance, and whether that guidance is complete, varies between regions. It may also depend on the situations in mind and on legal questions. Either way the work is small, so v0.5 keeps the current form (copying is required). The choice will be made together with each region's circumstances and the views of doctors and legal experts
+- **Clinical review of the default warning signs**: waiting for doctors
+
+### 10b. Open questions (from the AI assessments, reviews and surveys)
+
+Points not adopted in v0.5, grouped by topic. Sources: the assessment of position (three AI models), the v0.4 design reviews (Astra, Carbon and others) and the survey abroad (40 clinics in 8 countries). All are undecided; whether to adopt them depends on real use and expert advice. The full answers are kept by the author.
+
+**1. Showing it works and spreading it**
+- Measure, in one area (a medical association or local government with 5 to 10 clinics, starting with on-call clinics), that publishing files improves guidance (all three models)
+- Run the reader conformance set against real AI models and publish the results. Decide whether to automate the judging
+- Clinics publishing files by hand is hard to sustain. Make automatic output from booking systems and medical website builders the main route (the maker's JSON-LD and HTML output is a first step)
+- A fixed address for `policy.url` (versioned URLs)
+
+**2. Identity**
+- How to compare a file's location with the website address registered in the national register (depends on whether the register data is available)
+- Being on the same site, or having `identifiers`, is not proof (for example, a lapsed domain bought by someone else). Whether stronger methods such as signatures are needed
+
+**3. Separating the core from optional parts**
+- Make questionnaires and the personal health summary optional parts separate from the core (all three models)
+- Hold off on adding fields and do 1 and 2 above first
+
+**4. Writing reception and hours**
+- Whether to split the meaning of `entry: "none"` (no outpatients at that time, new bookings paused, no new patients)
+- **Whether new patients are accepted, or only registered ones** (a separate axis from first or return visits; in the survey, 21 of 40 treated new or first-visit patients differently, and 9 had registration or area conditions)
+- When booking slots open, how far ahead patients can book, and how bookings are confirmed. Booking and walk-in side by side, and phoning before visiting to be triaged
+- Fields for phoning before visiting with a fever and similar, and whether a referral letter is needed
+- Decide row priority by which rows contain which, not by how many fields are set
+- Add department and service to booking channels (`booking`)
+- What a temporary change replaces, and how far (including reception hours and how patients are taken). Reception hours per time slot in `exceptions`, and a field to limit a period to certain days of the week
+- How to write a single doctor's absence and cover (whether `doctorSchedule` should distinguish working, absent and covering)
+- The last week of the month ("last Saturday"), hours that cross midnight, time zones and the region for public holidays
+- Regional out-of-hours services (separate from a clinic's own on-call duty)
+- What goes in regional profiles: finer `service` categories, how first and return visits are decided, names of insurance and payment schemes, out-of-hours numbers and holiday calendars (the survey found no case needing region-specific fields)
+
+**5. Not urgent**
+- More overseas profiles, a proposal for a FHIR implementation guide, IANA registration, uses beyond healthcare and extending the personal health summary (all three models)
+
+### 10c. Other
+
+- **A home for clinics without a website (plan; one possible direction)**: encourage national and local governments to host the files of the clinics in their area together. Until that exists, this project may host them. Hosting, however, needs money and people for contacting each clinic, sending letters and so on, so it would have to be **run as an organisation**, not as one person's project. Proposed rules for hosting: (1) **accept temporary information only from clinics that can keep it up to date**; otherwise do not accept it (outdated temporary information harms patients more than none). (2) **Confirm the content with the clinic at least once a year.** (3) **If the clinic cannot be reached, downgrade the file to "unconfirmed"**; reading AI then says "this information has not been confirmed; please phone to check". Also decide how to confirm that a hosting request really comes from the clinic (to prevent impersonation), how this relates to the rule that files live on the clinic's own site (§3b, W12), and how to mark a file as unconfirmed. In the assessment of position (§10b), all three AI models were wary of this project hosting files: identity checks, mail and responsibility for stale data would fall on one person, and clinics without a website could be covered by national register data and local government or medical association directories. This item stays as one possible direction; whether to actually host files will be considered once there is a prospect of running it as an organisation
 - **A tool that drafts files from national data**: make a draft of a clinic's file from national data (§4e). The clinic publishes it itself and must check it first
 - A role for per-department questionnaire files
 - **Waiting times**: information patients weigh when choosing a clinic. Since v0.4, the current queue or availability can be reached through a link (`statusUrl`). How to publish typical waiting times is still to be decided
@@ -748,4 +800,3 @@ This format aims to be usable in any country or region.
 - Passing answers to clinics (QR code content and size, whether to encrypt)
 - A vocabulary for department names
 - Questionnaire text in other languages (e.g. the FHIR translation extension)
-- Clinical review of the default warning signs

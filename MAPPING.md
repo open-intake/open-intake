@@ -20,9 +20,13 @@
 | `clinic.departments` | `medicalSpecialty` | `HealthcareService.specialty` |
 | `clinic.focus` | ⚠ `availableService` などで近いことは書ける | `HealthcareService.type`・`HealthcareService.comment` |
 | `clinic.openingHours` | `openingHoursSpecification` | `Location.hoursOfOperation`・`HealthcareService.availableTime` |
+| `clinic.scopedOpeningHours`（v0.5。対象を絞った時間） | ⚠ `openingHoursSpecification` には対象を書けない（作成ツールの JSON-LD 出力には入れない） | `HealthcareService.availableTime`（診療科・用途ごとの `HealthcareService` に分ける） |
 | `clinic.closedNote` | ⚠ | `HealthcareService.availabilityExceptions` |
 | `clinic.handles`・`notHandled` | ⚠ | ⚠ `HealthcareService.comment` など |
 | `clinic.booking` | `potentialAction`（`ReserveAction`）など | `HealthcareService.appointmentRequired`・`Endpoint` |
+| `clinic.booking[].endpoints`（v0.5） | `potentialAction.target`（`EntryPoint`）に近い | `Endpoint`（`connectionType`・`address`） |
+| `status`（v0.5。閉院・移転） | ⚠ 閉院を示す標準の項目はない | `Organization.active`（false）・`Location.status`（inactive） |
+| `updated`・`verified`（v0.5） | `dateModified` | `meta.lastUpdated` |
 | `clinic.languages` | `availableLanguage` | `HealthcareService.communication` |
 
 ## 臨時の情報（`clinic-schedule.json`）
@@ -30,6 +34,7 @@
 | オープン受診案内 JSON | schema.org | HL7 FHIR R4 |
 |---|---|---|
 | `exceptions`（臨時の休診・時間の変更） | `specialOpeningHoursSpecification`（`validFrom`・`validThrough`） | `HealthcareService.notAvailable`（`during` の期間） |
+| `scopedExceptions`（v0.5。診療科・用途で絞った変更） | ⚠ 対象を書けない | 診療科・用途ごとの `HealthcareService.notAvailable` |
 | `doctorSchedule` | ⚠ | `PractitionerRole.availableTime` |
 | `onCall` | ⚠ | ⚠ `HealthcareService`（期間つき）で近いことは書ける |
 | `notices` | ⚠ `SpecialAnnouncement`（用途は限られる） | ⚠ |
