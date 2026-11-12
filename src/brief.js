@@ -6,7 +6,8 @@
 //   brief({ "https://example.com/clinic-intake.json": intakeObj, ... }, "2026-11-17T14:20:00+09:00", { register: null })
 //
 // - 時刻は ISO 形式の文字列で、書かれている現地の時刻のまま使う（時差の換算はしない）
-// - register: アプリが公的な名簿と照らした結果。null（照らせていない）・{ type: "phone", value }・{ type: "closed", date }・{ type: "match" }
+// - register: アプリが公的な名簿と照らした結果。null（照らせていない）・{ type: "phone", value }・{ type: "closed", date }・{ type: "match" }。
+//   ファイルの場所が名簿から逆にたどれることまで確かめたとき（SPEC §3d の「結びついている」）は linked: true を添える
 // - 祝日は holidays に YYYY-MM-DD の配列で渡す。渡さないときは、下の DEFAULT_HOLIDAYS（日本の祝日の一部）を使う
 // - まとめの文は日本語。言い方の型（「答えの初めに…と書く」）は、2026年11月の問題集の結果から足したもの（conformance/results-2026-11.md）
 // 依存なし。ブラウザでも Node でも動く。
@@ -129,9 +130,9 @@
     else if (age > 180) L.push(`- 情報の古さ: ${which} ${base} から ${age} 日。180日を過ぎているので「古いかもしれない」と添える。答えに、この日付と180日を過ぎていることを書く`);
     else L.push(`- 情報の古さ: ${which} ${base} から ${age} 日（新しい）`);
     if (!register) L.push("- 公的な名簿: 照らせていない。答えに「公的な名簿とは結びついていない情報です」と必ず添える");
-    else if (register.type === "phone") L.push(`- 公的な名簿: 電話番号が食い違う（名簿 ${register.value}、ファイル ${c.telephone || ""}）。両方の番号を示し、どちらが正しいかを確かめるよう勧める`);
+    else if (register.type === "phone") L.push(`- 公的な名簿: 電話番号が食い違う（名簿 ${register.value}、ファイル ${c.telephone || ""}）。両方の番号を示し、どちらが正しいかを確かめるよう勧める` + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
     else if (register.type === "closed") L.push(`- 公的な名簿: ${register.date} に廃止（閉院）とされている。名簿を優先し、「閉院しているかもしれない」と伝える。このファイルの時間で開いているとは案内せず、電話で確かめるか、ほかの医療機関を探すよう勧める`);
-    else L.push("- 公的な名簿: 照らして、食い違いはなかった");
+    else L.push("- 公的な名簿: 照らして、食い違いはなかった" + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
 
     const hasSchedLink = (intake.files || []).some(f => f.role === "schedule");
     if (sched) {
@@ -249,6 +250,9 @@
     const bk = (c.booking || []).map(x => {
       let s = x.method;
       if (x.url) s += ` ${x.url}` + (host(x.url) !== siteHost ? "（医療機関のサイトと別のドメイン）" : "");
+      if (x.mode === "queue") s += "（当日の順番取り。日時を決める予約ではない。別の日や時刻の予約を頼まれたら、この方法ではできないと書く）";
+      else if (x.mode === "time-slot") s += "（時刻の枠を取る予約）";
+      else if (x.mode === "request") s += "（申し込み。医療機関の返事で確定する。返事が来るまで予約が取れたとは言わない）";
       if (x.platform) s += `・予約の基盤 ${x.platform.name}（${host(x.platform.url || "")}）`;
       if (x.endpoints) s += "・機械から予約できる入口あり（患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
       return s;

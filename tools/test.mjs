@@ -226,6 +226,15 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     const fri = brief(one, "2026-11-27T18:01:00+09:00");
     ok(fri.includes("当番やほかの医療機関に相談できること"), "受付が終わったとき、当番やほかの医療機関も渡す");
   }
+  // 未見の問（holdout4）で見つかった足りないところ: 予約の取り方（mode、§4）と、名簿との結びつき（§3d）
+  {
+    const ep = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/endpoints.json", "utf8")) };
+    ok(brief(ep, "2027-01-25T09:18:00+09:00").includes("（当日の順番取り。日時を決める予約ではない"), "予約の方法が当日の順番取り（mode: queue）だと渡す");
+    const ph = brief(one, "2026-12-23T14:12:00+09:00", { register: { type: "phone", value: "03-0000-0001" } });
+    ok(ph.includes("名簿 03-0000-0001") && ph.includes("公的な名簿とは結びついていない情報です」とも添える"), "名簿と照らしても、逆にたどれていなければ結びついていないと渡す");
+    const lk = brief(one, "2026-12-23T14:12:00+09:00", { register: { type: "match", linked: true } });
+    ok(!lk.includes("結びついていない"), "名簿から逆にたどれた（linked）ときは、結びついていないと渡さない");
+  }
   // 未見の問（holdout1）で見つかった誤りを直したこと
   const fri = brief(one, "2026-11-27T18:01:00+09:00"), fri2 = brief(one, "2026-11-27T19:00:00+09:00"), thu = brief(one, "2026-11-26T16:10:00+09:00");
   ok(!fri.includes("金曜の午後は") && fri.includes("受付は 18:00 で締め切りました") && fri.includes("受付を済ませた人"), "午後の診療がある日に受付が終わっても「午後は休診」と書かせない");
