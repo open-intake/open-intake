@@ -58,13 +58,17 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 
 ## 今の状況（2026年11月）
 
-- どの組み合わせも、**まだ 3回の繰り返しをしていない**ので、基準を満たしたとは言えない。
-- 1回の結果では、小さいモデルでも段階2（短い決まり ＋ まとめ）で ○ が 17〜20問になった（Flash 20・Haiku 18・Luna 17。× はどれも 0）。1回分で見ると、Flash と Haiku は 2 と 3 を満たし、Luna は ○ が1問足りない。詳しくは[結果](results-2026-11.md)。
+- 区分 A（案内）を、小さいモデル3つで段階2のまま **3回ずつ**解かせた（[結果](results-2026-11.md)の5回目）。
+  - **Haiku（Anthropic）と Flash（Google）は、3回とも 2 と 3 を満たした**（○ は Haiku 19・19・20、Flash 20・18・20。× は 0）
+  - **Luna（OpenAI）は、× は 0 だが、○ が 14〜16 で 3 を満たさなかった**
+- 二つの系統の小さいモデルが満たしたので、区分 A は、6 の「この企画として使ってよい」に当たる。ただし、この基準そのものがとりあえずの案なので、企画としてそう書くかは、基準の妥当性を確かめてから作者が決める。
+- 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
 
 - 安全に関わる問の選び方と、○ の割合（9割）、繰り返しの回数（3回）が妥当か
-- 判定役の AI が甘い・厳しいことの影響（2026年11月には、判定役によって 1〜2問ずつ判定が割れた）
+- 判定役の AI が甘い・厳しいことの影響（2026年11月には、判定役によって 1〜2問ずつ判定が割れた）。割れたときは、基準の文のかっこの中も必要な中身として数えたが、この読み方でよいか
+- 短く答えるモデル（Luna）が、細かい時刻を落として ○ が足りなくなること。まとめの書き方で補えるか
 - 区分 B〜D の問を、どれだけ用意すれば足りるか
 - 汎用のベンチマークを、どれをどう使うか
 
@@ -128,12 +132,16 @@ Results are kept in `conformance/results-*.md`.
 
 ### Status (November 2026)
 
-- **No combination has been run 3 times yet**, so none can be said to meet the criteria.
-- In single runs, even small models reached 17–20 ○ at level 2 (key rules + summary): Flash 20, Haiku 18, Luna 17, with no × for any. On that one run, Flash and Haiku meet 2 and 3, and Luna is one ○ short. See the [results](results-2026-11.md).
+- Group A (guidance) was given to three small models at level 2, **3 times each** (round 5 in the [results](results-2026-11.md)).
+  - **Haiku (Anthropic) and Flash (Google) met 2 and 3 in all 3 runs** (○: Haiku 19, 19, 20; Flash 20, 18, 20; no ×)
+  - **Luna (OpenAI) had no ×, but only 14–16 ○, so it did not meet 3**
+- Since small models from two families met the criteria, group A falls under "the project says this feature may be used" in 6. But these criteria are themselves provisional, so whether the project says so is for the author to decide after checking whether the criteria are right.
+- Groups B–D have no cases yet and are not used.
 
 ### To consider later
 
 - Whether the choice of safety cases, the 90% share and the 3 repeats are right
-- How lenient or strict judges affect the result (in November 2026, judges disagreed on 1–2 cases per set)
+- How lenient or strict judges affect the result (in November 2026, judges disagreed on 1–2 cases per set). Disagreements were decided by counting the parts in brackets in the criteria as required content; whether this reading is right
+- A model that answers briefly (Luna) drops small details such as times and falls short on ○. Whether the summary's wording can make up for this
 - How many cases groups B–D need
 - Which general benchmarks to use, and how
