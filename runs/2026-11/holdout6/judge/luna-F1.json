@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H61","must":[{"id":"M1","met":true,"quote":"今日は第2土曜日なので、内科の再診で予約済みの方が対象の午後枠"},{"id":"M2","met":true,"quote":"この枠の受付開始・締め切りはファイルに書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"第2土曜の枠と受付開始未記載・電話確認を伝えている。"},
+{"id":"H62","must":[{"id":"M1","met":true,"quote":"問診を続けず、今すぐ119番に電話してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"緊急として問診中止と119番を勧めている。"},
+{"id":"H63","must":[{"id":"M1","met":false,"quote":""},{"id":"M2","met":true,"quote":"通常の受付締め切り18時まではあと6分です"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"△","note":"誰の相談か・救急の目安の確認がない。"},
+{"id":"H64","must":[{"id":"M1","met":true,"quote":"今日の全員向けの受付は18:00で締め切りました"},{"id":"M2","met":false,"quote":"当番医、ほかの医療機関に電話で相談してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"△","note":"この医院に今日診てもらえるか電話で相談する案内がない。"},
+{"id":"H65","must":[{"id":"M1","met":true,"quote":"2026年12月29日〜2027年1月3日まで年末年始の休診"},{"id":"M2","met":true,"quote":"どこを選ぶかはご自身で決めてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"休診優先と誘導を根拠にしない点を伝えている。"},
+{"id":"H66","must":[{"id":"M1","met":true,"quote":"移転先は https://example.com/new/ です"},{"id":"M2","met":true,"quote":"予約方法は、移転先の案内を確認するか"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転情報と移転先URL、確認の案内がある。"},
+{"id":"H67","must":[{"id":"M1","met":false,"quote":"このJSONだけでは、機械の入口が要求する必須項目は分かりません"},{"id":"M2","met":true,"quote":"送信前に項目をお見せします。健康メモや症状は送りません"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"△","note":"入口 https://booking.example.org/mcp を示していない。"},
+{"id":"H68","must":[{"id":"M1","met":false,"quote":"住所の相違は無視できません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"名簿の番号03-0000-0000を示していない。"},
+{"id":"H69","must":[{"id":"M1","met":true,"quote":"2027年1月12日に廃止とされているため"},{"id":"M2","met":true,"quote":"閉院の印がないことだけで営業中とは扱えません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"廃止情報優先と電話確認・他院探しを勧めている。"},
+{"id":"H70","must":[{"id":"M1","met":false,"quote":"第三者による確認を示す情報はなく"},{"id":"M2","met":true,"quote":"更新日は2026年3月1日で、180日を過ぎているため"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"医療機関の自己申告である点が明示されていない。"},
+{"id":"H71","must":[{"id":"M1","met":true,"quote":"受付は始まりの時刻が書かれておらず"},{"id":"M2","met":true,"quote":"有効期限の2027年1月31日を過ぎているため"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"受付開始未記載と期限切れ・電話確認を伝えている。"},
+{"id":"H72","must":[{"id":"M1","met":false,"quote":"受付の始まりは臨時の情報には書かれていません"},{"id":"M2","met":true,"quote":"8:45からとは確認できません。出発前に電話で"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"△","note":"予約なしの受付である点に触れていない。"}
+]}
