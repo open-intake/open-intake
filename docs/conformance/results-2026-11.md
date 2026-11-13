@@ -434,6 +434,49 @@ Claude の判定だけで数えると、Haiku は 12・9・11 ○、Luna は 10�
 - 上の候補は、この問を見て見つけたものなので、直しても、この組の結果は変わらない（そのまま数える）
 - H37〜H48 は、これで「見た問」になった
 
+## 14回目: holdout4 で見つかった足りないところをまとめに足して、20問すべてで（2026-11-13）
+
+holdout4 で見つかった、まとめの足りないところ2つを足した（どちらも仕様書にある決まり。[CHANGELOG](../CHANGELOG.md)）。予約の取り方（`mode`。`queue` は当日の順番取りで、日時を決める予約ではない。§4）を渡す。公的な名簿と照らしても、ファイルの場所が名簿から逆にたどれることを確かめていなければ、「公的な名簿とは結びついていない情報」と添えるよう渡す（§3d）。20問のまとめは18問が変わった。このまとめで、20問すべてを3回ずつ解かせた。
+
+- 条件・判定役は13回目と同じ
+- 一致したのは 120 のうち 120
+- Haiku の3回目の C03 は △（判定役は2つとも △）
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+
+### 14回目で分かったこと
+
+- まとめを直しても、20問では2つのモデルとも3回とも基準を満たした
+- この20問は見てきた問なので、続けて新しい未見の問（holdout5）で確かめた
+
+## 未見の問の5組目（holdout5）: 14回目のまとめで、見ていない12問（2026-11-13）
+
+- 問: [`cases-holdout.json`](cases-holdout.json) の H49〜H60。これまでと同じく、別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らして直した（H56 の文から「架空の」を外した）。まとめ（14回目と同じ `src/brief.js`）は、この問を見ずに作ったもの
+- 条件・判定役・基準は holdout4 と同じ
+- **決め方**: Haiku は2回目・3回目が、どちらの判定役の判定でも基準を満たさない。**Luna は、Claude の判定では 10・10・10 ○、Fable の判定では 11・11・11 ○ で、合否が割れた**。割れたのは3回とも H58 だけだったので、作者の側で答えを読んだ。H58 の must の一つは「11月10日更新の臨時の情報に、今日の変更は書かれていない」と伝えることで、3回ともこれがなかったので △ とした（13回目の C07、holdout3 の H26 と同じ読み方）。Haiku の3回目の H60 は、15:00 の到着を、一般外来の受付の締め切り 18:00 に照らして「締め切りには間に合います」と書いていて、mustNot（一般外来の 18:00 を引き継ぐ）に当たるので × とした（Astra と同じ。Claude は △）。ほかの割れた問は、合否を変えないので読まず、厳しいほうの判定を残した
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 9 | 3 | 0 | 8 | 4 | 0 | 9 | 2 | 1 | 満たさない（3回とも） |
+| Luna | 10 | 2 | 0 | 10 | 2 | 0 | 10 | 2 | 0 | 満たさない（3回とも。12問中11に1問足りない） |
+
+Claude の判定だけで数えると、Haiku は 11・10・10 ○、Luna は 10・10・10 ○。2つ目の判定役だけで数えると、Haiku（Astra）は 9・8・9 ○（3回目に × が1つ）、Luna（Fable）は 11・11・11 ○。判定役の一致は 72 のうち 63（Haiku 30/36、Luna 33/36）。
+
+### 未見の問の5組目で分かったこと
+
+- **どちらのモデルも基準を満たさなかった。Luna は3回とも 12問中 10 で、基準（11）に1問足りなかった。V1（区分 A）は、まだ「この企画として使ってよい」とは書かない**
+- **14回目で足したところは、未見の問でも効いた**: 予約の入口の宛先と送る項目を聞いた H55 は、Claude の判定で6回とも ○（Astra は Haiku の1回目を △）。名簿との食い違いの H56 も6回とも ○
+- 救急（H50 の子どもの嘔吐と意識、H52 のじんましんと息苦しさ）・閉院（H53）・1年を過ぎた情報（H57）・全体の臨時の変更の受付の締め切り（H59）は、6回とも ○
+- △ が多かった問:
+  - **H60（第5金曜の健診の枠と、15:00 ちょうどの到着）**: 6回すべて △ か ×。Luna は、健診の枠に週の指定がないことを書かず、「第5金曜の枠があるかはわからない」とした。Haiku は、第2・第4の指定が土曜の内科の再診の枠のものだと書かず、3回目は一般外来の受付の締め切り 18:00 を当てはめた（×）。まとめの「今日の対象を絞った時間」の行は、週の指定がない（毎週）ことも、受付の締め切りが書かれていないことも渡していない。**まとめの側の足りないところの候補**
+  - **H58（入荷待ちの期間が終わったあと）**: Luna は3回とも、臨時の情報の更新日（11月10日）を添えて「今日の変更は書かれていない」と書かなかった
+  - Haiku: 第4土曜であることを書かない（H49）、発熱で電話するときに到着の時刻を伝えるよう書かない（H51）ことがあった
+- 上の候補は、この問を見て見つけたものなので、直しても、この組の結果は変わらない（そのまま数える）
+- H49〜H60 は、これで「見た問」になった
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
@@ -446,7 +489,8 @@ Claude の判定だけで数えると、Haiku は 12・9・11 ○、Luna は 10�
 - まとめを仕様書の決まりと照らす検査を足し、見つかった誤りを直した。20問（上の12回目）では Haiku と Luna が基準を満たした
 - 新しい未見の問（上の holdout3）では、× はなかったが、どちらのモデルも基準を満たさなかった
 - holdout3 で見つかった足りないところ（全体の臨時の変更でなくなったふだんの時間、受付のあとの当番・ほかの医療機関）を足した。20問（上の13回目）では2つとも満たし、新しい未見の問（上の holdout4）では、○ は増えたが、どちらも満たさなかった
-- 次は、まとめが渡していないこと（holdout2 の H15・H20・H21・H23、holdout4 の H43 の当日の順番取り・H46 の名簿との結びつき）を足すかを考え、20問と新しい未見の問（holdout5）で確かめ直す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
+- holdout4 で見つかった足りないところ（当日の順番取り、名簿との結びつき）を足した。20問（上の14回目）では2つとも満たし、新しい未見の問（上の holdout5）では、Luna が3回とも 12問中 10 で、基準に1問足りなかった
+- 次は、まとめが渡していないこと（holdout2 の H15・H20・H21・H23、holdout5 の H60 の対象を絞った時間の週の指定と受付の締め切り）を足すかを考え、20問と新しい未見の問（holdout6）で確かめ直す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
@@ -889,6 +933,49 @@ Counted with Claude's verdicts only, Haiku had 12, 9 and 11 ○ and Luna had 10,
 - The candidates above were found by looking at these cases, so fixing them does not change this set's results (they count as they are)
 - H37 to H48 now count as seen
 
+### Round 14: the gaps found in holdout4 added to the summary, on all 20 cases (13 November 2026)
+
+The two summary gaps found in holdout4 were filled (both are rules in the spec; [CHANGELOG](../CHANGELOG.md)). The booking `mode` is now passed on (`queue` is a same-day queue, not a booking for a set date and time; §4). Even when the file has been checked against the public register, if its site has not been traced back from the register, the summary now says to add "information not linked to the public register" (§3d). The summary changed for 18 of the 20 cases. All 20 cases were run 3 times each with this summary.
+
+- Same conditions and judges as round 13
+- The judges agreed on 120 of 120
+- Haiku run 3, C03 is △ (both judges gave △)
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | Met |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+
+#### Findings in round 14
+
+- After the changes, both models still met the criteria in all 3 runs on the 20 cases
+- These 20 cases have been seen, so the summary was then checked on new unseen cases (holdout5)
+
+### Fifth set of unseen cases (holdout5): 12 cases not seen, with the round 14 summary (13 November 2026)
+
+- Cases: H49 to H60 in [`cases-holdout.json`](cases-holdout.json). As before, drafted by another AI family (Astra) and checked by the author's side against the files and the spec ("fictional" was removed from H56's text). The summary (the same `src/brief.js` as in round 14) was made without seeing these cases
+- Same conditions, judges and criteria as holdout4
+- **How it was decided**: Haiku runs 2 and 3 do not meet the criteria under either judge. **Luna had 10, 10 and 10 ○ under Claude and 11, 11 and 11 ○ under Fable, so its result depended on the judge**. The only split in all 3 runs was H58, so the author's side read the answers. One of H58's must items is saying that "the temporary information updated on 10 November lists no change for today"; none of the 3 answers did, so it was decided △ (the same reading as round 13 C07 and holdout3 H26). Haiku run 3, H60 measured a 15:00 arrival against the general reception deadline of 18:00 and said "you will make the deadline", which hits a mustNot (carrying over the general 18:00), so it was decided × (as Astra; Claude gave △). The other split cases cannot change any result, so they were not read; the table keeps the stricter verdict
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 9 | 3 | 0 | 8 | 4 | 0 | 9 | 2 | 1 | Not met (all 3 runs) |
+| Luna | 10 | 2 | 0 | 10 | 2 | 0 | 10 | 2 | 0 | Not met (all 3 runs; one short of 11) |
+
+Counted with Claude's verdicts only, Haiku had 11, 10 and 10 ○ and Luna had 10, 10 and 10 ○. Counted with the second judge only, Haiku (Astra) had 9, 8 and 9 ○ (one × in run 3) and Luna (Fable) had 11, 11 and 11 ○. The judges agreed on 63 of 72 (Haiku 30/36, Luna 33/36).
+
+#### Findings on the fifth set of unseen cases
+
+- **Neither model met the criteria. Luna had 10 of 12 in all 3 runs, one short of the criteria (11). V1 (group A) is not yet described as "may be used" by the project**
+- **What was added in round 14 also worked on unseen cases**: H55, which asked for the booking endpoint's address and what must be sent, was ○ in all 6 runs under Claude (Astra gave △ to Haiku run 1). H56 (mismatch with the register) was ○ in all 6 runs too
+- Emergencies (H50, a child vomiting and drowsy; H52, hives and difficulty breathing), closure (H53), information more than a year old (H57) and the reception deadline under a whole-day temporary change (H59) were ○ in all 6 runs
+- Cases with many △:
+  - **H60 (the check-up slot on a fifth Friday, and arriving at exactly 15:00)**: △ or × in all 6 runs. Luna did not say the check-up slot has no week restriction and said it is unknown whether there is a slot on the fifth Friday. Haiku did not say the 2nd/4th restriction belongs to the Saturday internal-medicine return-visit slot, and in run 3 applied the general reception deadline of 18:00 (×). The summary's line for today's narrowed hours passes on neither that there is no week restriction (every week) nor that the reception deadline is not given. **A candidate gap in the summary**
+  - **H58 (after the vaccine-shortage period ended)**: Luna never said "no change for today" with the notice's update date (10 November)
+  - Haiku sometimes did not say that the day is a fourth Saturday (H49), or that a patient with fever should give their arrival time when phoning (H51)
+- The candidate above was found by looking at these cases, so fixing it does not change this set's results (they count as they are)
+- H49 to H60 now count as seen
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
@@ -901,7 +988,8 @@ Counted with Claude's verdicts only, Haiku had 12, 9 and 11 ○ and Luna had 10,
 - A check of the summary against the spec rules was added and the errors it found were fixed. On the 20 cases (round 12 above), Haiku and Luna met the criteria
 - On new unseen cases (holdout3 above) there was no ×, but neither model met the criteria
 - The gaps found in holdout3 (usual hours removed by a whole-day temporary change; on-call or other clinics after reception ends) were filled. On the 20 cases (round 13 above) both models met the criteria; on new unseen cases (holdout4 above) there were more ○, but neither met them
-- Next, consider passing on what the summary leaves out (the △ on H15, H20, H21 and H23 in holdout2, and in holdout4 the same-day queue on H43 and the link to the register on H46), then check again on the 20 cases and new unseen cases (holdout5). New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
+- The gaps found in holdout4 (the same-day queue; the link to the register) were filled. On the 20 cases (round 14 above) both models met the criteria; on new unseen cases (holdout5 above) Luna had 10 of 12 in all 3 runs, one short of the criteria
+- Next, consider passing on what the summary leaves out (the △ on H15, H20, H21 and H23 in holdout2, and in holdout5 the week restriction and reception deadline of narrowed hours on H60), then check again on the 20 cases and new unseen cases (holdout6). New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)

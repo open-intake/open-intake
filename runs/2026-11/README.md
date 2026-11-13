@@ -24,13 +24,15 @@
 | `holdout3/` | 未見の問の3組目 | 12回目のまとめで、見ていない12問（H25〜H36）。1回だけ使った。Haiku と Luna。Luna の `judge2/` は Fable の判定 |
 | `round13/` | 13回目 | holdout3 で見つかった足りないところをまとめに足して、20問すべてを3回ずつ。Luna の `judge2/` は Fable の判定 |
 | `holdout4/` | 未見の問の4組目 | 13回目のまとめで、見ていない12問（H37〜H48）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
+| `round14/` | 14回目 | holdout4 で見つかった足りないところをまとめに足して、20問すべてを3回ずつ。Luna の `judge2/` は Fable の判定 |
+| `holdout5/` | 未見の問の5組目 | 14回目のまとめで、見ていない12問（H49〜H60）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
 
 各回のフォルダの中:
 
 - `kit*/` … AI に渡した文（問ごとに1つ。ここに書いてあることが、AI が見たもののすべて）
 - `out-<モデル>-<形><回>/` … 答え（問ごとに `<id>.md`）
 - `judge/` … Claude の判定。`judge2/` … 答えたモデルと別の系統の AI の判定。`in-*.md` は判定役に渡した資料（1回目は `judge/` にまとめて置いた）
-- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json`・`holdout3/finalH3.json`・`holdout4/finalH4.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`-` は答えなし）
+- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json`・`holdout3/finalH3.json`・`holdout4/finalH4.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout5/finalH5.json` は、合否が割れた Luna の H58 を読んで決めた。結果は厳しいほうの判定と同じ。`-` は答えなし）
 
 入れていないもの: 道具が出した生の記録（実行のログ・エラーの出力）。
 
@@ -73,13 +75,15 @@ Published from 13 November 2026. Until then the results said "the full answers a
 | `holdout3/` | Third set of unseen cases | 12 cases not seen (H25–H36), with the round 12 summary. Used once. Haiku and Luna. Luna's `judge2/` holds Fable's verdicts |
 | `round13/` | Round 13 | All 20 cases, 3 runs each, after filling the summary gaps found in holdout3. Luna's `judge2/` holds Fable's verdicts |
 | `holdout4/` | Fourth set of unseen cases | 12 cases not seen (H37–H48), with the round 13 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
+| `round14/` | Round 14 | All 20 cases, 3 runs each, after filling the summary gaps found in holdout4. Luna's `judge2/` holds Fable's verdicts |
+| `holdout5/` | Fifth set of unseen cases | 12 cases not seen (H49–H60), with the round 14 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
 
 In each round folder:
 
 - `kit*/` … the prompts given to the AI (one per case; this is everything the AI saw)
 - `out-<model>-<form><run>/` … the answers (`<id>.md` per case)
 - `judge/` … judgments by Claude. `judge2/` … judgments by an AI from a family other than the answering model. `in-*.md` are the documents given to the judges (round 1 keeps both in `judge/`)
-- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json`, `holdout3/finalH3.json` and `holdout4/finalH4.json` keep the stricter verdict, because no reading would change any result; `-` means no answer)
+- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json`, `holdout3/finalH3.json` and `holdout4/finalH4.json` keep the stricter verdict, because no reading would change any result; `holdout5/finalH5.json` was decided after reading Luna's H58, where the result depended on the judge, and matches the stricter verdict; `-` means no answer)
 
 Not included: raw tool output (run logs, error output). The answers and judgments themselves are all in the files above.
 
