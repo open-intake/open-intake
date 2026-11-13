@@ -243,6 +243,16 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout13）で見つかった足りないところ: 名簿と食い違う番号を数字で書く（§3d）・予定のファイルの期限のあと・病名を言わない（決まり2）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const one = { "https://example.com/clinic-intake.json": rd("conformance/files/clinic-intake.json") };
+    const b153 = brief(one, "2027-01-18T12:37:00+09:00", { register: { type: "phone", value: "03-0000-0001" } });
+    ok(b153.includes("名簿の番号 03-0000-0001 とファイルの番号 03-0000-0000 を、どちらも数字のまま書く"), "名簿と食い違う番号を数字で書くよう渡す");
+    const b155 = brief({ ...one, "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json") }, "2027-01-31T23:56:20+09:00");
+    ok(b155.includes("有効期限 2027-01-31 の終わりまで有効。期限のあとのことを聞かれたら"), "予定のファイルの期限のあとは電話で確かめるよう渡す");
+    ok(b153.includes("病名や原因を聞かれても、診断や推定はしない"), "病名を言わないと渡す");
+  }
   // 未見の問（holdout12）で見つかった足りないところ: 入口と予約の基盤のドメイン（決まり23）・救急の確認の返事を待ってから問診（決まり1）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
