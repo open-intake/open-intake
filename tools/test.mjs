@@ -243,6 +243,16 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout11）で見つかった足りないところ: 得意分野は自己申告で評価に変えない（決まり7）・対象を絞った時間に決まり17・閉院の日
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const b129 = brief({ "https://example.com/clinic-intake.json": rd("conformance/files/promo.json") }, "2026-12-24T20:53:00+09:00");
+    ok(b129.includes("得意分野（focus）: 内科 高血圧・糖尿病") && b129.includes("ファイルにない点数や評価を作ったり載せたりしない"), "得意分野は自己申告で、点数や評価に変えないと渡す");
+    const two = { ...one, "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json") };
+    ok(brief(two, "2027-01-19T13:54:30+09:00").includes("対象でない人に、この時間は使えないと伝えるときは（§5 の決まり17）"), "対象を絞った時間に、決まり17の添え書きを渡す");
+    const b125 = brief({ "https://example.com/clinic-intake.json": rd("conformance/files/clinic-intake-closed.json") }, "2027-01-01T02:47:00+09:00");
+    ok(b125.includes("閉院の日（2026年10月31日）"), "閉院の日を書くよう渡す");
+  }
   // 未見の問（holdout10）で見つかった足りないところ: 地域の当番表のほかの医療機関の当番（§6c）・ちょうど180日・移転の日
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
