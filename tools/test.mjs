@@ -243,6 +243,14 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout9）で見つかった足りないところ: 新しい受付を止めた臨時の変更に決まり17の添え書き・全員向けの時間の受け方と初診・再診の区別（§4）
+  {
+    const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
+    const b103 = brief(two, "2026-12-11T13:53:00+09:00");
+    ok(b103.includes("新しい受付を止めていることを伝えるときは（§5 の決まり17）") && b103.includes("当番やほかの医療機関に相談できることも書く"), "新しい受付を止めた臨時の変更には、決まり17の添え書きを渡す");
+    const b99 = brief(two, "2026-12-14T17:58:30+09:00");
+    ok(b99.includes("・予約なしで受付 → 今は受付中") && b99.includes("初診・再診: 区別は書かれていない") && b99.includes("「初診も受け付けています」とも言い切らない"), "全員向けの時間の受け方と、初診・再診の区別が書かれていないことを渡す");
+  }
   // 未見の問（holdout7）で見つかった誤りと足りないところ: 移転・閉院のファイルでも名簿の結果を渡す（§3d）・年代を聞く・有効期限はその日の終わりまで
   {
     const mv = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/moved.json", "utf8")) };

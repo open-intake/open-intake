@@ -160,7 +160,7 @@
         else if (nm < recEnd(r)) state = rc ? `今は受付中（受付の締め切り ${HM(rc)}）` : `今は診療中（受付の締め切りは書かれていない。診療は ${HM(r.closes)} まで）`;
         else if (nm < T(r.closes)) state = `受付は ${HM(rc)} で締め切った（診療は ${HM(r.closes)} まで）`;
         else state = "終わった";
-        return `${hoursText(r)} → ${state}${rnote(r)}`;
+        return `${hoursText(r)}${r.entry ? "・" + (ENTRY[r.entry] || r.entry) : ""} → ${state}${rnote(r)}`;
       });
       const stillOpen = parts.some(x => x.includes("受付中") || x.includes("診療中") || x.includes("まだ"));
       if (src.startsWith("臨時の情報（")) {
@@ -180,6 +180,9 @@
       } else {
         L.push(`- 今日の全員向けの時間（${src}）: ` + parts.join(" ／ "));
       }
+      // 全員向けの行に visitType がないときは all として当てはめるが、「初診にも決まりがない」とは言い切らない（§4）
+      if (src === "ふだんの時間" && allRows().some(r => r.visitType === "first" || r.visitType === "return"))
+        L.push("- 今日の全員向けの時間の初診・再診: 区別は書かれていない。対象を絞った時間の決まり（初診だけ・再診だけ・その注）を、この時間に当てはめない。「初診も受け付けています」とも言い切らない。初診・再診や予約のことを聞かれたら、答えで、この時間の受け方（上の矢印の前。例: 予約なしで受付）と、初診・再診の区別は書かれていないことを書く");
       if (!stillOpen) {
         // 「◯曜の午後は休診」は、ふだんの時間に、その時間帯の行がそもそもないときだけ
         const pm = nm >= T("12:00");
@@ -225,7 +228,10 @@
       for (const e of (sched.scopedExceptions || []).concat((sched.exceptions || []).filter(x => !wholeEx(x)))) {
         const f = D(e.from);
         if (inRange(e, today) || (dnum(f) > dnum(today) && days(f, today) <= 14))
-          L.push(`- 対象を絞った臨時の変更: ${e.from}〜${e.to}（対象: ${scopeLabel(e)}）: ${e.note || ""}。対象外の人・ほかの診療には当てはめない。答えでは、ほかの診療はふだんどおりだと書く`);
+          L.push(`- 対象を絞った臨時の変更: ${e.from}〜${e.to}（対象: ${scopeLabel(e)}）: ${e.note || ""}。対象外の人・ほかの診療には当てはめない。答えでは、ほかの診療はふだんどおりだと書く` +
+            (e.entry === "none" || e.entry === "appointment" || e.status === "closed"
+              ? `。${e.entry === "appointment" ? "予約の人だけにしている" : e.entry === "none" ? "新しい受付を止めている" : "休んでいる"}ことを伝えるときは（§5 の決まり17）、答えに、急ぐとき・悪くなるときは救急相談（#7119 など）を使えることと、医療機関に電話で相談できることと、当番やほかの医療機関に相談できることも書く。すでに予約や受付を済ませた人を断る意味に取らず、その人の扱いは電話で確かめるよう勧める（決まり11）`
+              : ""));
       }
     }
     // 次に全員向けの時間が開くとき
