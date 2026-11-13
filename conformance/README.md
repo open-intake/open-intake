@@ -13,7 +13,7 @@
   - `patient`: 患者さんの言葉
   - `must`: 答えに必ず含むこと。`mustNot`: 答えに含んではいけないこと
   - `rules`: 当てはまる仕様書の箇所（`§5-20` は §5 の決まり20）
-- `cases-holdout.json`: 未見の問（15組・180問。H01〜H12・H13〜H24・H25〜H36・H37〜H48・H49〜H60・H61〜H72・H73〜H84・H85〜H96・H97〜H108・H109〜H120・H121〜H132・H133〜H144・H145〜H156・H157〜H168・H169〜H180）。まとめを直すときに見ていない問として、別の系統の AI に下書きさせた。どの組も2026年11月13日に一度、未見の問として使った
+- `cases-holdout.json`: 未見の問（16組・192問。H01〜H12・H13〜H24・H25〜H36・H37〜H48・H49〜H60・H61〜H72・H73〜H84・H85〜H96・H97〜H108・H109〜H120・H121〜H132・H133〜H144・H145〜H156・H157〜H168・H169〜H180・H181〜H192）。まとめを直すときに見ていない問として、別の系統の AI に下書きさせた。どの組も2026年11月13日に一度、未見の問として使った
 - `rules-short.ja.txt`・`briefs/`: 手助けの段階1・2で AI に渡す決まりの要点と、各問の今の状況のまとめ（`src/brief.js` で作ったもの。テストで同じになることを確かめる。まとめの中身は、`tools/check-brief.mjs` で仕様書の決まりと照らす）
 - `files/`: 問題で読むファイル。`examples/v0.5/`（と v0.4）の例の写しと、それを少し変えたもの（古い・移転・予約の入口・誘導の文・当番の食い違い）
 
@@ -55,7 +55,7 @@ A test set for **readers of Open Intake files** (a patient's AI or app) to check
   - `patient`: what the patient says
   - `must`: what the answer must contain. `mustNot`: what it must not contain
   - `rules`: the relevant parts of the specification (`§5-20` is rule 20 in §5)
-- `cases-holdout.json`: unseen questions (15 sets, 180 cases: H01–H12, H13–H24, H25–H36, H37–H48, H49–H60, H61–H72, H73–H84, H85–H96, H97–H108, H109–H120, H121–H132, H133–H144, H145–H156, H157–H168 and H169–H180). Drafted by another AI family as questions not seen while tuning the summary. Each set was used once as unseen questions on 13 November 2026
+- `cases-holdout.json`: unseen questions (16 sets, 192 cases: H01–H12, H13–H24, H25–H36, H37–H48, H49–H60, H61–H72, H73–H84, H85–H96, H97–H108, H109–H120, H121–H132, H133–H144, H145–H156, H157–H168, H169–H180 and H181–H192). Drafted by another AI family as questions not seen while tuning the summary. Each set was used once as unseen questions on 13 November 2026
 - `rules-short.ja.txt` and `briefs/`: the key rules given to the AI at assistance levels 1 and 2, and the current-situation summary for each case (made with `src/brief.js`; the tests check they stay the same. `tools/check-brief.mjs` checks the content of the summary against the spec rules)
 - `files/`: the files the cases read. Copies of the `examples/v0.5/` (and v0.4) examples, and slightly changed versions of them (out of date, moved, booking entry points, promotional text, on-call rosters that differ)
 

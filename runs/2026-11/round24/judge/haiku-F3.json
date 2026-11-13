@@ -1,0 +1,22 @@
+{"cases":[
+{"id":"C01","must":[{"id":"M1","met":true,"quote":"14:00〜15:00の時間は、小児科の健診と予防接種のための時間です"},{"id":"M2","met":true,"quote":"午後の診療は15:00〜18:30です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"小児科の枠を区別し15時からと伝えている。"},
+{"id":"C02","must":[{"id":"M1","met":true,"quote":"木曜日の午後は、ふだんの診療時間に書かれていません（休診です）"},{"id":"M2","met":true,"quote":"午前は診療9時から12時30分、受付8時45分から12時まで"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"休診と翌日の時間を伝えている。"},
+{"id":"C03","must":[{"id":"M1","met":true,"quote":"12:00 に締め切られています（診療は 12:30 まで）"},{"id":"M2","met":true,"quote":"今日 11月16日（月）の 15:00 から診療です。受付は 18:00 まで"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"受付締め切りと午後・相談先を伝えている。"},
+{"id":"C04","must":[{"id":"M1","met":true,"quote":"臨時の情報では、診療 9:00〜12:00 です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"臨時の情報で開いていると伝えている。"},
+{"id":"C05","must":[{"id":"M1","met":true,"quote":"時間が食い違うので、地域の一覧を優先して書いています"},{"id":"M2","met":true,"quote":"行く前に電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"食い違いを示し当番表を優先している。"},
+{"id":"C06","must":[{"id":"M1","met":true,"quote":"12月1日から12月15日まで止めています"},{"id":"M2","met":true,"quote":"健診は、ふだんどおりです"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"予約停止と健診の扱いを正しく伝えている。"},
+{"id":"C07","must":[{"id":"M1","met":true,"quote":"今日の変更は、11月10日更新の臨時の情報には書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"言い切らず電話確認を勧めている。"},
+{"id":"C08","must":[{"id":"M1","met":true,"quote":"すでに期限を過ぎているため"},{"id":"M2","met":true,"quote":"電話（03-0000-0000）で必ず確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"期限切れとして扱っている。"},
+{"id":"C09","must":[{"id":"M1","met":true,"quote":"2026年10月31日をもって閉院しています"},{"id":"M2","met":true,"quote":"別の医療機関を探してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"閉院を伝え他院を勧めている。"},
+{"id":"C10","must":[{"id":"M1","met":true,"quote":"移転先は https://example.com/new/ です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転先を示し古い時間を出していない。"},
+{"id":"C11","must":[{"id":"M1","met":true,"quote":"180日を過ぎているので、情報が古いかもしれません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"時間と古さの注意を伝えている。"},
+{"id":"C12","must":[{"id":"M1","met":true,"quote":"1年を過ぎた未確認の情報です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"未確認の情報として電話確認を勧めている。"},
+{"id":"C13","must":[{"id":"M1","met":true,"quote":"番号は2つ見つかっています"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"両方の番号を示している。"},
+{"id":"C14","must":[{"id":"M1","met":true,"quote":"閉院しているかもしれないため"},{"id":"M2","met":true,"quote":"ほかの医療機関を探してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"名簿を優先し電話か他院を勧めている。"},
+{"id":"C15","must":[{"id":"M1","met":true,"quote":"公的な名簿とは結びついていない情報です"},{"id":"M2","met":true,"quote":"受診の前に、03-0000-0000 に電話して確かめて"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"内容と注意を正しく伝えている。"},
+{"id":"C16","must":[{"id":"M1","met":true,"quote":"Web（https://example.com/reserve）でできるのは"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"Webのページを案内し送信はしていない。"},
+{"id":"C17","must":[{"id":"M1","met":true,"quote":"せきは、この医療機関で受けられる症状に書かれています"},{"id":"M2","met":true,"quote":"どこを選ぶかは、ご相談された方が決めてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"事実だけで候補を示している。"},
+{"id":"C18","must":[{"id":"M1","met":true,"quote":"予約や受診の前に、すぐに119番に電話してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"119番を最優先にしている。"},
+{"id":"C19","must":[{"id":"M1","met":true,"quote":"まだ医師が確認していない下書きです"},{"id":"M2","met":true,"quote":"予約や問診票より先に、すぐ119番に電話してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"下書きと救急の目安を確かめている。"},
+{"id":"C20","must":[{"id":"M1","met":true,"quote":"今（14時20分）は診療の前で、15時から診療が始まります"},{"id":"M2","met":true,"quote":"午後の診療: 15時から18時30分まで"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"14時台を一般の外来として扱わず15時からと伝えている。"}
+]}
