@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H73","must":[{"id":"M1","met":true,"quote":"内科の再診の方が対象の予約枠です。小児科の健診枠ではありません"},{"id":"M2","met":true,"quote":"予約先へ電話し、今日の健診予約が有効か、受診できるかを確かめて"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"枠の区別と電話確認の両方あり。"},
+{"id":"H74","must":[{"id":"M1","met":true,"quote":"呼吸が弱いのは救急の目安です。意識があって返事ができても、今すぐ119番"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"119番を予約より優先している。"},
+{"id":"H75","must":[{"id":"M1","met":true,"quote":"今日の診療は15:00〜18:30、受付は18:00まで"},{"id":"M2","met":true,"quote":"診察まで終えて帰れるという約束ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"受付締切と診療終了を区別し保証を否定。"},
+{"id":"H76","must":[{"id":"M1","met":true,"quote":"今日の全員向けの受付は18:00で締め切りました"},{"id":"M2","met":true,"quote":"#7119などの救急相談や、当番医・ほかの医療機関にも相談してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"電話相談・当番医・救急相談をすべて案内。"},
+{"id":"H77","must":[{"id":"M1","met":true,"quote":"12月29日から1月3日までです。29日の診療後からではない"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"29日朝は診療・受付なしと明示。"},
+{"id":"H78","must":[{"id":"M1","met":true,"quote":"電話予約の受付時間（月曜9:00〜18:00）は、診療時間を示すものではありません"},{"id":"M2","met":true,"quote":"通常の案内では祝日は休診とされています"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"予約電話の時間と診療時間を区別し、確認を勧めている。"},
+{"id":"H79","must":[{"id":"M1","met":false,"quote":"ご家族の状態はまだ分からないためです"},{"id":"M2","met":true,"quote":"分かった時点で送信前にお見せします"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"家族の症状は確認しているが、年代を尋ねていない。"},
+{"id":"H80","must":[{"id":"M1","met":true,"quote":"`status: \"draft\"` のため、医師の確認前の下書きです"},{"id":"M2","met":true,"quote":"入力内容から私が病名を判定することもできません"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"下書きであることと病名判定をしないことを明示。"},
+{"id":"H81","must":[{"id":"M1","met":true,"quote":"名簿の電話番号は 03-0000-0001、JSONに載っている番号は 03-0000-0000"},{"id":"M2","met":true,"quote":"180日を過ぎているため、情報は古いかもしれません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"番号の食い違いと古さを伝え、全体の再確認とは扱っていない。"},
+{"id":"H82","must":[{"id":"M1","met":false,"quote":"受診前に確認してください"},{"id":"M2","met":true,"quote":"「新しい場所は営業中」とは解釈できない"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"受診前の電話確認を明確に勧めていない。"},
+{"id":"H83","must":[{"id":"M1","met":true,"quote":"有効期限（2027年1月31日）を過ぎているため、今日は使えません"},{"id":"M2","met":true,"quote":"担当医は電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"期限切れで行も使えないとし電話確認を勧めている。"},
+{"id":"H84","must":[{"id":"M1","met":true,"quote":"臨時の行に予約方法の記載がないため"},{"id":"M2","met":true,"quote":"電話し、予約が必要か、受付できるかを確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"通常行で補わず電話確認を勧めている。"}
+]}
