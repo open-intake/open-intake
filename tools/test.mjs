@@ -235,6 +235,14 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     const lk = brief(one, "2026-12-23T14:12:00+09:00", { register: { type: "match", linked: true } });
     ok(!lk.includes("結びついていない"), "名簿から逆にたどれた（linked）ときは、結びついていないと渡さない");
   }
+  // 未見の問（holdout5）で見つかった足りないところ: 対象を絞った時間の週の指定と受付（§4）
+  {
+    const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
+    const f29 = brief(two, "2027-01-29T13:58:00+09:00");
+    ok(f29.includes("週の指定: なし（その曜日は毎週。第5週も含む）"), "週の指定のない対象を絞った時間は、毎週（第5週も）と渡す");
+    ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
+    ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
+  }
   // 未見の問（holdout1）で見つかった誤りを直したこと
   const fri = brief(one, "2026-11-27T18:01:00+09:00"), fri2 = brief(one, "2026-11-27T19:00:00+09:00"), thu = brief(one, "2026-11-26T16:10:00+09:00");
   ok(!fri.includes("金曜の午後は") && fri.includes("受付は 18:00 で締め切りました") && fri.includes("受付を済ませた人"), "午後の診療がある日に受付が終わっても「午後は休診」と書かせない");
@@ -247,7 +255,7 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   // 未見の問（holdout2）で見つかった誤りを直したこと: 全体の臨時の変更は、その日の対象を絞った行も置き換える（§6b）
   const d26 = brief(two, "2026-12-26T13:40:00+09:00"), d12 = brief(two, "2026-12-12T13:40:00+09:00");
   ok(!d26.includes("- 今日の対象を絞った時間:") && d26.includes("置き換わっていて、ない"), "全体の臨時の変更がある日は、対象を絞った時間を今日の時間として渡さない");
-  ok(d12.includes("- 今日の対象を絞った時間: 14:00〜16:00"), "臨時の変更がない第2土曜は、対象を絞った時間を渡す");
+  ok(d12.includes("- 今日の対象を絞った時間: 診療 14:00〜16:00"), "臨時の変更がない第2土曜は、対象を絞った時間を渡す");
   const ep = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/endpoints.json", "utf8")) };
   ok(brief(ep, "2026-11-30T09:25:00+09:00").includes("送る項目は、入口の手順を読むまで分からない"), "予約の入口で送る項目がまだ分からないことを渡す");
   // 受付の始まり・締め切りが書かれていないときは、診療の時刻で埋めない（SPEC §4）

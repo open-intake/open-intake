@@ -155,7 +155,7 @@ export function readBrief(text) {
   const tm = get("- 明日 ");
   B.tomorrow = !tm ? null : /: なし/.test(tm) ? { kind: /臨時の休診/.test(tm) ? "closed" : /祝日/.test(tm) ? "holiday-unknown" : "none", rows: [] }
     : { kind: "rows", rows: parseRows(tm.slice(tm.indexOf(": ") + 2)) };
-  B.scoped = L.filter(x => x.startsWith("- 今日の対象を絞った時間:")).map(x => x.match(/: (\d{1,2}:\d\d〜\d{1,2}:\d\d)/)[1]).sort();
+  B.scoped = L.filter(x => x.startsWith("- 今日の対象を絞った時間:")).map(x => x.match(/: (?:診療 )?(\d{1,2}:\d\d〜\d{1,2}:\d\d)/)[1]).sort();
   B.scopedReplaced = L.some(x => x.startsWith("- ふだんの対象を絞った時間") && x.includes("置き換わって"));
   const n = get("- 次に全員向けの時間が開くとき:");
   B.next = !n ? null : (() => { const m = n.match(/: (\d+)月(\d+)日（[^）]*）(?: 診療 (\d{1,2}:\d\d)〜)?/); return { m: +m[1], d: +m[2], opens: m[3] || null, unknown: /わからない/.test(n) }; })();
