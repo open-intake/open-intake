@@ -113,14 +113,22 @@
 
     let L = [`【読む側のアプリが、ファイルと今の時刻から計算したまとめ（今: ${jday(today)}${hh}時${String(mm).padStart(2, "0")}分）】`,
       "- このまとめは計算の結果で、判断は相談の中身と合わせて行う。相談に救急の目安があれば、このまとめより先に119番を勧める。そのときは、予約の方法や時間を続けて書かない",
-      "- 相談に、誰の受診か、救急の目安に当たる症状があるかが書かれていないときは（§5 の決まり1）、答えの初めに、誰の受診かと、救急の目安（胸の痛み・息苦しさ・意識の異常など）に当たる症状がないかを聞く。当てはまればすぐ119番と書く。そのあとで、このまとめの時間や受付を書いてよい"];
+      "- 相談に、誰の受診か、救急の目安に当たる症状があるかが書かれていないときは（§5 の決まり1）、答えの初めに、誰の受診か（年代も。こども・高齢者で救急の目安が違う）と、救急の目安（胸の痛み・息苦しさ・意識の異常など）に当たる症状がないかを聞く。家族など本人と違う人の受診なら、その人について聞く。当てはまればすぐ119番と書く。そのあとで、このまとめの時間や受付を書いてよい"];
     const c = intake.clinic;
     L.push(`- 医療機関: ${c.name}（ファイルの場所: ${host(intakeUrl)}）。版 ${intake.specVersion}`);
+    // 公的な名簿と照らした結果（§3d。名簿を優先する）。ファイルの状態が閉院・移転のときも渡す
+    const pushRegister = () => {
+      if (!register) L.push("- 公的な名簿: 照らせていない。答えに「公的な名簿とは結びついていない情報です」と必ず添える");
+      else if (register.type === "phone") L.push(`- 公的な名簿: 電話番号が食い違う（名簿 ${register.value}、ファイル ${c.telephone || ""}）。両方の番号を示し、どちらが正しいかを確かめるよう勧める` + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
+      else if (register.type === "closed") L.push(`- 公的な名簿: ${register.date} に廃止（閉院）とされている。名簿を優先し、「閉院しているかもしれない」と伝える。このファイルの時間で開いているとは案内せず、電話で確かめるか、ほかの医療機関を探すよう勧める`);
+      else L.push("- 公的な名簿: 照らして、食い違いはなかった" + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
+    };
     const st = intake.status;
     if (st) {
       if (st.state === "closed") L.push(`- 状態: ${st.date} に閉院。このファイルの診療時間・予約の方法は使わない。答えで、ほかの医療機関を探すよう勧める`);
       else if (st.state === "moved") L.push(`- 状態: ${st.date} に移転。移転先: ${st.movedTo}。このファイルに残る時間・休診の説明（closedNote など）は移転前のもので、使わない。答えで、移転先の情報（上の場所）を示し、そちらで時間を確かめるよう勧める`);
       else L.push(`- 状態: ${st.state}（${st.note || ""}）。このファイルでの案内は使わない`);
+      if (register) { pushRegister(); if (register.type === "closed" && st.state === "moved") L.push("- 名簿の廃止とファイルの移転が食い違う: 名簿を優先する。移転先の場所は示してよいが、移転先で診療を続けているとは言い切らず、受診の前に電話で確かめるよう勧める"); }
       return L.join("\n") + "\n";
     }
     const base = [intake.updated, intake.verified].filter(Boolean).sort().pop();
@@ -130,15 +138,12 @@
     if (age > 365) L.push(`- 情報の古さ: ${which} ${base} から ${age} 日。1年を過ぎた「未確認の情報」。答えの初めに「この情報の${which}は ${b.y}年${b.m}月${b.d}日で、1年を過ぎた未確認の情報です」と書き、そのあとで時間を伝える。「はい」「開いています」と言い切らず、「お越しください」とも書かない。受診の前に電話で確かめるよう勧める`);
     else if (age > 180) L.push(`- 情報の古さ: ${which} ${base} から ${age} 日。180日を過ぎているので「古いかもしれない」と添える。答えに、この日付と180日を過ぎていることを書く`);
     else L.push(`- 情報の古さ: ${which} ${base} から ${age} 日（新しい）`);
-    if (!register) L.push("- 公的な名簿: 照らせていない。答えに「公的な名簿とは結びついていない情報です」と必ず添える");
-    else if (register.type === "phone") L.push(`- 公的な名簿: 電話番号が食い違う（名簿 ${register.value}、ファイル ${c.telephone || ""}）。両方の番号を示し、どちらが正しいかを確かめるよう勧める` + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
-    else if (register.type === "closed") L.push(`- 公的な名簿: ${register.date} に廃止（閉院）とされている。名簿を優先し、「閉院しているかもしれない」と伝える。このファイルの時間で開いているとは案内せず、電話で確かめるか、ほかの医療機関を探すよう勧める`);
-    else L.push("- 公的な名簿: 照らして、食い違いはなかった" + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
+    pushRegister();
 
     const hasSchedLink = (intake.files || []).some(f => f.role === "schedule");
     if (sched) {
       schedExpired = !!sched.validUntil && dnum(today) > dnum(D(sched.validUntil));
-      if (schedExpired) L.push(`- 臨時の情報: ${sched.updated} 更新、有効期限 ${sched.validUntil} を過ぎている。中身は使わない。臨時の休診は「わからない」とし、電話で確かめる`);
+      if (schedExpired) L.push(`- 臨時の情報: ${sched.updated} 更新、有効期限 ${sched.validUntil}（その日の終わりまで有効）を過ぎている。中身（臨時の休診・担当医の予定・当番・お知らせ）はどれも使わない。答えで、${sched.validUntil} の終わりまで有効だったことを書く。臨時の休診や担当医の予定は「わからない」とし、電話で確かめるよう勧める`);
       else {
         const todays = (sched.exceptions || []).filter(e => inRange(e, today) && wholeEx(e));
         const u = D(sched.updated);

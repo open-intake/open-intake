@@ -243,10 +243,20 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout7）で見つかった誤りと足りないところ: 移転・閉院のファイルでも名簿の結果を渡す（§3d）・年代を聞く・有効期限はその日の終わりまで
+  {
+    const mv = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/moved.json", "utf8")) };
+    const b82 = brief(mv, "2027-01-28T16:08:00+09:00", { register: { type: "closed", date: "2027-01-27" } });
+    ok(b82.includes("2027-01-27 に廃止") && b82.includes("名簿の廃止とファイルの移転が食い違う"), "移転のファイルでも、名簿の廃止を渡す");
+    ok(!brief(mv, "2027-01-28T16:08:00+09:00").includes("公的な名簿"), "名簿と照らしていない移転のファイルには、名簿の行を足さない");
+    const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
+    ok(brief(two, "2027-02-02T15:36:00+09:00").includes("2027-01-31 の終わりまで有効だった"), "期限切れの臨時の情報は、その日の終わりまで有効だったと渡す");
+    ok(brief(one, "2026-12-16T09:33:00+09:00").includes("年代も"), "先に聞くとき、年代も聞くよう渡す");
+  }
   // 未見の問（holdout6）で見つかった足りないところ: 救急の目安を先に聞く（§5 決まり1）・入口の場所・今日診てもらえるかの電話（決まり17）・臨時の変更の受け方
   {
     const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
-    ok(brief(two, "2026-12-11T17:54:00+09:00").includes("誰の受診かと、救急の目安"), "相談に書かれていないとき、救急の目安を先に聞くよう渡す");
+    ok(brief(two, "2026-12-11T17:54:00+09:00").includes("誰の受診か（年代も"), "相談に書かれていないとき、救急の目安を先に聞くよう渡す");
     const epf = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/endpoints.json", "utf8")) };
     ok(brief(epf, "2027-01-26T09:27:00+09:00").includes("入口: https://booking.example.org/mcp"), "予約の入口の場所を渡す");
     ok(brief(one, "2026-12-15T18:07:00+09:00").includes("「急ぐので今日診てもらえるか」を電話で相談できる"), "受付が終わったとき、今日診てもらえるかを電話で相談できると渡す");

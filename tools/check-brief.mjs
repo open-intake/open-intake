@@ -148,7 +148,7 @@ export function readBrief(text) {
   const get = p => L.find(x => x.startsWith(p));
   const B = {};
   B.status = /^- 状態: .*閉院/.test(get("- 状態:") || "") ? "closed" : /^- 状態: .*移転/.test(get("- 状態:") || "") ? "moved" : null;
-  B.schedExpired = /有効期限 .* を過ぎている/.test(get("- 臨時の情報:") || "");
+  B.schedExpired = /有効期限 \d{4}-\d\d-\d\d（その日の終わりまで有効）を過ぎている/.test(get("- 臨時の情報:") || "");
   const t = get("- 今日の全員向けの時間");
   B.today = !t ? null : / なし（/.test(t) || /: なし/.test(t) ? { kind: /臨時の休診/.test(t) ? "closed" : /祝日/.test(t) ? "holiday-unknown" : "none", rows: [] }
     : { kind: "rows", fromException: /臨時の情報による/.test(t), rows: parseRows(t.slice(t.indexOf(": ") + 2)) };
