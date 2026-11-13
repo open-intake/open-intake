@@ -126,7 +126,11 @@
     const st = intake.status;
     if (st) {
       if (st.state === "closed") L.push(`- 状態: ${st.date} に閉院。このファイルの診療時間・予約の方法は使わない。答えで、ほかの医療機関を探すよう勧める`);
-      else if (st.state === "moved") L.push(`- 状態: ${st.date} に移転。移転先: ${st.movedTo}。このファイルに残る時間・休診の説明（closedNote など）は移転前のもので、使わない。答えで、移転先の情報（上の場所）を示し、そちらで時間を確かめるよう勧める`);
+      else if (st.state === "moved") {
+        const md = D(st.date);
+        L.push(`- 状態: ${st.date} に移転。移転先: ${st.movedTo}。このファイルに残る時間・休診の説明（closedNote など）は移転前のもので、使わない。答えで、移転の日（${md.y}年${md.m}月${md.d}日）と移転先の情報（上の場所）を書き、そちらで時間を確かめるよう勧める`);
+        if (sched) L.push("- 臨時の情報: 移転前のこのファイルにひも付いたもの。中身（臨時の休診・担当医の予定・当番）を、移転先の休診や予定として使わない。答えで、移転先の休診や予定は移転先の情報で確かめるよう書く");
+      }
       else L.push(`- 状態: ${st.state}（${st.note || ""}）。このファイルでの案内は使わない`);
       if (register) { pushRegister(); if (register.type === "closed" && st.state === "moved") L.push("- 名簿の廃止とファイルの移転が食い違う: 名簿を優先する。移転先の場所は示してよいが、移転先で診療を続けているとは言い切らず、受診の前に電話で確かめるよう勧める"); }
       return L.join("\n") + "\n";
@@ -137,7 +141,9 @@
     const b = D(base);
     if (age > 365) L.push(`- 情報の古さ: ${which} ${base} から ${age} 日。1年を過ぎた「未確認の情報」。答えの初めに「この情報の${which}は ${b.y}年${b.m}月${b.d}日で、1年を過ぎた未確認の情報です」と書き、そのあとで時間を伝える。「はい」「開いています」と言い切らず、「お越しください」とも書かない。受診の前に電話で確かめるよう勧める`);
     else if (age > 180) L.push(`- 情報の古さ: ${which} ${base} から ${age} 日。180日を過ぎているので「古いかもしれない」と添える。答えに、この日付と180日を過ぎていることを書く`);
+    else if (age === 180) L.push(`- 情報の古さ: ${which} ${base} から ちょうど 180 日。「180日を過ぎた」には当たらない（181日目から）。答えで、ちょうど180日でまだ過ぎていないことを書く。過ぎていないことを、中身が今も正しい保証にはしない`);
     else L.push(`- 情報の古さ: ${which} ${base} から ${age} 日（新しい）`);
+    if (intake.updated && intake.verified && intake.updated !== intake.verified) L.push(`- 情報の古さの基準: 更新日 ${intake.updated} と確かめた日 ${intake.verified} の新しいほう（${base}）。古いほうだけで決めない`);
     pushRegister();
 
     const hasSchedLink = (intake.files || []).some(f => f.role === "schedule");
@@ -261,6 +267,14 @@
       if (ocD.length && ocC.length && a !== bb)
         L.push(`- 今日の当番: 食い違いがある。地域の一覧（${pub}）は ${a}、医療機関の臨時の情報は ${bb}。答えの初めに「地域の一覧（${pub}）では、今日の当番は ${a} です。医療機関の臨時の情報（${bb}）と食い違うので、地域の一覧を優先します」と書き、電話で確かめるよう勧める`);
       else L.push(`- 今日の当番: 地域の一覧 ${a}／医療機関の臨時の情報 ${bb}`);
+    }
+    // 地域の当番表にある、ほかの医療機関の今日の当番（§6c・§5 の決まり24）
+    const ocO = ((dirx || {}).onCall || []).filter(o => o.date === todayIso && o.url !== intakeUrl);
+    if (ocO.length) {
+      const pub = ((dirx || {}).publisher || {}).name || "地域の一覧";
+      L.push(`- 地域の当番表（${pub}）にある、ほかの医療機関の今日の当番: ` + ocO.map(o => `${o.name || o.url} ${o.department || "診療科は書かれていない"} ${HM(o.opens)}〜${HM(o.closes)}（詳しいファイルは読めていない）`).join(" ／ ") +
+        "。当番の候補を聞かれたら、相談に合う診療科（こどもなら小児科）の当番を先に示す。詳しいファイルがないこと・データの少なさで候補から外したり順位を下げたりせず、頼まれても、データの多さで順位を決めない。診療科の違う当番を、その診療科の当番として紹介しない。この医療機関の当番は、診療科が相談に合わないときは、合う候補のあとに書く。どの当番も受診の前に電話で確かめるよう勧める");
+      L = L.map(x => x.startsWith("- 今日の当番: 食い違い") ? x.replace("答えの初めに「", "答えで（この医療機関の診療科が相談に合わないときは、合う候補のあとでよい）「") : x);
     }
     // 予約
     const siteHost = host(c.url || intakeUrl);

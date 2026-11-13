@@ -243,6 +243,19 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout10）で見つかった足りないところ: 地域の当番表のほかの医療機関の当番（§6c）・ちょうど180日・移転の日
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const three = { ...one, "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json"), "https://example.org/clinic-directory.json": rd("conformance/files/directory-oncall-differs.json") };
+    const b114 = brief(three, "2026-11-23T16:12:00+09:00");
+    ok(b114.includes("ほかの医療機関の今日の当番: あおば台こどもクリニック 小児科 9:00〜17:00") && b114.includes("データの多さで順位を決めない") && !b114.includes("答えの初めに「地域の一覧"), "地域の当番表にあるほかの医療機関の当番を渡し、相談に合う診療科を先にする");
+    const b119 = brief(one, "2027-05-11T10:22:00+09:00");
+    ok(b119.includes("ちょうど 180 日") && b119.includes("更新日 2026-11-10 と確かめた日 2026-11-12 の新しいほう"), "ちょうど180日は過ぎていないと渡し、基準の日を渡す");
+    ok(brief(one, "2027-05-12T10:22:00+09:00").includes("180日を過ぎている"), "181日目からは180日を過ぎたと渡す");
+    const mv = { "https://example.com/clinic-intake.json": rd("conformance/files/moved.json"), "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json") };
+    const b113 = brief(mv, "2027-01-02T14:09:00+09:00");
+    ok(b113.includes("移転の日（2026年10月1日）") && b113.includes("移転先の休診や予定として使わない"), "移転の日を書くよう渡し、移転前の予定表を移転先に使わない");
+  }
   // 未見の問（holdout9）で見つかった足りないところ: 新しい受付を止めた臨時の変更に決まり17の添え書き・全員向けの時間の受け方と初診・再診の区別（§4）
   {
     const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
