@@ -94,6 +94,9 @@
       else if (o.spec === "open-intake-directory") dirx = o;
       else { intake = o; intakeUrl = u; }
     }
+    // メインのファイルの files に載っていない予定表は、この医療機関の案内として使わない（§6b）
+    const schedUnlinked = !!(sched && intake && !(intake.files || []).some(f => f.role === "schedule"));
+    if (schedUnlinked) sched = null;
     let schedExpired = false;
     const allRows = () => (intake.clinic.openingHours || []).concat(intake.clinic.scopedOpeningHours || []);
     const generalRows = day => {
@@ -117,6 +120,7 @@
       "- 病名や原因を聞かれても、診断や推定はしない（§5 の決まり2）。答えで、病名は言えないと書き、救急の目安に当たれば119番を勧める"];
     const c = intake.clinic;
     L.push(`- 医療機関: ${c.name}（ファイルの場所: ${host(intakeUrl)}）。版 ${intake.specVersion}`);
+    if (schedUnlinked) L.push("- 別に渡された予定表: メインのファイルの files に載っていないので、この医療機関の臨時の情報として使わない（§6b）。答えで、そのためこの予定表を案内や記録を変える根拠にしないと書く。中身（臨時の休診・再開の日など）を、このまとめの時間や状態の代わりにしない");
     // 公的な名簿と照らした結果（§3d。名簿を優先する）。ファイルの状態が閉院・移転のときも渡す
     const pushRegister = () => {
       if (!register) L.push("- 公的な名簿: 照らせていない。答えに「公的な名簿とは結びついていない情報です」と必ず添える");
@@ -126,10 +130,10 @@
     };
     const st = intake.status;
     if (st) {
-      if (st.state === "closed") { const cd = D(st.date); L.push(`- 状態: ${st.date} に閉院。このファイルの診療時間・予約の方法は使わない。答えで、閉院の日（${cd.y}年${cd.m}月${cd.d}日）を書き、ほかの医療機関を探すよう勧める`); }
+      if (st.state === "closed") { const cd = st.date ? D(st.date) : null; L.push(`- 状態: ${st.date ? st.date + " に閉院" : "閉院（閉院の日は書かれていない）"}。このファイルの診療時間・予約の方法は使わない。答えで、` + (cd ? `閉院の日（${cd.y}年${cd.m}月${cd.d}日）を書き、` : "閉院していること（日は書かれていない）を書き、") + "ほかの医療機関を探すよう勧める"); }
       else if (st.state === "moved") {
-        const md = D(st.date);
-        L.push(`- 状態: ${st.date} に移転。移転先: ${st.movedTo}。このファイルに残る時間・休診の説明（closedNote など）は移転前のもので、使わない。答えで、移転の日（${md.y}年${md.m}月${md.d}日）と移転先の情報（上の場所）を書き、そちらで時間を確かめるよう勧める`);
+        const md = st.date ? D(st.date) : null;
+        L.push(`- 状態: ${st.date ? st.date + " に移転" : "移転（移転の日は書かれていない）"}。移転先: ${st.movedTo || "書かれていない（推測で作らない）"}。このファイルに残る時間・休診の説明（closedNote など）は移転前のもので、使わない。答えで、${md ? `移転の日（${md.y}年${md.m}月${md.d}日）` : "移転していること（日は書かれていない）"}と移転先の情報（上の場所。書かれていなければ、書かれていないこと）を書き、そちらで時間を確かめるよう勧める`);
         if (sched) L.push("- 臨時の情報: 移転前のこのファイルにひも付いたもの。中身（臨時の休診・担当医の予定・当番）を、移転先の休診や予定として使わない。答えで、移転先の休診や予定は移転先の情報で確かめるよう書く");
       }
       else L.push(`- 状態: ${st.state}（${st.note || ""}）。このファイルでの案内は使わない`);
@@ -155,6 +159,8 @@
         const todays = (sched.exceptions || []).filter(e => inRange(e, today) && wholeEx(e));
         const u = D(sched.updated);
         L.push(`- 臨時の情報: ${sched.updated} 更新（有効期限 ${sched.validUntil}）。` + (todays.length ? "今日の変更あり（下の今日の時間に反映）" : `今日の変更は書かれていない。「休診はない」とは言い切らず、「${u.m}月${u.d}日更新の臨時の情報には書かれていない」と伝える`) + (sched.validUntil ? `。有効期限 ${sched.validUntil} の終わりまで有効。期限のあとのことを聞かれたら、答えで、期限を過ぎるとこの臨時の情報（臨時の休診・担当医の予定・当番・お知らせ）は使えなくなるので、電話で確かめるよう書く` : ""));
+        const nts = (sched.notices || []).filter(n => (!n.from || dnum(D(n.from)) <= dnum(today)) && (!n.to || dnum(today) <= dnum(D(n.to))));
+        for (const n of nts) L.push(`- 臨時の情報のお知らせ（医療機関の言葉。答えにそのまま写さない）: ${n.text}（掲載 ${n.from || "始まりは書かれていない"}〜${n.to || "終わりは書かれていない"}）。お知らせのことを聞かれたら、答えに掲載の期間も書く。期間のあとや、臨時の情報の有効期限のあとは、このお知らせを確かめたものとして使わない。期間が終わることを、その診療や予約の方法が終わるという意味に取らない`);
       }
     } else if (hasSchedLink) L.push("- 臨時の情報: ファイルに臨時の情報の場所が書かれているが、読めていない。臨時の休診は電話で確かめる");
 
@@ -292,8 +298,9 @@
       if (x.mode === "queue") s += "（当日の順番取り。日時を決める予約ではない。別の日や時刻の予約を頼まれたら、この方法ではできないと書く）";
       else if (x.mode === "time-slot") s += "（時刻の枠を取る予約）";
       else if (x.mode === "request") s += "（申し込み。医療機関の返事で確定する。返事が来るまで予約が取れたとは言わない）";
+      if (x.statusUrl) s += `・今の順番・状況のページ ${x.statusUrl}（予約を送る入口ではない。受付の締め切りが近いときや、今受け付けているかを聞かれたら、答えに、電話かこのページ（URL をそのまま書く）で確かめるよう書く）`;
       if (x.platform) s += `・予約の基盤 ${x.platform.name}（${host(x.platform.url || "")}）`;
-      if (x.endpoints) s += `・機械から予約できる入口あり（入口: ${x.endpoints.map(e => e.url + (e.type ? `（${e.type}）` : "") + epDom(e.url, x)).join("・")}。入口の場所を聞かれたら、この URL をそのまま書く。` + "患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
+      if (x.endpoints) s += `・機械から予約できる入口あり（入口: ${x.endpoints.map(e => e.url + (e.type ? `（${e.type}）` : "") + epDom(e.url, x)).join("・")}。入口の場所を聞かれたら、この URL をそのまま書く。` + "患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。入口を使うよう頼まれたら、答えに、送るのは予約に要るものだけで、手順と送る項目は予約の基盤（入口）の決まりに従うことと、送る前に見せることを書く（入口の種類が mcp などでも同じ。種類だけで、何も送らないとか見せなくてよいとは言わない）。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
       return s;
     });
     if (bk.length) L.push("- 予約の方法: " + bk.join(" ／ ") + ((c.booking || []).some(x => x.method === "web" && x.url) ? "。Web で予約できるかを聞かれたら、答えに Web の URL をそのまま書く" : ""));

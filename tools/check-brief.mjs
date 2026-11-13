@@ -81,6 +81,8 @@ function split(files, day) {
     if (o.spec === "open-intake-schedule") sched = o;
     else if (o.spec !== "open-intake-directory") intake = o;
   }
+  // §3b の決まり1・§6b の決まり6: メインの files に載っていない予定表は使わない
+  if (sched && intake && !(intake.files || []).some(f => f.role === "schedule")) sched = null;
   // §6b validUntil: その日の終わりまで有効
   const schedOk = !!sched && !(sched.validUntil && day > sched.validUntil);
   return { intake, sched, schedOk };
@@ -250,6 +252,7 @@ export function makeClinic(seed) {
       if (st !== "closed") { e.hours = chance(0.3) ? [{ opens: t(9), closes: t(12) }, { opens: t(14), closes: t(16) }] : [{ opens: t(9), closes: t(pick([11, 12, 13])) }]; if (e.hours.length === 1) { const rc = reception(9, 12); if (rc) e.reception = rc; } } // 時間帯が2つの変更に受付を1つだけ書く形は、仕様書で未決（§10b）
       if (chance(0.2)) { e.department = "小児科"; (ver === "0.5" ? sx : ex).push(e); } else ex.push(e);
     }
+    intake.files = [{ role: "schedule", url: "/clinic-schedule.json" }];
     files["https://example.com/clinic-schedule.json"] = { spec: "open-intake-schedule", specVersion: ver, updated: "2026-11-10", validUntil: pick(["2026-12-20", "2027-01-31"]), exceptions: ex, scopedExceptions: sx };
   }
   return files;

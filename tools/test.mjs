@@ -243,6 +243,24 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout14）で見つかった足りないところ: 状況のページ statusUrl・お知らせ notices・入口に送るもの（決まり23）・files に載っていない予定表（§6b）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const two = { "https://example.com/clinic-intake.json": rd("conformance/files/clinic-intake.json"), "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json") };
+    const b159 = brief(two, "2027-01-26T17:59:50+09:00");
+    ok(b159.includes("今の順番・状況のページ https://example.com/now（予約を送る入口ではない"), "予約の状況のページを渡す");
+    const b168 = brief(two, "2027-01-31T22:09:00+09:00");
+    ok(b168.includes("臨時の情報のお知らせ") && b168.includes("（掲載 2026-11-01〜2027-01-31）"), "お知らせとその期間を渡す");
+    ok(!brief(two, "2027-02-01T09:00:00+09:00").includes("臨時の情報のお知らせ"), "期間のあとのお知らせは渡さない");
+    const b163 = brief({ "https://example.com/clinic-intake.json": rd("conformance/files/endpoints.json") }, "2027-01-22T09:24:00+09:00");
+    ok(b163.includes("手順と送る項目は予約の基盤（入口）の決まりに従う"), "入口に送るものの扱いを答えに書くよう渡す");
+    const b161 = brief({ "https://example.com/clinic-intake.json": rd("conformance/files/clinic-intake-closed.json"), "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json") }, "2026-12-30T08:11:00+09:00");
+    const nd = rd("conformance/files/clinic-intake-closed.json"); delete nd.status.date;
+    ok(brief({ "https://example.com/clinic-intake.json": nd }, "2026-12-30T08:11:00+09:00").includes("閉院（閉院の日は書かれていない）"), "日付のない閉院で止まらない");
+    const nm = rd("conformance/files/moved.json"); delete nm.status.date; delete nm.status.movedTo;
+    ok(brief({ "https://example.com/clinic-intake.json": nm }, "2026-12-30T08:11:00+09:00").includes("移転（移転の日は書かれていない）。移転先: 書かれていない"), "日付・移転先のない移転で止まらない");
+    ok(b161.includes("- 別に渡された予定表: メインのファイルの files に載っていないので") && !b161.includes("臨時の情報のお知らせ"), "files に載っていない予定表は使わないと渡す");
+  }
   // 未見の問（holdout13）で見つかった足りないところ: 名簿と食い違う番号を数字で書く（§3d）・予定のファイルの期限のあと・病名を言わない（決まり2）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
