@@ -76,6 +76,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 - 足りないところを足した18回目でも、20問で2つとも3回とも満たした。**未見の問の10組目（holdout10）でも、どちらも満たさなかった**（Haiku 11・10・8 で2回目・3回目に ×、Luna 8・9・7）（[結果](results-2026-11.md)の「未見の問の10組目」）。
 - 足りないところを足した19回目では、20問で 120 の答えがすべて ○ だった。**未見の問の11組目（holdout11）でも、どちらも満たさなかった**（Haiku 9・11・8 で2回目に ×、Luna 9・10・9 で3回とも ×）（[結果](results-2026-11.md)の「未見の問の11組目」）。
 - 足りないところを足した20回目でも、20問で2つとも3回とも満たした。**未見の問の12組目（holdout12）では、Luna が3回とも満たし**（12・11・11、× 0）、Haiku は満たさなかった（10・9・9、× 0）（[結果](results-2026-11.md)の「未見の問の12組目」）。
+- 足りないところを足した21回目でも、20問で2つとも3回とも満たした。**未見の問の13組目（holdout13）では、Haiku が3回とも満たし**（11・11・12、× 0）、Luna は満たさなかった（12・12・9、× 0）。同じモデルが続けて満たしてはいない（[結果](results-2026-11.md)の「未見の問の13組目」）。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
@@ -165,6 +166,7 @@ Results are kept in `conformance/results-*.md`.
 - In round 18, with the gaps filled, both again met the criteria in all 3 runs on the 20 cases. **On the tenth set of unseen cases (holdout10), neither met them either** (Haiku 11, 10, 8 with × in runs 2 and 3; Luna 8, 9, 7) ([results](results-2026-11.md), "Tenth set of unseen cases").
 - In round 19, with the gaps filled, all 120 answers on the 20 cases were ○. **On the eleventh set of unseen cases (holdout11), neither met them either** (Haiku 9, 11, 8 with × in run 2; Luna 9, 10, 9 with × in all 3 runs) ([results](results-2026-11.md), "Eleventh set of unseen cases").
 - In round 20, with the gaps filled, both again met the criteria in all 3 runs on the 20 cases. **On the twelfth set of unseen cases (holdout12), Luna met them in all 3 runs** (12, 11, 11, no ×) and Haiku did not (10, 9, 9, no ×) ([results](results-2026-11.md), "Twelfth set of unseen cases").
+- In round 21, with the gaps filled, both again met the criteria in all 3 runs on the 20 cases. **On the thirteenth set of unseen cases (holdout13), Haiku met them in all 3 runs** (11, 11, 12, no ×) and Luna did not (12, 12, 9, no ×). No model has met them on consecutive sets ([results](results-2026-11.md), "Thirteenth set of unseen cases").
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later

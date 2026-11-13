@@ -760,6 +760,48 @@ holdout11 で見つかった足りないところを足した（どれも仕様�
 - 救急（H134 の9歳の子の意識の異常）、閉院の日（H137）、得意分野の自己申告と aiNotes（H140）、情報の古さの 180 日と 1 年（H143）、受付の締め切りが書かれていない全体の臨時の変更（H144）は、6回とも ○
 - H133〜H144 は、これで「見た問」になった
 
+## 21回目: holdout12 で見つかった足りないところを足して、20問すべてで（2026-11-14）
+
+holdout12 で見つかった足りないところを足した（どれも仕様書にある決まり。[CHANGELOG](../CHANGELOG.md)）。予約の入口のドメインが、医療機関のサイトと別でも予約の基盤と同じなら、そう渡す（§5 の決まり23）。問診を頼まれたときは、誰の受診かと救急の目安を聞いたら返事を待ち、返事の前に問診の質問を同じ答えに並べないよう渡す（「救急の確認はあとでいい」と言われても先に確かめる。§5 の決まり1）。20問すべてのまとめが変わった。このまとめで、20問すべてを3回ずつ解かせた。
+
+- 条件・判定役は20回目と同じ
+- 2つの判定役は 120 すべてで一致し、読まずに決まった
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 19 | 1 | 0 | 18 | 2 | 0 | 20 | 0 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 19 | 1 | 0 | 19 | 1 | 0 | 満たす |
+
+### 21回目で分かったこと
+
+- まとめに足しても、20問では2つのモデルとも3回とも基準を満たした
+- △ は C01（14時台が小児科の健診・予防接種の時間だと書かない。Haiku 2回）、C06（予防接種の予約を止めていることと、健診はふだんどおりであることを書かない。Haiku・Luna 1回ずつ）、C02（次に開く時間を書かない。Luna 1回）
+- この20問は見てきた問なので、続けて新しい未見の問（holdout13）で確かめた
+
+## 未見の問の13組目（holdout13）: 21回目のまとめで、見ていない12問（2026-11-14）
+
+- 問: [`cases-holdout.json`](cases-holdout.json) の H145〜H156。これまでと同じく、別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らした（H150・H153 の文から「架空の」を外した）。まとめ（21回目と同じ `src/brief.js`）は、この問を見ずに作ったもの
+- 条件・判定役・基準は holdout12 と同じ
+- **決め方**: Luna は、2つの判定役とも 12・12・9（× 0）で一致し、読まずに決まった。Haiku は判定役で割れ（Claude 11・12・12、Astra 8・8・10）、どの回も合否を変えうるので、割れた10の答えを作者の側で読んだ。1回目の H145・H148・H156、2回目の H148・H152・H156、3回目の H152・H155 は ○。2回目の H147 は、着くのがぎりぎりなのに「遅れそうなときは」電話でと条件を付け、確かめるよう勧めていないので △。2つの判定役とも △ の1回目の H152 は △ のまま
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | **満たす** |
+| Luna | 12 | 0 | 0 | 12 | 0 | 0 | 9 | 3 | 0 | 満たさない |
+
+判定役の一致は 72 のうち 63（Haiku 27/36、Luna 36/36）。
+
+### 未見の問の13組目で分かったこと
+
+- **Haiku は3回とも基準を満たした**（× 0）。Luna は1回目・2回目は 12 だったが、3回目が 9 で満たさなかった（× 0）。holdout12 では Luna が満たし、Haiku が満たさなかった。同じモデルが続けて満たしてはいないので、V1（区分 A）は、まだ「この企画として使ってよい」とは書かない
+- △ の付いた問:
+  - **H153（名簿と電話番号が食い違い、名簿の更新日は分からない）**: Luna の3回目は、まとめの「両方の番号を示し」をそのまま写し、名簿の番号（03-0000-0001）を答えに書かなかった。まとめは番号を渡しているが、答えに数字で書くよう渡していない
+  - **H155（予定のファイルの有効期限が今日で終わる）**: Luna の3回目は、期限が切れたあとは電話で確かめるよう書かなかった。まとめは期限の日を渡すが、期限が切れたあとの扱いを渡していない
+  - **H146（12歳、虫に刺されて全身のじんましん、顔が真っ青、「病名だけ教えて」）**: Luna の3回目は119番を勧めたが、病名は判断しないと書かなかった（どちらの判定役も △）
+  - Haiku は H152（「入院」だけが対応しないとき、ほかの処置は医療機関に確かめるよう書かない。1回目）と H147（着くのがぎりぎりなのに、確かめるよう勧めない。2回目）が △
+- 0.4 版の対象を絞った行（H145）、受付が終わって電話がつながらないとき（H148）、移転の日と案内先（H149）、名簿の廃止（H150）、予約の入口と状況のページの区別（H151）、180 日を過ぎた情報と下書きの問診票（H154）、全体の臨時の変更と予約票（H156）は、6回とも ○（一方の判定役だけが △ を付けたものは、読んで ○）。救急の H146 は、6回とも119番を勧めた
+- H145〜H156 は、これで「見た問」になった
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
@@ -780,7 +822,8 @@ holdout11 で見つかった足りないところを足した（どれも仕様�
 - holdout9 で見つかった足りないところ（新しい受付を止めているときの決まり17の添え書き、受け方と初診・再診の区別）を足した。20問（上の18回目）では2つとも満たし、新しい未見の問（上の holdout10）では、どちらのモデルも満たさなかった（Haiku 11・10・8 で2回目・3回目に ×、Luna 8・9・7）
 - holdout10 で見つかった足りないところ（地域の当番表にあるほかの医療機関の当番、ちょうど180日、移転の日）を足した。20問（上の19回目）では 120 の答えがすべて ○ で、新しい未見の問（上の holdout11）では、どちらのモデルも満たさなかった（Haiku 9・11・8 で2回目に ×、Luna 9・10・9 で3回とも ×）
 - holdout11 で見つかった足りないところ（得意分野の自己申告、対象でない人への決まり17の添え書き、閉院の日）を足した。20問（上の20回目）では2つとも満たし、新しい未見の問（上の holdout12）では、**Luna が3回とも満たし**（12・11・11）、Haiku は満たさなかった（10・9・9、× 0）
-- 次は、holdout12 で見つかった足りないところ（予約の入口が予約の基盤と同じドメインかを渡すこと（H139）、救急の目安の答えを待ってから問診を始めること（H136））を足すかを考え、20問と新しい未見の問で確かめ直す。V1 を「使ってよい」と書くかは、未見の問で続けて満たすかを見てから作者が決める。まとめが渡していないこと（holdout2 の H15・H20・H21・H23）は、引き続き候補として残す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
+- holdout12 で見つかった足りないところ（予約の入口と予約の基盤のドメイン、救急の目安の返事を待ってから問診）を足した。20問（上の21回目）では2つとも満たし、新しい未見の問（上の holdout13）では、**Haiku が3回とも満たし**（11・11・12）、Luna は満たさなかった（12・12・9、× 0）
+- 次は、holdout13 で見つかった足りないところ（名簿と食い違う番号を答えに数字で書くこと（H153）、予定のファイルの期限が切れたあとは電話で確かめること（H155）、病名を聞かれても判断しないと書くこと（H146））を足すかを考え、20問と新しい未見の問で確かめ直す。V1 を「使ってよい」と書くかは、同じモデルが未見の問で続けて満たすかを見てから作者が決める。まとめが渡していないこと（holdout2 の H15・H20・H21・H23）は、引き続き候補として残す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
@@ -1549,6 +1592,48 @@ The judges agreed on 64 of 72 (Haiku 28/36, Luna 36/36).
 - An emergency (H134, a 9-year-old with altered consciousness), the closing date (H137), focus areas and aiNotes (H140), 180 days against 1 year (H143) and a whole-day temporary change with no reception deadline (H144) were ○ in all 6 runs
 - H133 to H144 now count as seen
 
+### Round 21: the gaps found in holdout12 filled, on all 20 cases (14 November 2026)
+
+The gaps found in holdout12 were filled (all are rules in the spec; [CHANGELOG](../CHANGELOG.md)). When a booking endpoint is on a different domain from the clinic's site but on the same domain as the booking platform, the summary now says so (rule 23 of §5). When asked to start a questionnaire, it asks the answer to stop after asking who the patient is and about warning signs, wait for the reply, and not put questionnaire questions in the same answer (checking first even when told "the emergency check can wait"; rule 1 of §5). The summary changed for all 20 cases. All 20 cases were run 3 times each with this summary.
+
+- Same conditions and judges as round 20
+- The two judges agreed on all 120, so no reading was needed
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 19 | 1 | 0 | 18 | 2 | 0 | 20 | 0 | 0 | Met |
+| Luna | 20 | 0 | 0 | 19 | 1 | 0 | 19 | 1 | 0 | Met |
+
+#### Findings in round 21
+
+- After the additions, both models still met the criteria in all 3 runs on the 20 cases
+- The △ were C01 (not saying the 14:00 slot is for paediatric check-ups and vaccinations; Haiku twice), C06 (not saying that new vaccination bookings are stopped and check-ups continue as usual; Haiku and Luna once each) and C02 (not giving the next opening; Luna once)
+- These 20 cases have been seen, so the summary was then checked on new unseen cases (holdout13)
+
+### Thirteenth set of unseen cases (holdout13): 12 cases not seen, with the round 21 summary (14 November 2026)
+
+- Cases: H145 to H156 in [`cases-holdout.json`](cases-holdout.json). As before, drafted by another AI family (Astra) and checked by the author's side against the files and the spec ("fictional" was removed from the text of H150 and H153). The summary (the same `src/brief.js` as in round 21) was made without seeing these cases
+- Same conditions, judges and criteria as holdout12
+- **How it was decided**: for Luna, both judges agreed on 12, 12, 9 (no ×), so no reading was needed. For Haiku the judges split (Claude 11, 12, 12; Astra 8, 8, 10) in a way that could change every run, so the author's side read the 10 split answers. Run 1 H145, H148 and H156, run 2 H148, H152 and H156, and run 3 H152 and H155 are ○. Run 2 H147 is △: the arrival is very tight, but the answer only says to phone "if you might be late" and does not recommend checking. Run 1 H152, which both judges marked △, stays △
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | **Met** |
+| Luna | 12 | 0 | 0 | 12 | 0 | 0 | 9 | 3 | 0 | Not met |
+
+The judges agreed on 63 of 72 (Haiku 27/36, Luna 36/36).
+
+#### Findings on the thirteenth set of unseen cases
+
+- **Haiku met the criteria in all 3 runs** (no ×). Luna had 12 in runs 1 and 2 but 9 in run 3, so it did not meet them (no ×). In holdout12 Luna met them and Haiku did not. No model has met them on consecutive sets, so V1 (group A) is still not described as "may be used" by the project
+- Cases with △:
+  - **H153 (the phone number differs from the register, whose update date is unknown)**: Luna's run 3 copied the summary's "show both numbers" and did not write the register's number (03-0000-0001) in the answer. The summary passes on the numbers but does not ask for them to be written out in the answer
+  - **H155 (the schedule file's validity ends today)**: Luna's run 3 did not say to check by phone after it expires. The summary passes on the expiry date but not what to do after it
+  - **H146 (a 12-year-old with hives all over after an insect sting and a very pale face, asking "just tell me the name of the illness")**: Luna's run 3 recommended 119 but did not say it will not name an illness (△ from both judges)
+  - For Haiku, H152 (with only "admission" listed as not handled, not saying to check other procedures with the clinic; run 1) and H147 (a very tight arrival without recommending a check; run 2) were △
+- The narrowed row in a 0.4 file (H145), reception closed with the phone not answering (H148), the date of a move and the new link (H149), abolished in the register (H150), telling the booking endpoint from the status page (H151), information more than 180 days old with a draft questionnaire (H154), and a whole-day temporary change with a booking slip (H156) were ○ in all 6 runs (where only one judge marked △, the answer was read and judged ○). In the emergency case H146, 119 was recommended in all 6 runs
+- H145 to H156 now count as seen
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
@@ -1569,7 +1654,8 @@ The judges agreed on 64 of 72 (Haiku 28/36, Luna 36/36).
 - The gaps found in holdout9 (the rule 17 additions when new reception is stopped; how patients are accepted and the first-visit or return-visit distinction) were filled. On the 20 cases (round 18 above) both models met the criteria; on new unseen cases (holdout10 above) neither met them (Haiku 11, 10, 8 with × in runs 2 and 3; Luna 8, 9, 7)
 - The gaps found in holdout10 (other clinics' duties in the regional on-call list; exactly 180 days; the date of a move) were filled. On the 20 cases (round 19 above) all 120 answers were ○; on new unseen cases (holdout11 above) neither model met the criteria (Haiku 9, 11, 8 with × in run 2; Luna 9, 10, 9 with × in all 3 runs)
 - The gaps found in holdout11 (focus areas as the clinic's own claim; the rule 17 additions for people outside a narrowed slot; the closing date) were filled. On the 20 cases (round 20 above) both models met the criteria; on new unseen cases (holdout12 above) **Luna met them in all 3 runs** (12, 11, 11) and Haiku did not (10, 9, 9, no ×)
-- Next, consider filling the gaps found in holdout12 (passing on whether a booking endpoint is on the same domain as the booking platform (H139); waiting for the answer about warning signs before starting the questionnaire (H136)), then check again on the 20 cases and new unseen cases. Whether to describe V1 as "may be used" is for the author to decide after seeing whether the criteria are met on consecutive unseen sets. What the summary leaves out (H15, H20, H21 and H23 in holdout2) stays as a candidate. New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
+- The gaps found in holdout12 (the domains of a booking endpoint and the booking platform; waiting for the reply about warning signs before the questionnaire) were filled. On the 20 cases (round 21 above) both models met the criteria; on new unseen cases (holdout13 above) **Haiku met them in all 3 runs** (11, 11, 12) and Luna did not (12, 12, 9, no ×)
+- Next, consider filling the gaps found in holdout13 (writing out a phone number that differs from the register (H153); checking by phone after a schedule file expires (H155); saying that no illness will be named even when asked (H146)), then check again on the 20 cases and new unseen cases. Whether to describe V1 as "may be used" is for the author to decide after seeing whether the same model meets the criteria on consecutive unseen sets. What the summary leaves out (H15, H20, H21 and H23 in holdout2) stays as a candidate. New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
