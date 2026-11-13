@@ -243,6 +243,14 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout12）で見つかった足りないところ: 入口と予約の基盤のドメイン（決まり23）・救急の確認の返事を待ってから問診（決まり1）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const b139 = brief({ "https://example.com/clinic-intake.json": rd("conformance/files/endpoints.json") }, "2027-01-15T10:32:00+09:00");
+    ok(b139.includes("予約の基盤 https://booking.example.org/ と同じドメイン booking.example.org") && b139.includes("関係のない別のドメインとは言わない"), "入口が予約の基盤と同じドメインだと渡す");
+    const b136 = brief({ "https://example.com/clinic-intake.json": rd("conformance/files/clinic-intake.json") }, "2027-01-13T18:01:15+09:00");
+    ok(b136.includes("返事の前に、問診の質問（いつから・熱は何度かなど）を同じ答えに並べない") && b136.includes("返事を待ってから問診の最初の質問に進む"), "救急の確認の返事を待ってから問診に進むと渡す");
+  }
   // 未見の問（holdout11）で見つかった足りないところ: 得意分野は自己申告で評価に変えない（決まり7）・対象を絞った時間に決まり17・閉院の日
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
