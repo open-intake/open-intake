@@ -1,0 +1,22 @@
+{"cases":[
+{"id":"C01","must":[{"id":"M1","met":false,"quote":""},{"id":"M2","met":true,"quote":"今日の診療は15時からです"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"14時台が小児科の健診・予防接種の時間だと触れていない。"},
+{"id":"C02","must":[{"id":"M1","met":true,"quote":"ふだんの診療時間に書かれていません（休診です）"},{"id":"M2","met":true,"quote":"午前: 診療 9:00〜12:30、受付 8:45〜12:00"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"休診と翌日の時間を伝えている。"},
+{"id":"C03","must":[{"id":"M1","met":true,"quote":"午前の受付は12:00に締め切られているため"},{"id":"M2","met":true,"quote":"午後: 診療 15:00〜18:30、受付は18:00まで"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"受付締切・午後・相談先を伝えている。"},
+{"id":"C04","must":[{"id":"M1","met":true,"quote":"臨時の情報では、診療 9:00〜12:00"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"臨時の情報を優先している。"},
+{"id":"C05","must":[{"id":"M1","met":true,"quote":"当番については地域の一覧を優先します"},{"id":"M2","met":true,"quote":"必ず電話（03-0000-0000）で時間と受付を確かめて"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"食い違いを示し一覧を優先している。"},
+{"id":"C06","must":[{"id":"M1","met":true,"quote":"12月15日までは、小児科の予防接種は新しい予約を止めています"},{"id":"M2","met":true,"quote":"健診は、ふだんどおりです"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"変更の範囲を正しく伝えている。"},
+{"id":"C07","must":[{"id":"M1","met":true,"quote":"11月10日更新の臨時の情報には書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"言い切らずに伝えている。"},
+{"id":"C08","must":[{"id":"M1","met":true,"quote":"2027年1月31日の終わりまで有効でした。その期限を過ぎている"},{"id":"M2","met":true,"quote":"電話（03-0000-0000）で必ず確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"期限切れの情報を使っていない。"},
+{"id":"C09","must":[{"id":"M1","met":true,"quote":"2026年10月31日をもって閉院しています"},{"id":"M2","met":true,"quote":"ほかの医療機関をお探しください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"閉院を伝え時間は案内していない。"},
+{"id":"C10","must":[{"id":"M1","met":true,"quote":"移転先は https://example.com/new/ です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転先を示し古い時間を使っていない。"},
+{"id":"C11","must":[{"id":"M1","met":true,"quote":"256日が過ぎています。情報が古いかもしれません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"時間と古さの注意を伝えている。"},
+{"id":"C12","must":[{"id":"M1","met":true,"quote":"1年を過ぎた未確認の情報です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"未確認の情報として電話を勧めている。"},
+{"id":"C13","must":[{"id":"M1","met":true,"quote":"電話番号は、2つの情報で食い違っています"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"両方の番号を示している。"},
+{"id":"C14","must":[{"id":"M1","met":true,"quote":"閉院しているかもしれません"},{"id":"M2","met":true,"quote":"受診の前に、必ず電話（03-0000-0000）で"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"名簿を優先している。"},
+{"id":"C15","must":[{"id":"M1","met":true,"quote":"公的な名簿とは結びついていない情報です"},{"id":"M2","met":true,"quote":"03-0000-0000 へ電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"内容と注記、電話の勧めがある。"},
+{"id":"C16","must":[{"id":"M1","met":true,"quote":"予約ページ: https://example.com/reserve"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"ページを案内するのみ。"},
+{"id":"C17","must":[{"id":"M1","met":true,"quote":"掲載されている対応症状に「せき」があります"},{"id":"M2","met":true,"quote":"どこを受診するかは、ご自身でお決めください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"事実だけで候補を示している。"},
+{"id":"C18","must":[{"id":"M1","met":true,"quote":"予約を取る前に、今すぐ119番に電話してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"119番を先に伝え病名なし。"},
+{"id":"C19","must":[{"id":"M1","met":true,"quote":"医師が確認する前の下書きです"},{"id":"M2","met":true,"quote":"問診票はあとにして、すぐ119番に電話してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"下書きと救急の目安を伝えている。"},
+{"id":"C20","must":[{"id":"M1","met":true,"quote":"大人の方の内科の時間ではありません"},{"id":"M2","met":true,"quote":"内科の診療は、15時00分〜18時30分です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"健診の行を一般外来と区別している。"}
+]}
