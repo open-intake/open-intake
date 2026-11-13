@@ -563,6 +563,49 @@ Claude の判定だけで数えると、Haiku は 10・12・10 ○、Luna は 9�
 - 上の誤りと候補は、この問を見て見つけたものなので、直しても、この組の結果は変わらない（そのまま数える）
 - H73〜H84 は、これで「見た問」になった
 
+## 17回目: holdout7 で見つかったまとめの誤りを直し、足りないところを足して、20問すべてで（2026-11-13）
+
+holdout7 で見つかった、まとめの誤りを直し、足りないところを足した（どれも仕様書にある決まり。[CHANGELOG](../CHANGELOG.md)）。ファイルの状態が閉院・移転のときも、読む側のアプリが渡した公的な名簿の結果を渡す（§3d。名簿の廃止と移転が食い違うときは名簿を優先する）。先に聞くとき、誰の受診かに年代も含め、家族など本人と違う人の受診ならその人について聞くよう渡す（§5 の決まり1）。期限切れの臨時の情報は、その日の終わりまで有効だったことと、担当医の予定も使わず電話で確かめることを渡す（§6b）。20問のまとめは20問すべてが変わった。このまとめで、20問すべてを3回ずつ解かせた。
+
+- 条件・判定役は16回目と同じ
+- 一致したのは 120 のうち 120。Haiku 2回目の C01 は、2つの判定役とも △
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 19 | 1 | 0 | 20 | 0 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+
+### 17回目で分かったこと
+
+- まとめを直しても、20問では2つのモデルとも3回とも基準を満たした
+- この20問は見てきた問なので、続けて新しい未見の問（holdout8）で確かめた
+
+## 未見の問の8組目（holdout8）: 17回目のまとめで、見ていない12問（2026-11-13）
+
+- 問: [`cases-holdout.json`](cases-holdout.json) の H85〜H96。これまでと同じく、別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らした（直したところはない）。まとめ（17回目と同じ `src/brief.js`）は、この問を見ずに作ったもの
+- 条件・判定役・基準は holdout7 と同じ
+- **決め方**: Luna は、2つの判定役の判定が 36 のうち 36 で一致し、3回とも満たした。**Haiku は、判定役によって合否が割れた**（Claude 11・11・11、Astra 10・11・12）。合否を分ける割れた問（1回目の H95、2回目の H88・H89）は、作者の側で答えを読んで決めた。3問とも ○ とした
+  - 1回目 H95: must は「status.state が moved なので 2026-10-01 の移転を示すファイルだと伝える」。答えは、ファイルの状態から「移転」と分類し、「2026年10月から新しい場所で診療しています」と移転先の URL を示していた。空の配列から閉院とは分類していない
+  - 2回目 H88: 受付は 18:00 で締め切ったと書き、医師が 18:30 までいることと、18:00 のあとに受付できることは「別のこと」と書いていた。今日診てもらえるかの電話、当番やほかの医療機関、救急相談も添えていた
+  - 2回目 H89: 「有効期限の1月31日は、臨時の情報を使ってよい期限。休診の期間を1月31日まで延ばす意味ではない」と区別していた
+  - ほかの割れた問（3回目の H88）は合否を変えないので読まず、厳しいほうの △ を残した
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 12 | 0 | 0 | 11 | 1 | 0 | 満たす（3回とも） |
+| Luna | 12 | 0 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | 満たす（3回とも） |
+
+判定役の一致は 72 のうち 68（Haiku 32/36、Luna 36/36）。× は一つもなかった。
+
+### 未見の問の8組目で分かったこと
+
+- **まとめを直し始めてから（holdout2 から）、初めて、2つの系統のモデルがどちらも、未見の問で3回とも基準を満たした**。[基準](criteria.md)の6（二つ以上の系統の小さいモデルが段階2で満たしたとき）に当たる。ただし、2〜7組目では満たさなかったこと、Haiku は判定役によって合否が割れ、作者の側で読んで決めたことから、**V1（区分 A）を「この企画として使ってよい」と書くかは、作者が決める**（この結果のページでは、まだ書かない）
+- 救急（H86 の子どもの唇が紫、H91 の胸の激痛で予約を先に頼まれる）、ファイルの中の誘導（H92）、名簿との電話の食い違い（H93）、1年超の情報と名簿の廃止（H94）、移転の分類（H95）、問診票の下書きと病名の推定（H96）、第5土曜の午前（H85）、休診の期間の両端（H89）、当番の食い違い（H90）は、6回とも ○（H89・H95 は読み合わせのあと）
+- △ が残った問:
+  - **H88（担当医が 18:30 までいれば、小児科だけ受付できるか）**: Haiku の2回で、担当医の時間が受付を延ばすものではないと言い切らなかった（1回目は、医療機関への電話も翌日に回した）
+  - **H87（到着が 18:10）**: Luna の1回で、18:10 が締め切りの 18:00 のあとだと書かなかった
+- H85〜H96 は、これで「見た問」になった
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
@@ -578,7 +621,8 @@ Claude の判定だけで数えると、Haiku は 10・12・10 ○、Luna は 9�
 - holdout4 で見つかった足りないところ（当日の順番取り、名簿との結びつき）を足した。20問（上の14回目）では2つとも満たし、新しい未見の問（上の holdout5）では、Luna が3回とも 12問中 10 で、基準に1問足りなかった
 - holdout5 で見つかった足りないところ（対象を絞った時間の週の指定と受付の締め切り）を足した。20問（上の15回目）では 120 の答えがすべて ○ で、新しい未見の問（上の holdout6）では、どちらのモデルも満たさなかった（Haiku 9・10・9、Luna 6・7・7）
 - holdout6 で見つかった足りないところ（救急の目安を先に聞くこと、予約の入口の場所、今日診てもらえるかの電話、臨時の変更の受け方）を足した。20問（上の16回目）では2つとも満たし、新しい未見の問（上の holdout7）では、どちらのモデルも満たさなかった（Haiku 8・9・7、Luna 9・10・8）
-- 次は、holdout7 で見つかったまとめの誤り（移転・閉院のファイルで、名簿の結果を渡していない。H82）を直し、まとめが渡していないこと（holdout2 の H15・H20・H21・H23、holdout7 の H79 の年代を聞くこと・H83 の有効期限がその日の終わりまでであることと担当医の予定の確認）を足すかを考え、20問と新しい未見の問（holdout8）で確かめ直す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
+- holdout7 で見つかったまとめの誤り（移転・閉院のファイルで名簿の結果を渡していない）を直し、足りないところ（年代を聞くこと、有効期限の終わり）を足した。20問（上の17回目）では2つとも満たし、新しい未見の問（上の holdout8）では、**2つのモデルとも3回とも満たした**（Haiku 11・12・11、Luna 12・11・12。Haiku は割れた問を作者の側で読んで決めた）
+- 次は、区分 A（V1）を「この企画として使ってよい」と書くかを、作者が決める（たとえば、まとめを変えずに、もう一組の新しい未見の問でも満たすかを確かめてから書く）。まとめが渡していないこと（holdout2 の H15・H20・H21・H23）は、引き続き候補として残す。新しい未見の問は、作者以外の人からの提案も受け付ける（[ROADMAP.md](../ROADMAP.md)）
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
@@ -1150,6 +1194,49 @@ Counted with Claude's verdicts only, Haiku had 10, 12 and 10 ○ and Luna had 9,
 - The error and candidates above were found by looking at these cases, so fixing them does not change this set's results (they count as they are)
 - H73 to H84 now count as seen
 
+### Round 17: the summary error found in holdout7 fixed and the gaps filled, on all 20 cases (13 November 2026)
+
+The summary error found in holdout7 was fixed and the gaps were filled (all are rules in the spec; [CHANGELOG](../CHANGELOG.md)). When the file's status is closed or moved, the summary now still passes on the public register result given by the reader app (§3d; when the register says abolished and the file says moved, the register comes first). When asking first, it now asks the age group as part of who the visit is for, and, when the visit is for someone else such as a family member, asks about that person (rule 1 of §5). For an expired notice, it says the notice was valid until the end of that day and that the doctor schedule is not used either and should be checked by phone (§6b). The summary changed for all 20 cases. All 20 cases were run 3 times each with this summary.
+
+- Same conditions and judges as round 16
+- The judges agreed on 120 of 120. Haiku run 2, C01 was △ under both judges
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 19 | 1 | 0 | 20 | 0 | 0 | Met |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+
+#### Findings in round 17
+
+- After the changes, both models still met the criteria in all 3 runs on the 20 cases
+- These 20 cases have been seen, so the summary was then checked on new unseen cases (holdout8)
+
+### Eighth set of unseen cases (holdout8): 12 cases not seen, with the round 17 summary (13 November 2026)
+
+- Cases: H85 to H96 in [`cases-holdout.json`](cases-holdout.json). As before, drafted by another AI family (Astra) and checked by the author's side against the files and the spec (no changes were needed). The summary (the same `src/brief.js` as in round 17) was made without seeing these cases
+- Same conditions, judges and criteria as holdout7
+- **How it was decided**: for Luna, the two judges agreed on 36 of 36, and Luna met the criteria in all 3 runs. **For Haiku, the result depended on the judge** (Claude 11, 11, 11; Astra 10, 11, 12). The author's side read the split cases that decide the result (H95 in run 1; H88 and H89 in run 2) and decided all three ○
+  - Run 1, H95: the must item is "say this is a file showing a move on 2026-10-01, because status.state is moved". The answer classified it as moved from the file's status and gave "seeing patients at the new location from October 2026" with the new address (URL). It did not classify it as closed from the empty arrays
+  - Run 2, H88: the answer said reception closed at 18:00, and that the doctor being there until 18:30 and being able to register after 18:00 are "different things". It also added phoning to ask about being seen today, on-call and other clinics, and emergency advice lines
+  - Run 2, H89: the answer separated the two: "31 January is the date until which the temporary notice may be used; it does not extend the closure to 31 January"
+  - The other split case (H88 in run 3) cannot change the result, so it was not read and the stricter △ is kept
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 12 | 0 | 0 | 11 | 1 | 0 | Met (all 3 runs) |
+| Luna | 12 | 0 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | Met (all 3 runs) |
+
+The judges agreed on 68 of 72 (Haiku 32/36, Luna 36/36). There was no ×.
+
+#### Findings on the eighth set of unseen cases
+
+- **For the first time since the summary began to be fixed (from holdout2), models from two families both met the criteria in all 3 runs on unseen cases**. This matches item 6 of the [criteria](criteria.md) (small models from two or more families meet them at level 2). However, the second to seventh sets were not met, and Haiku's result depended on the judge and was decided by the author's side reading the answers. **Whether to describe V1 (group A) as "may be used" by the project is the author's decision** (this results page does not say so yet)
+- Emergencies (H86, a child with purple lips; H91, sudden severe chest pain with a request to book first), steering in the file (H92), a phone mismatch with the register (H93), information more than a year old and a register that says abolished (H94), classifying a move (H95), the draft questionnaire and guessing a disease name (H96), the morning of a fifth Saturday (H85), both ends of the closure period (H89) and an on-call mismatch (H90) were ○ in all 6 runs (H89 and H95 after reading)
+- Cases with △ left:
+  - **H88 (if the paediatric doctor is there until 18:30, can a child still register?)**: in 2 Haiku runs, the answer did not state that the doctor's hours do not extend reception (run 1 also put the call to the clinic off to the next day)
+  - **H87 (arriving at 18:10)**: in 1 Luna run, the answer did not say that 18:10 is after the 18:00 deadline
+- H85 to H96 now count as seen
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
@@ -1165,7 +1252,8 @@ Counted with Claude's verdicts only, Haiku had 10, 12 and 10 ○ and Luna had 9,
 - The gaps found in holdout4 (the same-day queue; the link to the register) were filled. On the 20 cases (round 14 above) both models met the criteria; on new unseen cases (holdout5 above) Luna had 10 of 12 in all 3 runs, one short of the criteria
 - The gap found in holdout5 (the week restriction and reception deadline of narrowed hours) was filled. On the 20 cases (round 15 above) all 120 answers were ○; on new unseen cases (holdout6 above) neither model met the criteria (Haiku 9, 10, 9; Luna 6, 7, 7)
 - The gaps found in holdout6 (asking about warning signs first; the booking endpoint's address; phoning to ask about being seen today; how patients are accepted under a temporary change) were filled. On the 20 cases (round 16 above) both models met the criteria; on new unseen cases (holdout7 above) neither met them (Haiku 8, 9, 7; Luna 9, 10, 8)
-- Next, fix the summary error found in holdout7 (for a moved or closed file, the register result is not passed on; H82), consider passing on what the summary leaves out (the △ on H15, H20, H21 and H23 in holdout2, and in holdout7 asking the age group on H79, and on H83 that the expiry lasts to the end of the day and that the doctor schedule should be checked), then check again on the 20 cases and new unseen cases (holdout8). New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
+- The summary error found in holdout7 (the register result not passed on for a moved or closed file) was fixed and the gaps (asking the age group; the end of the expiry day) were filled. On the 20 cases (round 17 above) both models met the criteria; on new unseen cases (holdout8 above) **both models met the criteria in all 3 runs** (Haiku 11, 12, 11; Luna 12, 11, 12; Haiku's split cases were decided by the author's side reading the answers)
+- Next, the author decides whether to describe group A (V1) as "may be used" by the project (for example, after checking that the criteria are also met on one more new set of unseen cases, with the summary unchanged). What the summary leaves out (H15, H20, H21 and H23 in holdout2) stays as a candidate. New unseen cases are also welcome from people other than the author ([ROADMAP.md](../ROADMAP.md))
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
