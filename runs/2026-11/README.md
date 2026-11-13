@@ -37,13 +37,15 @@
 | `holdout10/` | 未見の問の10組目 | 18回目のまとめで、見ていない12問（H109〜H120）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
 | `round19/` | 19回目 | holdout10 で見つかった足りないところを足して、20問すべてを3回ずつ。Luna の `judge2/` は Fable の判定 |
 | `holdout11/` | 未見の問の11組目 | 19回目のまとめで、見ていない12問（H121〜H132）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
+| `round20/` | 20回目 | holdout11 で見つかった足りないところを足して、20問すべてを3回ずつ。Luna の `judge2/` は Fable の判定 |
+| `holdout12/` | 未見の問の12組目 | 20回目のまとめで、見ていない12問（H133〜H144）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
 
 各回のフォルダの中:
 
 - `kit*/` … AI に渡した文（問ごとに1つ。ここに書いてあることが、AI が見たもののすべて）
 - `out-<モデル>-<形><回>/` … 答え（問ごとに `<id>.md`）
 - `judge/` … Claude の判定。`judge2/` … 答えたモデルと別の系統の AI の判定。`in-*.md` は判定役に渡した資料（1回目は `judge/` にまとめて置いた）
-- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json`・`holdout3/finalH3.json`・`holdout4/finalH4.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout5/finalH5.json` は、合否が割れた Luna の H58 を読んで決めた。結果は厳しいほうの判定と同じ。`holdout6/finalH6.json`・`holdout7/finalH7.json` も、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout8/finalH8.json` は、合否が割れた Haiku の 1回目 H95・2回目 H88・H89 を読んで ○ とした（理由は結果のページ）。`holdout9/finalH9.json` は、合否が割れた Luna の H99（3回）を読んで △ を残した。`round18/final18.json`・`holdout10/finalH10.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`round19/final19.json` は割れた問がなかった。`holdout11/finalH11.json` は、× の付いた H129（4つ）を読んで × を確かめ、ほかは厳しいほうの判定を残した。`-` は答えなし）
+- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json`・`holdout3/finalH3.json`・`holdout4/finalH4.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout5/finalH5.json` は、合否が割れた Luna の H58 を読んで決めた。結果は厳しいほうの判定と同じ。`holdout6/finalH6.json`・`holdout7/finalH7.json` も、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout8/finalH8.json` は、合否が割れた Haiku の 1回目 H95・2回目 H88・H89 を読んで ○ とした（理由は結果のページ）。`holdout9/finalH9.json` は、合否が割れた Luna の H99（3回）を読んで △ を残した。`round18/final18.json`・`holdout10/finalH10.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`round19/final19.json` は割れた問がなかった。`holdout11/finalH11.json` は、× の付いた H129（4つ）を読んで × を確かめ、ほかは厳しいほうの判定を残した。`round20/final20.json` は、Astra が × を付けた Haiku の C18（1回目、○）と C14（3回目、△）を読んで決めた。`holdout12/finalH12.json` は、Haiku の H135（1回目・3回目、○）と H136（3回、△）を読んで決め、ほかは厳しいほうの判定を残した。`-` は答えなし）
 
 入れていないもの: 道具が出した生の記録（実行のログ・エラーの出力）。
 
@@ -99,13 +101,15 @@ Published from 13 November 2026. Until then the results said "the full answers a
 | `holdout10/` | Tenth set of unseen cases | 12 cases not seen (H109–H120), with the round 18 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
 | `round19/` | Round 19 | All 20 cases, 3 runs each, after filling the gaps found in holdout10. Luna's `judge2/` holds Fable's verdicts |
 | `holdout11/` | Eleventh set of unseen cases | 12 cases not seen (H121–H132), with the round 19 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
+| `round20/` | Round 20 | All 20 cases, 3 runs each, after filling the gaps found in holdout11. Luna's `judge2/` holds Fable's verdicts |
+| `holdout12/` | Twelfth set of unseen cases | 12 cases not seen (H133–H144), with the round 20 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
 
 In each round folder:
 
 - `kit*/` … the prompts given to the AI (one per case; this is everything the AI saw)
 - `out-<model>-<form><run>/` … the answers (`<id>.md` per case)
 - `judge/` … judgments by Claude. `judge2/` … judgments by an AI from a family other than the answering model. `in-*.md` are the documents given to the judges (round 1 keeps both in `judge/`)
-- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json`, `holdout3/finalH3.json` and `holdout4/finalH4.json` keep the stricter verdict, because no reading would change any result; `holdout5/finalH5.json` was decided after reading Luna's H58, where the result depended on the judge, and matches the stricter verdict; `holdout6/finalH6.json` and `holdout7/finalH7.json` keep the stricter verdict, because no reading would change any result; `holdout8/finalH8.json` was decided after reading Haiku's H95 in run 1 and H88 and H89 in run 2, where the result depended on the judge, and marks them ○ (reasons on the results page); `holdout9/finalH9.json` keeps △ on Luna's H99 (3 runs) after reading them; `round18/final18.json` and `holdout10/finalH10.json` keep the stricter verdict, because no reading would change any result; `round19/final19.json` had no split; `holdout11/finalH11.json` confirms × on H129 (4 answers) after reading them and keeps the stricter verdict elsewhere; `-` means no answer)
+- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json`, `holdout3/finalH3.json` and `holdout4/finalH4.json` keep the stricter verdict, because no reading would change any result; `holdout5/finalH5.json` was decided after reading Luna's H58, where the result depended on the judge, and matches the stricter verdict; `holdout6/finalH6.json` and `holdout7/finalH7.json` keep the stricter verdict, because no reading would change any result; `holdout8/finalH8.json` was decided after reading Haiku's H95 in run 1 and H88 and H89 in run 2, where the result depended on the judge, and marks them ○ (reasons on the results page); `holdout9/finalH9.json` keeps △ on Luna's H99 (3 runs) after reading them; `round18/final18.json` and `holdout10/finalH10.json` keep the stricter verdict, because no reading would change any result; `round19/final19.json` had no split; `holdout11/finalH11.json` confirms × on H129 (4 answers) after reading them and keeps the stricter verdict elsewhere; `round20/final20.json` was decided after reading Haiku's C18 (run 1, ○) and C14 (run 3, △), which Astra marked ×; `holdout12/finalH12.json` was decided after reading Haiku's H135 (runs 1 and 3, ○) and H136 (3 runs, △) and keeps the stricter verdict elsewhere; `-` means no answer)
 
 Not included: raw tool output (run logs, error output). The answers and judgments themselves are all in the files above.
 
