@@ -243,6 +243,15 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout6）で見つかった足りないところ: 救急の目安を先に聞く（§5 決まり1）・入口の場所・今日診てもらえるかの電話（決まり17）・臨時の変更の受け方
+  {
+    const two = { ...one, "https://example.com/clinic-schedule.json": JSON.parse(fs.readFileSync("conformance/files/clinic-schedule.json", "utf8")) };
+    ok(brief(two, "2026-12-11T17:54:00+09:00").includes("誰の受診かと、救急の目安"), "相談に書かれていないとき、救急の目安を先に聞くよう渡す");
+    const epf = { "https://example.com/clinic-intake.json": JSON.parse(fs.readFileSync("conformance/files/endpoints.json", "utf8")) };
+    ok(brief(epf, "2027-01-26T09:27:00+09:00").includes("入口: https://booking.example.org/mcp"), "予約の入口の場所を渡す");
+    ok(brief(one, "2026-12-15T18:07:00+09:00").includes("「急ぐので今日診てもらえるか」を電話で相談できる"), "受付が終わったとき、今日診てもらえるかを電話で相談できると渡す");
+    ok(brief(two, "2026-12-26T08:36:00+09:00").includes("今日の受け方（臨時の情報による）: 予約なしで受付"), "全体の臨時の変更の受け方（予約なし）を渡す");
+  }
   // 未見の問（holdout1）で見つかった誤りを直したこと
   const fri = brief(one, "2026-11-27T18:01:00+09:00"), fri2 = brief(one, "2026-11-27T19:00:00+09:00"), thu = brief(one, "2026-11-26T16:10:00+09:00");
   ok(!fri.includes("金曜の午後は") && fri.includes("受付は 18:00 で締め切りました") && fri.includes("受付を済ませた人"), "午後の診療がある日に受付が終わっても「午後は休診」と書かせない");

@@ -101,7 +101,7 @@
         for (const e of sched.exceptions || []) {
           if (inRange(e, day) && wholeEx(e)) {
             if (e.status === "closed") return [[], "臨時の休診（" + span(e) + (e.note ? "・" + e.note : "") + "）。答えでは、この休診の期間を書く"];
-            const rows = (e.hours || []).map(h => ({ opens: h.opens, closes: h.closes, reception: e.reception || {} }));
+            const rows = (e.hours || []).map(h => ({ opens: h.opens, closes: h.closes, reception: e.reception || {}, entry: e.entry }));
             return [rows, "臨時の情報（" + (e.note || "") + "）"];
           }
         }
@@ -112,7 +112,8 @@
     };
 
     let L = [`【読む側のアプリが、ファイルと今の時刻から計算したまとめ（今: ${jday(today)}${hh}時${String(mm).padStart(2, "0")}分）】`,
-      "- このまとめは計算の結果で、判断は相談の中身と合わせて行う。相談に救急の目安があれば、このまとめより先に119番を勧める。そのときは、予約の方法や時間を続けて書かない"];
+      "- このまとめは計算の結果で、判断は相談の中身と合わせて行う。相談に救急の目安があれば、このまとめより先に119番を勧める。そのときは、予約の方法や時間を続けて書かない",
+      "- 相談に、誰の受診か、救急の目安に当たる症状があるかが書かれていないときは（§5 の決まり1）、答えの初めに、誰の受診かと、救急の目安（胸の痛み・息苦しさ・意識の異常など）に当たる症状がないかを聞く。当てはまればすぐ119番と書く。そのあとで、このまとめの時間や受付を書いてよい"];
     const c = intake.clinic;
     L.push(`- 医療機関: ${c.name}（ファイルの場所: ${host(intakeUrl)}）。版 ${intake.specVersion}`);
     const st = intake.status;
@@ -160,6 +161,7 @@
       if (src.startsWith("臨時の情報（")) {
         L.push("- 今日の全員向けの時間（臨時の情報による。ふだんの時間ではない）: " + parts.join(" ／ "));
         L.push(`- 臨時の情報の文（医療機関の言葉。答えにそのまま写さない）: ${src.slice(6, -1)}`);
+        if (rows[0].entry) L.push(`- 今日の受け方（臨時の情報による）: ${ENTRY[rows[0].entry] || rows[0].entry}。答えにも書く`);
         // 全体の臨時の変更は、その日のふだんの行を置き換える（§6b）。なくなったふだんの時間を、はっきり渡す
         const usual = allRows().filter(r => !scoped(r) && matches(r, today));
         const gone = usual.filter(u => !rows.some(r => T(r.opens) < T(u.closes) && T(u.opens) < T(r.closes)));
@@ -188,7 +190,7 @@
         }
       }
       if (!parts.some(x => x.includes("受付中") || x.includes("診療中")) && parts.some(x => x.includes("締め切った") || x.includes("終わった")))
-        L.push("- 受付が終わったとき: 答えでは、次に受けられる診療と受付の時間と、急ぐとき・悪くなるときは電話や救急相談（#7119 など）を使えることと、当番やほかの医療機関に相談できることを書く。受付が終わったことを、受診を延ばしてよい理由にしない");
+        L.push("- 受付が終わったとき: 答えでは、次に受けられる診療と受付の時間と、急ぐとき・悪くなるときは救急相談（#7119 など）を使えることと、この医療機関に「急ぐので今日診てもらえるか」を電話で相談できることと、当番やほかの医療機関に相談できることを書く。受付が終わったことを、受診を延ばしてよい理由にしない");
     } else {
       L.push(`- 今日の全員向けの時間: なし（${src}）`);
     }
@@ -258,7 +260,7 @@
       else if (x.mode === "time-slot") s += "（時刻の枠を取る予約）";
       else if (x.mode === "request") s += "（申し込み。医療機関の返事で確定する。返事が来るまで予約が取れたとは言わない）";
       if (x.platform) s += `・予約の基盤 ${x.platform.name}（${host(x.platform.url || "")}）`;
-      if (x.endpoints) s += "・機械から予約できる入口あり（患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
+      if (x.endpoints) s += `・機械から予約できる入口あり（入口: ${x.endpoints.map(e => e.url + (e.type ? `（${e.type}）` : "")).join("・")}。入口の場所を聞かれたら、この URL をそのまま書く。` + "患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
       return s;
     });
     if (bk.length) L.push("- 予約の方法: " + bk.join(" ／ ") + ((c.booking || []).some(x => x.method === "web" && x.url) ? "。Web で予約できるかを聞かれたら、答えに Web の URL をそのまま書く" : ""));
