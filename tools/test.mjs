@@ -185,7 +185,7 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   ok(Array.isArray(H.cases) && H.cases.length >= 12, "未見の問が12問以上ある");
   const lang = x => x && typeof x.ja === "string" && x.ja && typeof x.en === "string" && x.en;
   for (const c of C.cases.concat(H.cases)) {
-    ok(/^[CH]\d{2}$/.test(c.id) && !ids.has(c.id), `問題 ${c.id} の id が重ならない`); ids.add(c.id);
+    ok(/^[CH]\d{2,3}$/.test(c.id) && !ids.has(c.id), `問題 ${c.id} の id が重ならない`); ids.add(c.id);
     ok(!isNaN(Date.parse(c.now)) && lang(c.patient) && Array.isArray(c.must) && c.must.length && c.must.every(lang) && Array.isArray(c.mustNot) && c.mustNot.every(lang) && (c.context === undefined || lang(c.context)), `問題 ${c.id} の形（now・patient・must・mustNot は日英）`);
     for (const [u, f] of Object.entries(c.files || {})) {
       const there = fs.existsSync(f); ok(/^https:\/\//.test(u) && there, `問題 ${c.id} のファイル ${f} がある`);

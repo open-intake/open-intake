@@ -32,13 +32,14 @@
 | `holdout7/` | 未見の問の7組目 | 16回目のまとめで、見ていない12問（H73〜H84）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
 | `round17/` | 17回目 | holdout7 で見つかったまとめの誤りを直し、足りないところを足して、20問すべてを3回ずつ。Luna の `judge2/` は Fable の判定 |
 | `holdout8/` | 未見の問の8組目 | 17回目のまとめで、見ていない12問（H85〜H96）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
+| `holdout9/` | 未見の問の9組目 | 17回目のまとめ（変えていない）で、見ていない12問（H97〜H108）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
 
 各回のフォルダの中:
 
 - `kit*/` … AI に渡した文（問ごとに1つ。ここに書いてあることが、AI が見たもののすべて）
 - `out-<モデル>-<形><回>/` … 答え（問ごとに `<id>.md`）
 - `judge/` … Claude の判定。`judge2/` … 答えたモデルと別の系統の AI の判定。`in-*.md` は判定役に渡した資料（1回目は `judge/` にまとめて置いた）
-- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json`・`holdout3/finalH3.json`・`holdout4/finalH4.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout5/finalH5.json` は、合否が割れた Luna の H58 を読んで決めた。結果は厳しいほうの判定と同じ。`holdout6/finalH6.json`・`holdout7/finalH7.json` も、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout8/finalH8.json` は、合否が割れた Haiku の 1回目 H95・2回目 H88・H89 を読んで ○ とした（理由は結果のページ）。`-` は答えなし）
+- `final*.json` … 2つの判定が割れた所を、作者の側で答えを読んで決めたあとの判定（`holdout2/finalH2.json`・`holdout3/finalH3.json`・`holdout4/finalH4.json` は、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout5/finalH5.json` は、合否が割れた Luna の H58 を読んで決めた。結果は厳しいほうの判定と同じ。`holdout6/finalH6.json`・`holdout7/finalH7.json` も、どう読んでも合否が変わらなかったので、厳しいほうの判定を残した。`holdout8/finalH8.json` は、合否が割れた Haiku の 1回目 H95・2回目 H88・H89 を読んで ○ とした（理由は結果のページ）。`holdout9/finalH9.json` は、合否が割れた Luna の H99（3回）を読んで △ を残した。`-` は答えなし）
 
 入れていないもの: 道具が出した生の記録（実行のログ・エラーの出力）。
 
@@ -89,13 +90,14 @@ Published from 13 November 2026. Until then the results said "the full answers a
 | `holdout7/` | Seventh set of unseen cases | 12 cases not seen (H73–H84), with the round 16 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
 | `round17/` | Round 17 | All 20 cases, 3 runs each, after fixing the summary error found in holdout7 and filling the gaps. Luna's `judge2/` holds Fable's verdicts |
 | `holdout8/` | Eighth set of unseen cases | 12 cases not seen (H85–H96), with the round 17 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
+| `holdout9/` | Ninth set of unseen cases | 12 cases not seen (H97–H108), with the round 17 summary (unchanged). Used once. Luna's `judge2/` holds Fable's verdicts |
 
 In each round folder:
 
 - `kit*/` … the prompts given to the AI (one per case; this is everything the AI saw)
 - `out-<model>-<form><run>/` … the answers (`<id>.md` per case)
 - `judge/` … judgments by Claude. `judge2/` … judgments by an AI from a family other than the answering model. `in-*.md` are the documents given to the judges (round 1 keeps both in `judge/`)
-- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json`, `holdout3/finalH3.json` and `holdout4/finalH4.json` keep the stricter verdict, because no reading would change any result; `holdout5/finalH5.json` was decided after reading Luna's H58, where the result depended on the judge, and matches the stricter verdict; `holdout6/finalH6.json` and `holdout7/finalH7.json` keep the stricter verdict, because no reading would change any result; `holdout8/finalH8.json` was decided after reading Haiku's H95 in run 1 and H88 and H89 in run 2, where the result depended on the judge, and marks them ○ (reasons on the results page); `-` means no answer)
+- `final*.json` … the judgments after the author's side read the answers where the two judges disagreed (`holdout2/finalH2.json`, `holdout3/finalH3.json` and `holdout4/finalH4.json` keep the stricter verdict, because no reading would change any result; `holdout5/finalH5.json` was decided after reading Luna's H58, where the result depended on the judge, and matches the stricter verdict; `holdout6/finalH6.json` and `holdout7/finalH7.json` keep the stricter verdict, because no reading would change any result; `holdout8/finalH8.json` was decided after reading Haiku's H95 in run 1 and H88 and H89 in run 2, where the result depended on the judge, and marks them ○ (reasons on the results page); `holdout9/finalH9.json` keeps △ on Luna's H99 (3 runs) after reading them; `-` means no answer)
 
 Not included: raw tool output (run logs, error output). The answers and judgments themselves are all in the files above.
 
