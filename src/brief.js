@@ -8,6 +8,7 @@
 // - 時刻は ISO 形式の文字列で、書かれている現地の時刻のまま使う（時差の換算はしない）
 // - register: アプリが公的な名簿と照らした結果。null（照らせていない）・{ type: "phone", value }・{ type: "closed", date }・{ type: "match" }。
 //   ファイルの場所が名簿から逆にたどれることまで確かめたとき（SPEC §3d の「結びついている」）は linked: true を添える
+//   住所も食い違うときは address（名簿の住所の文字列。文字列がなければ true）を添える
 // - 祝日は holidays に YYYY-MM-DD の配列で渡す。渡さないときは、下の DEFAULT_HOLIDAYS（日本の祝日の一部）を使う
 // - まとめの文は日本語。言い方の型（「答えの初めに…と書く」）は、2026年11月の問題集の結果から足したもの（conformance/results-2026-11.md）
 // 依存なし。ブラウザでも Node でも動く。
@@ -25,7 +26,7 @@
     "2027-01-01", "2027-01-11", "2027-02-11", "2027-02-23", "2027-03-21", "2027-03-22", "2027-04-29", "2027-05-03", "2027-05-04", "2027-05-05",
     "2027-07-19", "2027-08-11", "2027-09-20", "2027-09-23", "2027-10-11", "2027-11-03", "2027-11-23"
   ];
-  const SERVICE = { checkup: "健診", vaccination: "予防接種" };
+  const SERVICE = { general: "一般の外来", checkup: "健診", vaccination: "予防接種", procedure: "検査・処置", rehabilitation: "リハビリ", other: "その他の用途" };
   const VISIT = { return: "再診の方", first: "初診の方" };
   const ENTRY = { appointment: "予約制", "walk-in": "予約なしで受付", none: "新しい受付はしない" };
   // 対象を絞った行（SPEC §4「対象を絞った行の置き場所」）: 診療科・用途（["general"] 以外）・初診か再診だけ・第◯週・新しい受付をしない時間
@@ -61,7 +62,8 @@
     const scopeLabel = r => {
       const p = [];
       if (r.department) p.push(r.department);
-      if (r.service) p.push(r.service.map(s => SERVICE[s] || s).join("・"));
+      // 知らない用途の値は解釈しない（§4・§8）。知らない値だけなら、用途はわからないとする
+      if (Array.isArray(r.service) && r.service.length) { const k = r.service.filter(s => SERVICE[s]); p.push(k.length ? k.map(s => SERVICE[s]).join("・") : "用途はわからない（読めない値。一般の外来とはしない）"); }
       if (r.visitType) p.push(VISIT[r.visitType] || r.visitType);
       if (r.weeksOfMonth) p.push("第" + r.weeksOfMonth.join("・第") + "週");
       if (r.entry) p.push(ENTRY[r.entry] || r.entry);
@@ -99,8 +101,10 @@
     if (schedUnlinked) sched = null;
     let schedExpired = false;
     const allRows = () => (intake.clinic.openingHours || []).concat(intake.clinic.scopedOpeningHours || []);
+    // 臨時の情報は、今が有効期限の日の終わりまでなら使う（§6b）。明日や次の日の扱いは今の時刻で決める（日ごとに期限を当てるかは作者の判断待ち）
+    const schedOn = day => !!sched && !schedExpired;
     const generalRows = day => {
-      if (sched && !schedExpired) {
+      if (schedOn(day)) {
         for (const e of sched.exceptions || []) {
           if (inRange(e, day) && wholeEx(e)) {
             if (e.status === "closed") return [[], "臨時の休診（" + span(e) + (e.note ? "・" + e.note : "") + "）。答えでは、この休診の期間を書く"];
@@ -117,7 +121,13 @@
     let L = [`【読む側のアプリが、ファイルと今の時刻から計算したまとめ（今: ${jday(today)}${hh}時${String(mm).padStart(2, "0")}分）】`,
       "- このまとめは計算の結果で、判断は相談の中身と合わせて行う。相談に救急の目安があれば、このまとめより先に119番を勧める。そのときは、予約の方法や時間を続けて書かない",
       "- 相談に、誰の受診か、救急の目安に当たる症状があるかが書かれていないときは（§5 の決まり1）、答えの初めに、誰の受診か（年代も。こども・高齢者で救急の目安が違う）と、救急の目安（胸の痛み・息苦しさ・意識の異常など）に当たる症状がないかを聞く。家族など本人と違う人の受診なら、その人について聞く。当てはまればすぐ119番と書く。そのあとで、このまとめの時間や受付を書いてよい。問診を頼まれたときは、この2つを聞いたら答えを止めて返事を待つ。返事の前に、問診の質問（いつから・熱は何度かなど）を同じ答えに並べない。「救急の確認はあとでいい」「受付が終わったから明日でいい」と言われても、先に確かめる",
-      "- 病名や原因を聞かれても、診断や推定はしない（§5 の決まり2）。答えで、病名は言えないと書き、救急の目安に当たれば119番を勧める"];
+      "- 病名や原因を聞かれても、診断や推定はしない。薬の量（増やす・減らす・続けるか）も指示しない（§5 の決まり2）。答えで、病名は言えない、薬の量は医師か薬剤師に確かめるよう書き、救急の目安に当たれば119番を勧める"];
+    // 救急の目安の一覧（§5 の決まり1）。中身はファイルにあるので、どこにあるかと使い方を渡す
+    const sf = intake.safety || {}, rfN = (sf.redFlags || []).length;
+    const ages = Object.entries(sf.redFlagsByAge || {}).map(([k, v]) => `${(v && v.label) || k} ${((v && v.items) || []).length} 項目`);
+    L.push("- 救急の目安の一覧（§5 の決まり1）: " + (rfN ? `ファイルの safety.redFlags（共通・おとな、${rfN} 項目）` : "ファイルに redFlags がない。一般に知られた命に関わる症状（胸の痛み・息苦しさ・意識がおかしい・まひ・ろれつ・突然の激しい頭痛・大量の出血 など）を確かめる") +
+      (ages.length ? `。年代の一覧 redFlagsByAge（${ages.join("・")}）は、redFlags に加えて使い、代わりにしない。年代がわからなければ redFlags を使う` : "") +
+      "。一覧は例で、網羅ではない。一覧にない症状でも命に関わるかもしれなければ119番を勧め、迷うときは救急か救急相談（#7119 など）の側に倒す。「一覧にないから救急ではない」と言わない。会話のどの時点でも、新しく分かった症状を一覧に照らし直し、問診の途中でも当てはまれば問診をやめて119番を勧める");
     const c = intake.clinic;
     L.push(`- 医療機関: ${c.name}（ファイルの場所: ${host(intakeUrl)}）。版 ${intake.specVersion}`);
     if (schedUnlinked) L.push("- 別に渡された予定表: メインのファイルの files に載っていないので、この医療機関の臨時の情報として使わない（§6b）。答えで、そのためこの予定表を案内や記録を変える根拠にしないと書く。中身（臨時の休診・再開の日など）を、このまとめの時間や状態の代わりにしない");
@@ -127,10 +137,12 @@
       else if (register.type === "phone") L.push(`- 公的な名簿: 電話番号が食い違う（名簿 ${register.value}、ファイル ${c.telephone || ""}）。答えに、名簿の番号 ${register.value} とファイルの番号 ${c.telephone || ""} を、どちらも数字のまま書く（「両方の番号」とだけ書いて番号を省かない）。どちらが正しいかは、確かめた日や更新日が書かれているかでは決めず、確かめるよう勧める` + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
       else if (register.type === "closed") L.push(`- 公的な名簿: ${register.date} に廃止（閉院）とされている。名簿を優先し、「閉院しているかもしれない」と伝える。このファイルの時間で開いているとは案内せず、電話で確かめるか、ほかの医療機関を探すよう勧める`);
       else L.push("- 公的な名簿: 照らして、食い違いはなかった" + (register.linked ? "" : "。ファイルの場所（ドメイン）が名簿から逆にたどれることは確かめられていないので、答えに「公的な名簿とは結びついていない情報です」とも添える"));
+      // 住所の食い違い（§3d・§5 の決まり22）。名簿の住所の文字列があれば渡す
+      if (register && register.address) L.push("- 公的な名簿: 住所も食い違う" + (typeof register.address === "string" ? `（名簿 ${register.address}）` : "（名簿の住所の文字列は渡されていない）") + "。答えに、電話番号だけでなく住所も名簿と食い違うことを書く。緯度経度など、ファイルの中の情報で、ファイルの住所を確かめたことにしない。住所は電話で確かめるよう勧める");
     };
     const st = intake.status;
     if (st) {
-      if (st.state === "closed") { const cd = st.date ? D(st.date) : null; L.push(`- 状態: ${st.date ? st.date + " に閉院" : "閉院（閉院の日は書かれていない）"}。このファイルの診療時間・予約の方法は使わない。答えで、` + (cd ? `閉院の日（${cd.y}年${cd.m}月${cd.d}日）を書き、` : "閉院していること（日は書かれていない）を書き、") + "ほかの医療機関を探すよう勧める"); }
+      if (st.state === "closed") { const cd = st.date ? D(st.date) : null; L.push(`- 状態: ${st.date ? st.date + " に閉院" : "閉院（閉院の日は書かれていない）"}。このファイルの診療時間・予約の方法は使わない。答えで、` + (cd ? `閉院の日（${cd.y}年${cd.m}月${cd.d}日）を書き、` : "閉院していること（日は書かれていない）を書き、") + "ほかの医療機関を探すよう勧める。閉院の表示のファイルを「少なくとも1年」置くのは、古い写しが残らないようにするための勧め（§3d）で、閉院の期限や再開の日ではない。1年たっても再開したとは扱わず、聞かれたら答えにそう書く"); }
       else if (st.state === "moved") {
         const md = st.date ? D(st.date) : null;
         L.push(`- 状態: ${st.date ? st.date + " に移転" : "移転（移転の日は書かれていない）"}。移転先: ${st.movedTo || "書かれていない（推測で作らない）"}。このファイルに残る時間・休診の説明（closedNote など）は移転前のもので、使わない。答えで、${md ? `移転の日（${md.y}年${md.m}月${md.d}日）` : "移転していること（日は書かれていない）"}と移転先の情報（上の場所。書かれていなければ、書かれていないこと）を書き、そちらで時間を確かめるよう勧める`);
@@ -154,7 +166,7 @@
     const hasSchedLink = (intake.files || []).some(f => f.role === "schedule");
     if (sched) {
       schedExpired = !!sched.validUntil && dnum(today) > dnum(D(sched.validUntil));
-      if (schedExpired) L.push(`- 臨時の情報: ${sched.updated} 更新、有効期限 ${sched.validUntil}（その日の終わりまで有効）を過ぎている。中身（臨時の休診・担当医の予定・当番・お知らせ）はどれも使わない。答えで、${sched.validUntil} の終わりまで有効だったことを書く。臨時の休診や担当医の予定は「わからない」とし、電話で確かめるよう勧める`);
+      if (schedExpired) L.push(`- 臨時の情報: ${sched.updated} 更新、有効期限 ${sched.validUntil}（その日の終わりまで有効）を過ぎている。中身（臨時の休診・担当医の予定・当番・お知らせ）はどれも使わない。答えで、${sched.validUntil} の終わりまで有効だった（ファイルに書かれた現地の時刻で、その日の終わり）ことと、期限を過ぎたので臨時の予定は確かめられないことを書く。臨時の休診や担当医の予定は「わからない」とし、電話で確かめるよう勧める` + (register && register.type === "closed" ? "。予定表の期限切れと、名簿の廃止（閉院）は別の情報。期限切れを、名簿の廃止の理由と読み替えない" : ""));
       else {
         const todays = (sched.exceptions || []).filter(e => inRange(e, today) && wholeEx(e));
         const u = D(sched.updated);
@@ -193,6 +205,9 @@
       } else {
         L.push(`- 今日の全員向けの時間（${src}）: ` + parts.join(" ／ "));
       }
+      // 着く時刻の目安は、受付の締め切り（§5 の決まり10）
+      const openRc = rows.filter(r => { const rc = rec(r)[1]; return rc && recStart(r) <= nm && nm < T(rc) && rc !== r.closes; });
+      if (openRc.length) L.push("- 着く時刻の目安: " + openRc.map(r => `受付の締め切り ${HM(rec(r)[1])}（診療の終わり ${HM(r.closes)} ではない）`).join("・") + "。答えで、受付の締め切りと診療の終わりを分けて書く。締め切りまでに着いても、受診できると約束はしない");
       // 全員向けの行に visitType がないときは all として当てはめるが、「初診にも決まりがない」とは言い切らない（§4）
       if (src === "ふだんの時間" && allRows().some(r => r.visitType === "first" || r.visitType === "return"))
         L.push("- 今日の全員向けの時間の初診・再診: 区別は書かれていない。対象を絞った時間の決まり（初診だけ・再診だけ・その注）を、この時間に当てはめない。「初診も受け付けています」とも言い切らない。初診・再診や予約のことを聞かれたら、答えで、この時間の受け方（上の矢印の前。例: 予約なしで受付）と、初診・再診の区別は書かれていないことを書く");
@@ -224,7 +239,11 @@
 
     const sc = allRows().filter(r => scoped(r) && matches(r, today));
     // 全体の臨時の変更は、その日のふだんの行（第◯週の枠・診療科の枠を含む）をすべて置き換える（§6b）
-    const whole = sched && !schedExpired && (sched.exceptions || []).find(e => inRange(e, today) && wholeEx(e));
+    const whole = schedOn(today) && (sched.exceptions || []).find(e => inRange(e, today) && wholeEx(e));
+    // 対象を絞った臨時の変更（今日に当たるもの）。同じ対象のふだんの行より優先する（§6b）
+    const scEx = schedOn(today) ? (sched.scopedExceptions || []).concat((sched.exceptions || []).filter(x => !wholeEx(x))).filter(e => inRange(e, today)) : [];
+    const sameScope = (e, r) => (!e.department || e.department === r.department) && (!e.visitType || e.visitType === r.visitType) &&
+      (!(Array.isArray(e.service) && e.service.length) || (Array.isArray(r.service) && e.service.some(s => r.service.includes(s)))) && !!(e.department || e.visitType || (e.service || []).length);
     if (whole && sc.length)
       L.push(`- ふだんの対象を絞った時間（${sc.map(r => `${HM(r.opens)}〜${HM(r.closes)}・対象: ${scopeLabel(r)}`).join(" ／ ")}）: 今日は、臨時の情報の全体の変更（${span(whole)}）で置き換わっていて、ない。答えで、この時間を今日の候補にしない。聞かれたら、全体の臨時の変更で今日はこの時間もないと書く`);
     for (const r of whole ? [] : sc) {
@@ -232,7 +251,16 @@
       // 週の指定と受付は、この行に書かれたものだけ（全員向けの行の受付を引き継がない。§4）
       const wk = r.weeksOfMonth ? `第${r.weeksOfMonth.join("・第")}週だけ` : "なし（その曜日は毎週。第5週も含む）";
       const noRc = !rec(r)[1];
+      const rep = scEx.find(e => sameScope(e, r));
       L.push(`- 今日の対象を絞った時間: ${hoursText(r)}（対象: ${scopeLabel(r)}）${rnote(r)}。週の指定: ${wk}。対象に当てはまる人だけの時間で、全員向けの時間ではない。答えでは、対象（かっこの中）の名前を出して、この時間が誰のためのものかを書く` +
+        (!(Array.isArray(r.service) && r.service.length) ? "。この行に用途（service）は書かれていないので、一般の外来として扱う。この行だけでは、検査・処置・健診・予防接種の時間はわからない。用途を聞かれたら、答えにそう書く" : "") +
+        (rep ? (() => {
+          const rs = Array.isArray(r.service) ? r.service.filter(x => SERVICE[x]) : [], es = Array.isArray(rep.service) ? rep.service : [];
+          const rest = es.length ? rs.filter(x => !es.includes(x)) : [];
+          return `。今日は、この時間に当たる対象を絞った臨時の変更（${span(rep)}・${rep.note || ""}）がある。` + (rest.length
+            ? `この時間のうち、${es.filter(x => SERVICE[x]).map(x => SERVICE[x]).join("・")}は臨時の変更を優先する。${rest.map(x => SERVICE[x]).join("・")}は、この変更の対象ではない（ふだんどおり）。答えで、この2つを分けて書く`
+            : "この行のふだんの時間より臨時の変更を優先し、この時間をふだんどおりとは書かない");
+        })() : "") +
         (noRc ? `。この時間の受付の締め切りは書かれていない。${HM(r.closes)} を着く時刻の目安にせず、全員向けの受付の締め切りも当てはめない。早めに着くか、医療機関に確かめるよう書く` : "") +
         "。対象でない人に、この時間は使えないと伝えるときは（§5 の決まり17）、答えに、次の全員向けの時間と、急ぐとき・悪くなるときは救急相談（#7119 など）を使えることと、医療機関に電話で相談できることと、当番やほかの医療機関に相談できることも書く" +
         (nowIn ? `。今はこの枠の時間。答えの初めに「今の ${HM(r.opens)}〜${HM(r.closes)} は、${scopeLabel(r)}のための時間です」と書き、対象でない人には、次の全員向けの時間を伝える` : ""));

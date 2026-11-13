@@ -243,6 +243,29 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout15）で見つかった足りないところと、Astra の点検の第1段: 救急の目安の一覧（決まり1）・薬の量（決まり2）・service の省略・閉院の1年・住所の食い違い・着く時刻の目安・絞った臨時の変更
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = (id, reg) => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: reg === undefined ? c.register || null : reg }); };
+    const b170 = hb("H170");
+    ok(/redFlags（共通・おとな、\d+ 項目）/.test(b170) && b170.includes("redFlags に加えて使い、代わりにしない") && b170.includes("一覧は例で、網羅ではない") && b170.includes("問診の途中でも当てはまれば問診をやめて119番"), "救急の目安の一覧の場所と使い方を渡す");
+    ok(b170.includes("薬の量（増やす・減らす・続けるか）も指示しない"), "薬の量を指示しないと渡す");
+    ok(hb("H169").includes("この行に用途（service）は書かれていないので、一般の外来として扱う"), "service のない行は一般の外来と渡す");
+    ok(hb("H171").includes("着く時刻の目安: 受付の締め切り 18:00（診療の終わり 18:30 ではない）"), "着く時刻の目安は受付の締め切りと渡す");
+    ok(hb("H173").includes("閉院の期限や再開の日ではない"), "閉院の表示の1年は閉院の期限ではないと渡す");
+    const b174 = hb("H174", { type: "phone", value: "03-0000-0001", address: true });
+    ok(b174.includes("住所も食い違う（名簿の住所の文字列は渡されていない）") && b174.includes("緯度経度など"), "名簿と住所の食い違いを渡す");
+    ok(!hb("H174").includes("住所も食い違う"), "住所の食い違いは、名簿の結果にあるときだけ渡す");
+    const b180 = hb("H180");
+    ok(b180.includes("期限を過ぎたので臨時の予定は確かめられない") && b180.includes("期限切れを、名簿の廃止の理由と読み替えない"), "予定表の期限切れと名簿の廃止を分けて渡す");
+    const c06 = fs.readFileSync("conformance/briefs/C06.txt", "utf8");
+    ok(c06.includes("この時間のうち、予防接種は臨時の変更を優先する。健診は、この変更の対象ではない（ふだんどおり）"), "絞った臨時の変更が行の一部に当たるとき、分けて渡す");
+    const two = { "https://example.com/clinic-intake.json": rd("conformance/files/clinic-intake.json") };
+    const x = rd("conformance/files/clinic-intake.json"); (x.clinic.scopedOpeningHours || []).forEach(r => { if (r.service) r.service = ["telehealth-x"]; });
+    ok(!brief({ "https://example.com/clinic-intake.json": x }, "2026-11-17T14:20:00+09:00").includes("telehealth-x"), "知らない用途の値をそのまま対象の名前にしない");
+    ok(brief(two, "2026-11-17T14:20:00+09:00").length > 0, "ふつうのファイルで止まらない");
+  }
   // 未見の問（holdout14）で見つかった足りないところ: 状況のページ statusUrl・お知らせ notices・入口に送るもの（決まり23）・files に載っていない予定表（§6b）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
