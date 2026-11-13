@@ -74,6 +74,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 - 17回目でも、20問で2つとも3回とも満たした。**未見の問の8組目（holdout8）では、Haiku と Luna がどちらも3回とも満たした**（Haiku 11・12・11、Luna 12・11・12。× はなし。Haiku は判定役で合否が割れたので、作者の側で答えを読んで決めた）。6 の条件には当たるが、2〜7組目では満たさなかったので、**区分 A を「この企画として使ってよい」と書くかは、作者が決める**（[結果](results-2026-11.md)の「未見の問の8組目」）。
 - まとめを変えずに、**未見の問の9組目（holdout9）で確かめたところ、どちらも満たさなかった**（Haiku 8・9・8、Luna 10・10・10。× はなし）。8組目の結果は続けて確かめられなかったので、**区分 A は、まだ「この企画として使ってよい」とは書かない**（[結果](results-2026-11.md)の「未見の問の9組目」）。
 - 足りないところを足した18回目でも、20問で2つとも3回とも満たした。**未見の問の10組目（holdout10）でも、どちらも満たさなかった**（Haiku 11・10・8 で2回目・3回目に ×、Luna 8・9・7）（[結果](results-2026-11.md)の「未見の問の10組目」）。
+- 足りないところを足した19回目では、20問で 120 の答えがすべて ○ だった。**未見の問の11組目（holdout11）でも、どちらも満たさなかった**（Haiku 9・11・8 で2回目に ×、Luna 9・10・9 で3回とも ×）（[結果](results-2026-11.md)の「未見の問の11組目」）。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
@@ -161,6 +162,7 @@ Results are kept in `conformance/results-*.md`.
 - In round 17, both again met the criteria in all 3 runs on the 20 cases. **On the eighth set of unseen cases (holdout8), Haiku and Luna both met the criteria in all 3 runs** (Haiku 11, 12, 11; Luna 12, 11, 12; no ×; Haiku's result depended on the judge, so the author's side decided by reading the answers). This matches item 6, but the second to seventh sets were not met, so **whether to describe group A as "may be used" by the project is the author's decision** ([results](results-2026-11.md), "Eighth set of unseen cases").
 - With the summary unchanged, **on the ninth set of unseen cases (holdout9), neither met the criteria** (Haiku 8, 9, 8; Luna 10, 10, 10; no ×). The eighth set's result was not confirmed, so **group A is still not described as "may be used" by the project** ([results](results-2026-11.md), "Ninth set of unseen cases").
 - In round 18, with the gaps filled, both again met the criteria in all 3 runs on the 20 cases. **On the tenth set of unseen cases (holdout10), neither met them either** (Haiku 11, 10, 8 with × in runs 2 and 3; Luna 8, 9, 7) ([results](results-2026-11.md), "Tenth set of unseen cases").
+- In round 19, with the gaps filled, all 120 answers on the 20 cases were ○. **On the eleventh set of unseen cases (holdout11), neither met them either** (Haiku 9, 11, 8 with × in run 2; Luna 9, 10, 9 with × in all 3 runs) ([results](results-2026-11.md), "Eleventh set of unseen cases").
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later
