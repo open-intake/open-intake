@@ -80,6 +80,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 - 足りないところを足した22回目でも、20問で2つとも3回とも満たした。**未見の問の14組目（holdout14）では、どちらも満たさなかった**（Haiku 10・10・8、Luna 9・9・9、× 0）（[結果](results-2026-11.md)の「未見の問の14組目」）。
 - 足りないところを足した23回目でも、20問で2つとも3回とも満たした。**未見の問の15組目（holdout15）でも、どちらも満たさなかった**（Haiku 8・7・7、Luna 11・10・9、× 0）（[結果](results-2026-11.md)の「未見の問の15組目」）。
 - 足りないところとまとめの点検の第1段を足した24回目でも、20問で2つとも3回とも満たした。**未見の問の16組目（holdout16）では、Haiku が3回とも満たし**（11・11・11、× 0）、Luna は満たさなかった（11・10・10、H182 で × が2つ）。同じモデルが続けて満たしてはいない（[結果](results-2026-11.md)の「未見の問の16組目」）。
+- 足りないところを足した25回目でも、20問で2つとも3回とも満たした。**未見の問の17組目（holdout17）では、2つとも3回とも満たした**（Haiku 11・11・12、Luna 12・11・11、× 0）。**Haiku は holdout16 に続いて2組続けて満たした**。V1 を「この企画として使ってよい」と書くかは、作者が決める（[結果](results-2026-11.md)の「未見の問の17組目」）。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
@@ -173,6 +174,7 @@ Results are kept in `conformance/results-*.md`.
 - In round 22, with the gaps filled, both again met the criteria in all 3 runs on the 20 cases. **On the fourteenth set of unseen cases (holdout14), neither met them** (Haiku 10, 10, 8; Luna 9, 9, 9; no ×) ([results](results-2026-11.md), "Fourteenth set of unseen cases").
 - In round 23, with the gaps filled, both again met the criteria in all 3 runs on the 20 cases. **On the fifteenth set of unseen cases (holdout15), neither met them again** (Haiku 8, 7, 7; Luna 11, 10, 9; no ×) ([results](results-2026-11.md), "Fifteenth set of unseen cases").
 - In round 24, with the gaps and stage 1 of the summary review filled, both again met the criteria in all 3 runs on the 20 cases. **On the sixteenth set of unseen cases (holdout16), Haiku met them in all 3 runs** (11, 11, 11, no ×) and Luna did not (11, 10, 10; two × on H182). No model has met them on consecutive sets ([results](results-2026-11.md), "Sixteenth set of unseen cases").
+- In round 25, with the gaps filled, both again met the criteria in all 3 runs on the 20 cases. **On the seventeenth set of unseen cases (holdout17), both met them in all 3 runs** (Haiku 11, 11, 12; Luna 12, 11, 11; no ×). **Haiku has now met them on two consecutive sets, after holdout16.** Whether to describe V1 as "may be used" by the project is for the author to decide ([results](results-2026-11.md), "Seventeenth set of unseen cases").
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later

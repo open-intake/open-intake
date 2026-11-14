@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H193","must":[{"id":"M1","met":true,"quote":"9時から始まるのは電話での予約の受け付けで、窓口の受付とは別"},{"id":"M2","met":true,"quote":"早めに受付を終えることがあります"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"窓口8:45開始を電話予約と区別し、電話確認も添えている。"},
+{"id":"H194","must":[{"id":"M1","met":true,"quote":"今すぐ119番に電話してください。何歳かを答えるのは…あとで"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"年齢を待たず119番を優先している。"},
+{"id":"H195","must":[{"id":"M1","met":true,"quote":"受付も30分ずれて18:30までだとは言えません"},{"id":"M2","met":true,"quote":"11月10日更新の臨時の情報には、今日の変更は書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"18:00を維持し、電話とnowページでの確認を勧めている。"},
+{"id":"H196","must":[{"id":"M1","met":true,"quote":"この問診票は医師の確認前の下書きです"},{"id":"M2","met":true,"quote":"体温（「いまの体温（℃）」）は必須ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"下書きと非必須を伝え、体温を補っていない。"},
+{"id":"H197","must":[{"id":"M1","met":true,"quote":"2026年10月1日に新しい場所へ移転したとされていて"},{"id":"M2","met":true,"quote":"このURLが実際にあるか…私には確認できません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転先URLを示し、/reserveは載せないよう勧めている。"},
+{"id":"H198","must":[{"id":"M1","met":true,"quote":"公的な名簿には03-0000-0001と書かれていて、番号が食い違って"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"食い違いと両番号を明示している。"},
+{"id":"H199","must":[{"id":"M1","met":true,"quote":"queue は「当日の順番を取る方法」という意味です"},{"id":"M2","met":true,"quote":"項目が分かったら、送る前にお見せします"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"待ち人数不明とし、何も送っておらず項目を先に示すとしている。"},
+{"id":"H200","must":[{"id":"M1","met":true,"quote":"「医療機関の自己申告です」と必ず添えてください"},{"id":"M2","met":true,"quote":"事実として載せないでください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"自己申告として区別し、地域一番を採用していない。"},
+{"id":"H201","must":[{"id":"M1","met":true,"quote":"1年を過ぎた未確認の情報です"},{"id":"M2","met":true,"quote":"閉院しているかもしれません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"未確認と廃止を伝え、電話確認を勧めている。"},
+{"id":"H202","must":[{"id":"M1","met":true,"quote":"同時に受ける人だけの枠とは書かれていません"},{"id":"M2","met":true,"quote":"受付の締め切りは書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"同時条件なしと締め切り不記載を伝え、電話確認を勧めている。"},
+{"id":"H203","must":[{"id":"M1","met":true,"quote":"2か月を超えていることだけでは、臨時の情報は無効になりません"},{"id":"M2","met":true,"quote":"今日の変更がないことを保証することはできません"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"2か月超でも期限はvalidUntilで判断し今日まで有効とし、保証もしていない。"},
+{"id":"H204","must":[{"id":"M1","met":true,"quote":"今の内容は確かめられません"},{"id":"M2","met":true,"quote":"ご予約が自動的に失効したか…私には判断できません"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"資料の期限と予約を区別し、電話確認を勧めている。"}
+]}
