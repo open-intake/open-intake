@@ -243,6 +243,21 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout18）で見つかった足りないところ: closed と withdrawn・notHandled・名簿の番号で確かめる・入口の URL・名簿で閉院のときの古さ
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H209").includes("ファイルでの案内だけをやめた状態は withdrawn で、closed とは違う"), "閉院のファイルで withdrawn との違いを渡す");
+    ok(hb("H208").includes("notHandled（対応していないこと。提供していない診療・処置・年齢層）: 入院") && hb("H208").includes("対象外とは判断しない"), "notHandled を渡し、問診票の質問で対象外としない");
+    ok(hb("H210").includes("名簿の番号 03-0000-0008 に電話して確かめる") && hb("H210").includes("偽のファイル・第三者が作ったとは決めない"), "名簿の番号で確かめるよう渡し、偽と決めない");
+    ok(hb("H211").includes("入口を使うよう頼まれたときは、答えにこの URL をそのまま書く") && hb("H211").includes("申し込みを送ったことではない"), "入口の URL を答えに書き、見つけたことは送ったことではないと渡す");
+    const b213 = hb("H213");
+    ok(b213.includes("名簿の廃止の日 2027-01-25 を書く") && b213.includes("1年以上確かめられていない未確認の情報"), "名簿で閉院のときも情報の古さを答えに書くよう渡す");
+    const w = rd("conformance/files/clinic-intake-closed.json"); w.status = { state: "withdrawn", note: "案内はホームページで" };
+    const bw = brief({ "https://example.com/clinic-intake.json": w }, "2026-12-31T18:46:00+09:00");
+    ok(bw.includes("医療機関は続いていて、閉院（closed）ではない") && !bw.includes("に閉院"), "withdrawn は閉院ではないと渡す");
+  }
   // 未見の問（holdout16）で見つかった足りないところ: 一覧の1つの項目で救急（決まり1）・全体の休診は絞った診療にも当てはまる（§6b）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
