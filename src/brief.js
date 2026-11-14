@@ -127,7 +127,7 @@
     const ages = Object.entries(sf.redFlagsByAge || {}).map(([k, v]) => `${(v && v.label) || k} ${((v && v.items) || []).length} 項目`);
     L.push("- 救急の目安の一覧（§5 の決まり1）: " + (rfN ? `ファイルの safety.redFlags（共通・おとな、${rfN} 項目）` : "ファイルに redFlags がない。一般に知られた命に関わる症状（胸の痛み・息苦しさ・意識がおかしい・まひ・ろれつ・突然の激しい頭痛・大量の出血 など）を確かめる") +
       (ages.length ? `。年代の一覧 redFlagsByAge（${ages.join("・")}）は、redFlags に加えて使い、代わりにしない。年代がわからなければ redFlags を使う` : "") +
-      "。一覧は例で、網羅ではない。一覧にない症状でも命に関わるかもしれなければ119番を勧め、迷うときは救急か救急相談（#7119 など）の側に倒す。「一覧にないから救急ではない」と言わない。会話のどの時点でも、新しく分かった症状を一覧に照らし直し、問診の途中でも当てはまれば問診をやめて119番を勧める");
+      "。一覧の1つの項目に当たれば、それだけで救急の目安（119番を勧める）。ほかの症状（意識がはっきりしている・水分が少し取れるなど）がないことを理由に外さず、一覧にない条件（「水分が取れないなら」など）を足さない。一覧は例で、網羅ではない。一覧にない症状でも命に関わるかもしれなければ119番を勧め、迷うときは救急か救急相談（#7119 など）の側に倒す。「一覧にないから救急ではない」と言わない。会話のどの時点でも、新しく分かった症状を一覧に照らし直し、問診の途中でも当てはまれば問診をやめて119番を勧める");
     const c = intake.clinic;
     L.push(`- 医療機関: ${c.name}（ファイルの場所: ${host(intakeUrl)}）。版 ${intake.specVersion}`);
     if (schedUnlinked) L.push("- 別に渡された予定表: メインのファイルの files に載っていないので、この医療機関の臨時の情報として使わない（§6b）。答えで、そのためこの予定表を案内や記録を変える根拠にしないと書く。中身（臨時の休診・再開の日など）を、このまとめの時間や状態の代わりにしない");
@@ -245,7 +245,8 @@
     const sameScope = (e, r) => (!e.department || e.department === r.department) && (!e.visitType || e.visitType === r.visitType) &&
       (!(Array.isArray(e.service) && e.service.length) || (Array.isArray(r.service) && e.service.some(s => r.service.includes(s)))) && !!(e.department || e.visitType || (e.service || []).length);
     if (whole && sc.length)
-      L.push(`- ふだんの対象を絞った時間（${sc.map(r => `${HM(r.opens)}〜${HM(r.closes)}・対象: ${scopeLabel(r)}`).join(" ／ ")}）: 今日は、臨時の情報の全体の変更（${span(whole)}）で置き換わっていて、ない。答えで、この時間を今日の候補にしない。聞かれたら、全体の臨時の変更で今日はこの時間もないと書く`);
+      L.push(`- ふだんの対象を絞った時間（${sc.map(r => `${HM(r.opens)}〜${HM(r.closes)}・対象: ${scopeLabel(r)}`).join(" ／ ")}）: 今日は、臨時の情報の全体の変更（${span(whole)}）で置き換わっていて、ない。答えで、この時間を今日の候補にしない。聞かれたら、全体の臨時の変更で今日はこの時間もないと書く。答えに、今日の全体の変更の中身（` + (whole.status === "closed" ? "休診" : (whole.hours || []).map(h => `診療 ${HM(h.opens)}〜${HM(h.closes)}`).join("・") + (whole.note ? `、${whole.note}` : "")) + `）も書く`);
+    if (whole && whole.status === "closed") L.push(`- 全体の臨時の休診（${span(whole)}）: 診療科や用途（予防接種・健診など）を問わず、すべての診療に当てはまる。答えで、予防接種など対象を絞った診療もこの期間は休みだと言い切る。お知らせの掲載期間がこの期間に重なっていても、その日に診療している意味にはしない`);
     for (const r of whole ? [] : sc) {
       const nowIn = T(r.opens) <= nm && nm < T(r.closes);
       // 週の指定と受付は、この行に書かれたものだけ（全員向けの行の受付を引き継がない。§4）

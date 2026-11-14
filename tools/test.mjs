@@ -243,6 +243,15 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout16）で見つかった足りないところ: 一覧の1つの項目で救急（決まり1）・全体の休診は絞った診療にも当てはまる（§6b）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H182").includes("一覧の1つの項目に当たれば、それだけで救急の目安"), "一覧の1つの項目に当たればそれだけで救急の目安と渡す");
+    ok(hb("H185").includes("- 全体の臨時の休診（2026年12月29日〜2027年1月3日）: 診療科や用途"), "全体の休診は絞った診療にも当てはまると渡す");
+    ok(hb("H191").includes("今日の全体の変更の中身（診療 9:00〜12:30、院内研修のため午後は休診）"), "全体の変更の中身を答えに書くよう渡す");
+  }
   // 未見の問（holdout15）で見つかった足りないところと、Astra の点検の第1段: 救急の目安の一覧（決まり1）・薬の量（決まり2）・service の省略・閉院の1年・住所の食い違い・着く時刻の目安・絞った臨時の変更
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
