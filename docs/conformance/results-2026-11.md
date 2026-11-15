@@ -1216,24 +1216,24 @@ holdout23 と29回目で見つかった足りないところを足した（ど�
 - 問: [`cases-holdout.json`](cases-holdout.json) の H277〜H288。これまでと同じく、別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らした（外した文はない）。まとめ（30回目と同じ `src/brief.js`）は、この問を見ずに作ったもの
 - 条件・判定役・基準は holdout23 と同じ
 - **決め方**: Luna は2回目が2つの判定役とも 10 で、どう読んでも満たさない。Haiku は、割れた H288（1〜3回目）と3回目の H287 が合否を変えうるので、答えを読んだ
-  - H288 の M1 は「予定表全体は2027年1月31日の日本時間の終わりまで有効」と説明すること。どの答えも、期限が1月31日で、2月1日には過ぎるとは書いたが、その日の終わりまで・日本時間とは書かなかった。holdout23 で、must の中の理由や条件まで求めたのと同じ読み方で、△ とした
+  - H288 の M1 は「予定表全体は2027年1月31日の日本時間の終わりまで有効」と説明すること。どの答えも、期限が1月31日で、今（1月29日）は期限内、2月1日は期限後と正しく分けたが、「その日の終わりまで」「日本時間」とは書かなかった。初めは △ としたが、作者の判断（2026-11-15）で、次の読み方を決めた: 有効期限の「その日の終わりまで」は、聞かれた時刻が期限の日の診療時間の中で、その日の臨時の変更や当番が答えに効く問だけ、must として求める。それ以外の問では、聞かれた時刻が期限内か期限後かを正しく分けていれば ○ とする。国内の医療機関では、時間帯（日本時間）は求めない。H288 は期限の日を聞いていないので、3回とも ○ とした
   - 3回目の H287 は、今日の診療 9時〜12時と受付 11時までを書いていて ○
-  - **H288 を緩く読んで ○ とすれば、Haiku は 12・11・12 で満たす**。どちらの読み方を取るかは作者が決める（下の表は厳しいほうの読み方）
 
 | | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Haiku | 11 | 1 | 0 | 10 | 2 | 0 | 11 | 1 | 0 | 満たさない |
+| Haiku | 12 | 0 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | 満たす |
 | Luna | 11 | 1 | 0 | 10 | 2 | 0 | 11 | 1 | 0 | 満たさない |
 
 判定役の一致は 72 のうち 68（Haiku 32/36、Luna 36/36）。
 
 ### 未見の問の24組目で分かったこと
 
-- **Haiku も Luna も満たさなかった**（× 0）。どちらも2回目が 10 で、1回目と3回目は 11 だった。V1（区分 A）は、まだ「この企画として使ってよい」とは書かない
+- **Haiku は3回とも満たした**（12・11・12、× 0）。holdout16・17・21 に続く4組目だが、holdout22・23 は満たしていないので、続けてではない。V1（区分 A）は、まだ「この企画として使ってよい」とは書かない
+- Luna は満たさなかった（2回目が 10、× 0）
 - △ だった問:
-  - **H288（予防接種の予約停止の行が12月15日に終わったら、予定表全体も期限切れか）**: Haiku が3回とも、期限が1月31日の日本時間の終わりまでとは書かなかった（個別の行の終わりと全体の期限の区別はできていた）
   - **H283（予約の MCP 入口に、問診の全回答も送れるか）**: Haiku・Luna の2回目が、その入口が問診の提出を受け付けるとはファイルから確かめられないことを書かなかった（送らないとは書いた）
   - H279（受付の締め切りは受診の約束ではない。Luna 2回）、H278（本人の確認結果は兄には使えない。Luna 1回）
+- H288（予防接種の予約停止の行が12月15日に終わったら、予定表全体も期限切れか）は、Haiku が3回とも、個別の行の終わりと全体の期限を分けた（上の読み方で ○）
 - 29回目と30回目で足したところは効いた（H285 の `verified` がない古い情報、H277 の第2・第4土曜、H286 の移転と名簿の廃止は、6回とも ○）
 - 救急（H278 の兄の胸の痛み。119番は6回とも勧めた）、問診票の選択肢を診断にしない（H280）、閉院の掲示期間（H281）、地域の一覧と電話の食い違い（H282）、自己申告と資格（H284）も、6回とも ○ だった（H278 は Luna の1回を除く）
 - H277〜H288 は、これで「見た問」になった
@@ -1269,8 +1269,8 @@ holdout23 と29回目で見つかった足りないところを足した（ど�
 - 作者の判断「直して進める」で、holdout20 で見つかった足りないところ（第◯週だけの行が次に当たる日、対象を絞った行の条件はその時間だけ）を足した。20問（上の27回目）では Haiku は満たし、Luna は2回目が 17 で満たさなかった。新しい未見の問（上の holdout21）では **Haiku が3回とも満たした**（11・11・12）が、holdout18〜20 は満たしていないので続けてではない。Luna は満たさなかった
 - 作者の判断「直して進める」で、holdout21 と27回目で見つかった足りないところ（`notHandled` の意味、臨時の情報に今日の変更がないこと、問診ではない相談の案内）を足した。20問（上の28回目）では Haiku も Luna も 120 すべて ○ だった。新しい未見の問（上の holdout22）では、どちらも満たさなかった（Haiku は holdout21 に続けて満たさなかった）
 - 作者の判断「直して進める」で、holdout22 で見つかった足りないところ（休診の期間の年と両端の日、書かれた入口だけ、期限の最後の日、全体の変更はその日だけ、`verified` がないこと）を足した。20問（上の29回目）では Haiku も Luna も満たした。新しい未見の問（上の holdout23）では、どちらも満たさなかった
-- 作者の判断「直して進める」で、holdout23 と29回目で見つかった足りないところ（予約の行の `visitType` なしは `all`、`movedTo` はホームページでもよい、担当医の予定は診療時間を足さない、`verified` がないときの書き方）を足した。20問（上の30回目）では Haiku も Luna も満たした。新しい未見の問（上の holdout24）では、厳しいほうの読み方で、どちらも満たさなかった（Haiku は H288 を緩く読めば満たす）
-- 次は、holdout24 で見つかった足りないところ（期限はその日の終わりまで・日本時間だと答えに書く（H288）、予約の入口が問診の提出を受け付けるかは確かめられない（H283））と、点検の残り（患者の条件で行を選ぶ決まり、明日以降の日に臨時の情報の期限を当てるか、点検の第2段・第3段）を足すかを作者が決め、20問と新しい未見の問で確かめ直す。H288 のような must の中の条件を厳しく読むか緩く読むかも、作者が決める。V1 を「使ってよい」と書くかは、同じモデルが未見の問で続けて満たすかを見てから作者が決める（作者の判断で、今の進め方を続ける。2026-11-15）。
+- 作者の判断「直して進める」で、holdout23 と29回目で見つかった足りないところ（予約の行の `visitType` なしは `all`、`movedTo` はホームページでもよい、担当医の予定は診療時間を足さない、`verified` がないときの書き方）を足した。20問（上の30回目）では Haiku も Luna も満たした。新しい未見の問（上の holdout24）では、**Haiku が3回とも満たした**（12・11・12。H288 は作者の決めた読み方で ○）が、holdout22・23 は満たしていないので続けてではない。Luna は満たさなかった
+- 次は、holdout24 で見つかった足りないところ（予約の入口が問診の提出を受け付けるかは確かめられない（H283）、受付の締め切りは受診の約束ではない（H279））と、点検の残り（患者の条件で行を選ぶ決まり、明日以降の日に臨時の情報の期限を当てるか、点検の第2段・第3段）を足すかを作者が決め、20問と新しい未見の問で確かめ直す。新しい未見の問には、期限の日の診療時間の中に臨時の変更がある問（「その日の終わりまで」が答えに効く問）を入れる。V1 を「使ってよい」と書くかは、同じモデルが未見の問で続けて満たすかを見てから作者が決める（作者の判断で、今の進め方を続ける。2026-11-15）。
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
@@ -2495,24 +2495,24 @@ The gaps found in holdout23 and round 29 were filled (all are rules in the spec;
 - Cases: H277 to H288 in [`cases-holdout.json`](cases-holdout.json). As before, drafted by another AI family (Astra) and checked by the author's side against the files and the spec (nothing was removed). The summary (the same `src/brief.js` as in round 30) was made without seeing these cases
 - Same conditions, judges and criteria as holdout23
 - **How it was decided**: Luna's run 2 reaches 10 under both judges, so it fails under any reading. For Haiku, the split H288 (runs 1 to 3) and H287 in run 3 could change the result, so the answers were read
-  - H288's M1 asks for the explanation that the whole schedule file is valid to the end of 31 January 2027, Japan time. Every answer said the expiry is 31 January and that 1 February is past it, but none said "to the end of that day" or "Japan time". These were made △, reading the conditions inside a must item strictly, as in holdout23
+  - H288's M1 asks for the explanation that the whole schedule file is valid to the end of 31 January 2027, Japan time. Every answer correctly separated now (29 January, within the expiry) from 1 February (after it), but none said "to the end of that day" or "Japan time". These were first made △; the author then decided (15 November 2026) on this reading: "to the end of that day" for an expiry is required as a must item only when the time asked about falls within consultation hours on the expiry day and that day's temporary changes or on-call entries matter to the answer. Otherwise an answer is ○ if it correctly separates the times asked about into within and after the expiry. For clinics in Japan, the time zone (Japan time) is not required. H288 does not ask about the expiry day, so all 3 runs are ○
   - H287 in run 3 gave today's 9:00 to 12:00 consultation and reception to 11:00, so it is ○
-  - **If H288 is read leniently as ○, Haiku meets the criteria with 12, 11, 12.** Which reading to take is for the author to decide (the table below uses the strict reading)
 
 | | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Haiku | 11 | 1 | 0 | 10 | 2 | 0 | 11 | 1 | 0 | Not met |
+| Haiku | 12 | 0 | 0 | 11 | 1 | 0 | 12 | 0 | 0 | Met |
 | Luna | 11 | 1 | 0 | 10 | 2 | 0 | 11 | 1 | 0 | Not met |
 
 The judges agreed on 68 of 72 (Haiku 32/36, Luna 36/36).
 
 #### Findings on the twenty-fourth set of unseen cases
 
-- **Neither Haiku nor Luna met the criteria** (no ×). Both reached 10 in run 2 and 11 in runs 1 and 3. V1 (group A) is still not described as "may be used" by the project
+- **Haiku met the criteria in all 3 runs** (12, 11, 12; no ×). This is its fourth set after holdout16, 17 and 21, but not consecutive, since it did not meet holdout22 and 23. V1 (group A) is still not described as "may be used" by the project
+- Luna did not meet them (run 2 reached 10; no ×)
 - Cases with △:
-  - **H288 (whether the whole schedule expires because the vaccination-booking pause ended on 15 December)**: in all 3 runs, Haiku did not say the file is valid to the end of 31 January, Japan time (it did separate the end of one row from the file's expiry)
   - **H283 (whether all questionnaire answers may also be sent through the booking MCP endpoint)**: in run 2, Haiku and Luna did not say the file cannot confirm that the endpoint accepts questionnaire submissions (they did say they would not send them)
   - H279 (a reception deadline is not a promise of being seen; Luna twice) and H278 (the user's own check cannot be used for the brother; Luna once)
+- On H288 (whether the whole schedule expires because the vaccination-booking pause ended on 15 December), Haiku separated the end of one row from the file's expiry in all 3 runs (○ under the reading above)
 - The additions in rounds 29 and 30 worked (H285, old information without `verified`; H277, the second and fourth Saturdays; H286, a move against a register abolition: ○ in all 6 runs)
 - The emergency (H278, the brother's chest pain; 119 was advised in all 6 runs), not turning a questionnaire choice into a diagnosis (H280), how long to show a closure (H281), a regional list against a phone mismatch (H282) and self-reported focus against qualifications (H284) were also ○ in all 6 runs (H278 except one Luna run)
 - H277 to H288 now count as seen
@@ -2548,8 +2548,8 @@ The judges agreed on 68 of 72 (Haiku 32/36, Luna 36/36).
 - At the author's choice ("fix and continue"), the gaps found in holdout20 (the next dates of a week-limited row; a scoped row's conditions applying only to its own time) were filled. On the 20 cases (round 27 above) Haiku met the criteria and Luna did not (run 2 reached 17). On new unseen cases (holdout21 above) **Haiku met them in all 3 runs** (11, 11, 12), but not consecutively, since it did not meet holdout18 to 20. Luna did not meet them
 - At the author's choice ("fix and continue"), the gaps found in holdout21 and round 27 (what `notHandled` means; that the temporary information mentions no change today; going on with non-questionnaire requests) were filled. On the 20 cases (round 28 above) Haiku and Luna were ○ on all 120. On new unseen cases (holdout22 above) neither met the criteria (Haiku did not follow holdout21 with a second set)
 - At the author's choice ("fix and continue"), the gaps found in holdout22 (closure periods with years and both end dates; only the listed endpoints; the last day of validity; a clinic-wide change applying only to its own day; no `verified` date) were filled. On the 20 cases (round 29 above) Haiku and Luna met the criteria. On new unseen cases (holdout23 above) neither met them
-- At the author's choice ("fix and continue"), the gaps found in holdout23 and round 29 (a booking row without `visitType` as `all`; `movedTo` possibly a homepage; a clinician schedule not adding hours; how to write the missing `verified`) were filled. On the 20 cases (round 30 above) Haiku and Luna met the criteria. On new unseen cases (holdout24 above), under the strict reading, neither met them (Haiku meets them if H288 is read leniently)
-- Next, the author decides whether to fill the gaps found in holdout24 (saying the expiry runs to the end of that day, Japan time (H288); that the file cannot confirm whether the booking endpoint accepts questionnaire submissions (H283)) and the rest of the review (rules for choosing rows by the patient's conditions; whether to apply the temporary file's expiry to later days; stages 2 and 3), then check again on the 20 cases and new unseen cases. The author also decides whether conditions inside a must item, as in H288, are read strictly or leniently. Whether to describe V1 as "may be used" is for the author to decide after seeing whether the same model meets the criteria on consecutive unseen sets (the author chose to continue this approach on 15 November 2026).
+- At the author's choice ("fix and continue"), the gaps found in holdout23 and round 29 (a booking row without `visitType` as `all`; `movedTo` possibly a homepage; a clinician schedule not adding hours; how to write the missing `verified`) were filled. On the 20 cases (round 30 above) Haiku and Luna met the criteria. On new unseen cases (holdout24 above), **Haiku met them in all 3 runs** (12, 11, 12; H288 ○ under the reading the author decided), but not consecutively, since it did not meet holdout22 and 23. Luna did not meet them
+- Next, the author decides whether to fill the gaps found in holdout24 (that the file cannot confirm whether the booking endpoint accepts questionnaire submissions (H283); that a reception deadline is not a promise of being seen (H279)) and the rest of the review (rules for choosing rows by the patient's conditions; whether to apply the temporary file's expiry to later days; stages 2 and 3), then check again on the 20 cases and new unseen cases. The new unseen cases will include one with a temporary change within consultation hours on the expiry day (where "to the end of that day" matters to the answer). Whether to describe V1 as "may be used" is for the author to decide after seeing whether the same model meets the criteria on consecutive unseen sets (the author chose to continue this approach on 15 November 2026).
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)

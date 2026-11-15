@@ -48,6 +48,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 3. **全体**: その区分の問すべてで × がなく、○ が 9割以上（区分 A では 20問中18問以上）。
 4. **繰り返し**: 問ごとに新しい会話で、**3回**解いて、3回とも 2 と 3 を満たす。
 5. **判定**: 答えたモデルと別の系統の AI 二つで判定する。判定が割れた問は、作者の側で答えを読んで決める。
+   - 読み方（作者の判断、2026-11-15）: 有効期限の「その日の終わりまで」は、聞かれた時刻が期限の日の診療時間の中で、その日の臨時の変更や当番が答えに効く問だけ、must として求める。それ以外の問では、聞かれた時刻が期限内か期限後かを正しく分けていれば ○ とする。国内の医療機関では、時間帯（日本時間）は求めない（[結果](results-2026-11.md)の「未見の問の24組目」の H288）。
 6. **公開の言い方**: この企画として「この機能は使ってよい」と書くのは、**二つ以上の系統の小さいモデル**が段階2で満たしたとき。一つのアプリが自分のモデルで満たしたときは、そのアプリで使ってよい。
 
 ## 確かめ直すとき
@@ -87,7 +88,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 - holdout20 の分を足した27回目では、20問で Haiku は満たし、Luna は2回目が 17 で満たさなかった。**未見の問の21組目（holdout21）では、Haiku が3回とも満たした**（11・11・12、× 0）が、holdout18〜20 は満たしていないので続けてではない。Luna は満たさなかった。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の21組目」）。
 - holdout21 と27回目の分を足した28回目では、20問で Haiku も Luna も 120 すべて ○ だった。**未見の問の22組目（holdout22）では、どちらも満たさなかった**（Haiku 10・8・9、Luna 10・9・8、× 0）。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の22組目」）。
 - holdout22 の分を足した29回目では、20問で Haiku も Luna も満たした。**未見の問の23組目（holdout23）では、どちらも満たさなかった**（Haiku 10・10・11、Luna 9・9・8、× 0）。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の23組目」）。
-- holdout23 と29回目の分を足した30回目では、20問で Haiku も Luna も満たした。**未見の問の24組目（holdout24）では、厳しいほうの読み方で、どちらも満たさなかった**（Haiku 11・10・11、Luna 11・10・11、× 0）。Haiku は、H288 を緩く読めば 12・11・12 で満たす。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の24組目」）。
+- holdout23 と29回目の分を足した30回目では、20問で Haiku も Luna も満たした。**未見の問の24組目（holdout24）では、Haiku が3回とも満たした**（12・11・12、× 0。H288 は上の読み方で ○）が、holdout22・23 は満たしていないので続けてではない。Luna は満たさなかった（11・10・11）。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の24組目」）。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
@@ -149,6 +150,7 @@ A combination (model × level) may start using a feature group when all of these
 3. **Overall**: no × on any case in the group, and ○ on at least 90% (for group A, at least 18 of 20).
 4. **Repeated**: solved **3 times**, each case in a new conversation, meeting 2 and 3 every time.
 5. **Judging**: two AI judges from families other than the answering model. Where they disagree, the author's side reads the answer and decides.
+   - Reading (the author's decision, 15 November 2026): "to the end of that day" for an expiry is required as a must item only when the time asked about falls within consultation hours on the expiry day and that day's temporary changes or on-call entries matter to the answer. Otherwise an answer is ○ if it correctly separates the times asked about into within and after the expiry. For clinics in Japan, the time zone (Japan time) is not required ([results](results-2026-11.md), H288 in "Twenty-fourth set of unseen cases").
 6. **How it is published**: the project says "this feature may be used" only when **small models from at least two families** meet the criteria at level 2. An app that meets them with its own model may use the feature in that app.
 
 ### When to check again
@@ -188,7 +190,7 @@ Results are kept in `conformance/results-*.md`.
 - In round 27, with the holdout20 gaps filled, Haiku met the criteria on the 20 cases and Luna did not (run 2 reached 17). **On the twenty-first set of unseen cases (holdout21), Haiku met them in all 3 runs** (11, 11, 12; no ×), but not consecutively, since it did not meet holdout18 to 20. Luna did not meet them. V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-first set of unseen cases").
 - In round 28, with the holdout21 and round 27 gaps filled, Haiku and Luna were ○ on all 120 of the 20 cases. **On the twenty-second set of unseen cases (holdout22), neither met the criteria** (Haiku 10, 8, 9; Luna 10, 9, 8; no ×). V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-second set of unseen cases").
 - In round 29, with the holdout22 gaps filled, Haiku and Luna met the criteria on the 20 cases. **On the twenty-third set of unseen cases (holdout23), neither met the criteria** (Haiku 10, 10, 11; Luna 9, 9, 8; no ×). V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-third set of unseen cases").
-- In round 30, with the holdout23 and round 29 gaps filled, Haiku and Luna met the criteria on the 20 cases. **On the twenty-fourth set of unseen cases (holdout24), under the strict reading, neither met the criteria** (Haiku 11, 10, 11; Luna 11, 10, 11; no ×). Haiku would meet them with 12, 11, 12 if H288 were read leniently. V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-fourth set of unseen cases").
+- In round 30, with the holdout23 and round 29 gaps filled, Haiku and Luna met the criteria on the 20 cases. **On the twenty-fourth set of unseen cases (holdout24), Haiku met them in all 3 runs** (12, 11, 12; no ×; H288 ○ under the reading above), but not consecutively, since it did not meet holdout22 and 23. Luna did not meet them (11, 10, 11). V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-fourth set of unseen cases").
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later
