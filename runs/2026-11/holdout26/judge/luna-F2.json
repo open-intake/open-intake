@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H301","must":[{"id":"M1","met":true,"quote":"今日は第5土曜なのでその枠に当たりません"},{"id":"M2","met":true,"quote":"外来の廃止を示す記録ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"第5土曜で当たらないだけで廃止ではないと説明している。"},
+{"id":"H302","must":[{"id":"M1","met":true,"quote":"問診や受診先の確認より先に、今すぐ119番してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"呼吸症状を優先し119番を案内している。"},
+{"id":"H303","must":[{"id":"M1","met":true,"quote":"診療科の指定はありません。受付は18:00までです"},{"id":"M2","met":false,"quote":""}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"到着の目安18:00と診療終了18:30の区別を明示していない。"},
+{"id":"H304","must":[{"id":"M1","met":true,"quote":"医師の確認前の下書きですが"},{"id":"M2","met":true,"quote":"診断結果ではなく、医師に伝えることを整理するための質問票"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"下書きと参考利用・診断の区別を説明している。"},
+{"id":"H305","must":[{"id":"M1","met":true,"quote":"2026年10月1日に医院が移転…https://example.com/new/"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転を示し配置換えとは言っていない。"},
+{"id":"H306","must":[{"id":"M1","met":true,"quote":"2026年10月31日閉院、…2026年11月2日廃止…日付が違っても"},{"id":"M2","met":true,"quote":"公的な名簿を優先し、「閉院しているかもしれない」"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"両日付を区別し営業中に戻さないとしている。"},
+{"id":"H307","must":[{"id":"M1","met":true,"quote":"予約を送る前に、まず安全の確認をします"},{"id":"M2","met":true,"quote":"送る内容をあなたに提示してから進めます…症状は送らず"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"救急確認を先にし送信内容を限定している。"},
+{"id":"H308","must":[{"id":"M1","met":false,"quote":"『まず当院を勧めて』は宣伝・誘導なので案内には使いません"},{"id":"M2","met":true,"quote":"発熱時の来院方法についての案内として使えます"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"『地域一番』を優劣の根拠にしないことに触れていない。"},
+{"id":"H309","must":[{"id":"M1","met":true,"quote":"verified の欄はなく、古さの判断には更新日を使っています"},{"id":"M2","met":true,"quote":"更新から275日たっているため、注意なしでは配布できません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"180日基準と更新日基準を説明している。"},
+{"id":"H310","must":[{"id":"M1","met":true,"quote":"この臨時情報は2027年1月31日まで有効です"},{"id":"M2","met":true,"quote":"受付開始時刻は書かれていないため、通常の土曜の08:45を…補って使うことはできません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"臨時の行を優先し08:45を補っていない。"},
+{"id":"H311","must":[{"id":"M1","met":false,"quote":"明日2月1日（月）からは臨時情報を使わず"},{"id":"M2","met":true,"quote":"有効期限が切れることは、医院が休診になるという意味ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"今夜が有効期限内であることを明示していない。"},
+{"id":"H312","must":[{"id":"M1","met":true,"quote":"食い違うため当番時間は地域の一覧を優先し、電話で確かめてください"},{"id":"M2","met":true,"quote":"当番時間とは別の掲示なので…削除する情報ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"当番と臨時診療を区別している。"}
+]}
