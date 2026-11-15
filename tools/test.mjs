@@ -243,6 +243,16 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout21）と27回目で見つかった足りないところ: notHandled の意味（§1b）・臨時の情報に今日の変更がないことを書く（§6b）・問診ではない相談は続けて案内する（決まり1）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H250").includes("notHandled は、この医療機関が提供していない診療・処置・年齢層の記載で、部門の閉鎖や名簿の廃止の範囲を表すものではない"), "notHandled は提供していない診療の記載で、名簿の廃止の範囲ではないと渡す");
+    ok(hb("H243").includes("答えに「11月10日更新の臨時の情報には、今日の変更は書かれていない」と書く"), "臨時の情報に今日の変更がないことを答えに書くよう渡す");
+    const c06 = fs.readFileSync("conformance/briefs/C06.txt", "utf8");
+    ok(c06.includes("問診ではない相談（予約・時間・予防接種の予約など）では、この2つを聞いたあと、同じ答えの中で続けて") && c06.includes("対象ではない用途はふだんどおりであることを、どちらも書く"), "問診ではない相談では、救急の目安を聞いたあとも続けて案内するよう渡す");
+  }
   // 未見の問（holdout20）で見つかった足りないところ: 第◯週だけの行が次に当たる日・対象を絞った行の条件はその時間だけ（§4）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
