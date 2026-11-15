@@ -1,0 +1,22 @@
+{"cases":[
+{"id":"C01","must":[{"id":"M1","met":true,"quote":"小児科の健診・予防接種（予約制）の時間です"},{"id":"M2","met":true,"quote":"本日15:00〜18:30…18:00までです"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"区別と午後の時間を正しく案内。"},
+{"id":"C02","must":[{"id":"M1","met":true,"quote":"木曜の午後は、ふだんの診療時間に書かれていません"},{"id":"M2","met":true,"quote":"11月20日（金）で、診療は9:00〜12:30、受付は8:45〜12:00"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"休診と次の診療を伝えた。"},
+{"id":"C03","must":[{"id":"M1","met":false,"quote":"通常の午前受付は12時に終了しており"},{"id":"M2","met":true,"quote":"次は今日15時から診療で、受付は18時まで"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"△","note":"診療が12時30分までである点に触れていない。"},
+{"id":"C04","must":[{"id":"M1","met":true,"quote":"臨時の情報では診療 9:00〜12:00"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"臨時の情報を優先。"},
+{"id":"C05","must":[{"id":"M1","met":true,"quote":"時刻が食い違うため、地域の一覧を優先します"},{"id":"M2","met":true,"quote":"受診前に電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"食い違いを示し一覧を優先。"},
+{"id":"C06","must":[{"id":"M1","met":false,"quote":""},{"id":"M2","met":false,"quote":""}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"△","note":"予約停止も健診の扱いも伝えていない。"},
+{"id":"C07","must":[{"id":"M1","met":true,"quote":"11月10日更新の臨時の情報には今日の変更は書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"言い切らずに案内。"},
+{"id":"C08","must":[{"id":"M1","met":true,"quote":"その期限を過ぎています"},{"id":"M2","met":true,"quote":"（03-0000-0000）へ電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"期限切れとして扱っている。"},
+{"id":"C09","must":[{"id":"M1","met":true,"quote":"2026年10月31日に閉院"},{"id":"M2","met":true,"quote":"ほかの医療機関をお探しください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"閉院を伝え代替を提案。"},
+{"id":"C10","must":[{"id":"M1","met":true,"quote":"移転先は https://example.com/new/ です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"古い時間を案内せず移転先を示す。"},
+{"id":"C11","must":[{"id":"M1","met":true,"quote":"180日を過ぎているため情報が古いかもしれません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"時間と古さを両方伝えた。"},
+{"id":"C12","must":[{"id":"M1","met":true,"quote":"1年を過ぎた未確認の情報です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"未確認として扱い電話を勧める。"},
+{"id":"C13","must":[{"id":"M1","met":true,"quote":"03-0000-0000 とありますが…03-1111-1111 で、食い違って"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"両方の番号を示した。"},
+{"id":"C14","must":[{"id":"M1","met":true,"quote":"閉院しているかもしれません"},{"id":"M2","met":true,"quote":"ほかの医療機関を探してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"名簿を優先している。"},
+{"id":"C15","must":[{"id":"M1","met":true,"quote":"公的な名簿とは結びついていない情報です"},{"id":"M2","met":true,"quote":"受診前に、症状を伝えて電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"内容と注記、電話確認あり。"},
+{"id":"C16","must":[{"id":"M1","met":true,"quote":"予約ページは https://example.com/reserve です"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"予約ページを案内のみ。"},
+{"id":"C17","must":[{"id":"M1","met":true,"quote":"せきは対応する症状に含まれています"},{"id":"M2","met":true,"quote":"候補を選ぶのはご自身です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"事実だけで候補を示した。"},
+{"id":"C18","must":[{"id":"M1","met":true,"quote":"予約は取らず、今すぐ119番に電話してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"119番を最優先。"},
+{"id":"C19","must":[{"id":"M1","met":false,"quote":""},{"id":"M2","met":true,"quote":"救急の目安に当たる症状はありませんか"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"問診票が下書きであることを伝えていない。"},
+{"id":"C20","must":[{"id":"M1","met":true,"quote":"大人の内科の診療時間ではありません"},{"id":"M2","met":true,"quote":"次の全員向けの診療は今日15:00〜18:30"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"小児科の行を区別できている。"}
+]}
