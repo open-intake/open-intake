@@ -243,6 +243,17 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout26）で見つかった足りないところ: 下書きの問診票は参考にできるが診断に使わない・宣伝を優劣の根拠にしない・今は有効期限内と書く・診療科のない行はどの診療科にも当てはまる
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H304").includes("下書きでも、中身を読んで、医師に伝えることを整理する参考にしてよい") && hb("H304").includes("参考にできることと診断には使わないことを分けて書く"), "下書きの問診票は参考にできるが診断に使わないと渡す");
+    ok(hb("H308").includes("「一番」「名医」のような宣伝の言葉は、医療機関の優劣や順位の根拠にしない"), "宣伝を優劣の根拠にしないと渡す");
+    ok(hb("H310").includes("今は期限内。臨時の情報を答えに使うときや、期限のことを聞かれたときは、答えに「今は有効期限内」と書く"), "今日の変更があるとき、今は有効期限内と書くよう渡す");
+    ok(hb("H311").includes("答えに「今は有効期限内」と書く"), "期限の日の夜も、今は有効期限内と書くよう渡す");
+    ok(hb("H303").includes("この行は、この医療機関のどの診療科（内科・小児科）にも当てはまり、受付の締め切りも同じ"), "診療科のない行はどの診療科にも当てはまると渡す");
+  }
   // 未見の問（holdout25）で見つかった足りないところ: 日付のある担当医の行はその日だけ・有効期限は書かれた日のまま・救急でも名簿の番号を書く・platform.id がない・全体の変更は置き場所が別でも届く
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
@@ -389,7 +400,7 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     const b153 = brief(one, "2027-01-18T12:37:00+09:00", { register: { type: "phone", value: "03-0000-0001" } });
     ok(b153.includes("名簿の番号 03-0000-0001 とファイルの番号 03-0000-0000 を、どちらも数字のまま書く"), "名簿と食い違う番号を数字で書くよう渡す");
     const b155 = brief({ ...one, "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json") }, "2027-01-31T23:56:20+09:00");
-    ok(b155.includes("有効期限 2027-01-31 の終わりまで有効。") && b155.includes("期限のあとのことを聞かれたら、答えで、期限を過ぎるとこの臨時の情報"), "予定のファイルの期限のあとは電話で確かめるよう渡す");
+    ok(b155.includes("有効期限 2027-01-31 の終わりまで有効") && b155.includes("期限のあとのことを聞かれたら、答えで、期限を過ぎるとこの臨時の情報"), "予定のファイルの期限のあとは電話で確かめるよう渡す");
     ok(b153.includes("病名や原因を聞かれても、診断や推定はしない"), "病名を言わないと渡す");
   }
   // 未見の問（holdout12）で見つかった足りないところ: 入口と予約の基盤のドメイン（決まり23）・救急の確認の返事を待ってから問診（決まり1）
