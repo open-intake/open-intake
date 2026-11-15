@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H325","must":[{"id":"M1","met":true,"quote":"診療の時間（9時00分〜12時30分）と、受付の時間（8時45分〜12時00分）は別"},{"id":"M2","met":true,"quote":"受付の締め切りは、ふだんどおり12時00分です。早く終わることがある"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"受付開始8:45を維持し、早期終了と電話確認を添えている。"},
+{"id":"H326","must":[{"id":"M1","met":true,"quote":"#8000 がつながるまで待たないでください。"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"返事なしを救急の目安とし119番を指示。"},
+{"id":"H327","must":[{"id":"M1","met":true,"quote":"18:30 は診療の終わりで、受付の締め切りではありません。"},{"id":"M2","met":true,"quote":"駐車場が3台ということは、診察の残りの人数とは関係ありません。"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"締め切り18:00と人数不明を伝え電話確認を案内。"},
+{"id":"H328","must":[{"id":"M1","met":true,"quote":"この問診票は、医師の確認前の下書き（draft）です。"},{"id":"M2","met":true,"quote":"症状が始まった時期を選ぶ選択肢です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"下書きであり診断に使わないと説明。"},
+{"id":"H329","must":[{"id":"M1","met":true,"quote":"閉院したとは書かれていません。"},{"id":"M2","met":true,"quote":"移転先の案内は、https://example.com/new/ です。"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転と閉院を区別しリンクを示した。"},
+{"id":"H330","must":[{"id":"M1","met":true,"quote":"国内表記と国際表記の違いでは説明できません。"},{"id":"M2","met":true,"quote":"公的な名簿の番号 03-0000-0001 に電話して"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"番号の相違と住所の不一致を正しく扱った。"},
+{"id":"H331","must":[{"id":"M1","met":true,"quote":"問診の提出を受け付けるとはファイルには書かれていない"},{"id":"M2","met":true,"quote":"送らないもの: 健康メモ、症状、問診の回答"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"送信内容を先に示し予約に必要な項目に限定。"},
+{"id":"H332","must":[{"id":"M1","met":true,"quote":"糖尿病が書かれているのは、医療機関の自己申告です。"},{"id":"M2","met":true,"quote":"今の順番は https://example.com/now で確かめられます。"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"優先枠の根拠にならないと説明し順番確認先を案内。"},
+{"id":"H333","must":[{"id":"M1","met":true,"quote":"1 年を過ぎてはいないため、「未確認の情報」とは書けません。"},{"id":"M2","met":true,"quote":"明日（2027年3月2日）: 更新から 366 日で 1 年を過ぎる"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"今日と明日の区別と電話確認を正しく伝えた。"},
+{"id":"H334","must":[{"id":"M1","met":true,"quote":"名簿を優先すると、このクリニックは閉院しているかもしれません。"},{"id":"M2","met":true,"quote":"当日の順番を取るためのもので、オンライン診療の案内ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"廃止を優先しオンライン継続を否定。"},
+{"id":"H335","must":[{"id":"M1","met":true,"quote":"今は有効期限（2027年1月31日）の期限内です。"},{"id":"M2","met":true,"quote":"今日の臨時の情報には受付の時間が書かれていません。"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"臨時行を優先し受付は不明とした。"},
+{"id":"H336","must":[{"id":"M1","met":true,"quote":"今日（2027-02-02）は期限を過ぎているので"},{"id":"M2","met":true,"quote":"「受付の時間は書かれていません」と表示してください。"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"制限なしと表示せず15:00も締め切りにしていない。"}
+]}
