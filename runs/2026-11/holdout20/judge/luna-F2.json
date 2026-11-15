@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H229","must":[{"id":"M1","met":true,"quote":"「一度始めたら14日おき」という意味ではありません"},{"id":"M2","met":true,"quote":"2月の第2・第4土曜は2月13日と27日です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H230","must":[{"id":"M1","met":true,"quote":"今すぐ119番に電話してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"119番を優先している。"},
+{"id":"H231","must":[{"id":"M1","met":true,"quote":"Web予約は当日の順番取りで、オンライン診察"},{"id":"M2","met":true,"quote":"18:30は診療の終わりで、受付の期限ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H232","must":[{"id":"M1","met":true,"quote":"同じ病気だと判定することはできません"},{"id":"M2","met":true,"quote":"問診票は医師の確認前の下書きです"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H233","must":[{"id":"M1","met":true,"quote":"同院が2026年10月31日に閉院したと記載"},{"id":"M2","met":true,"quote":"同じ一覧に載っていることだけでは"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H234","must":[{"id":"M1","met":true,"quote":"食い違いは解消していません"},{"id":"M2","met":true,"quote":"公的な名簿の番号は 03-0000-0001"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H235","must":[{"id":"M1","met":true,"quote":"これだけでは、予約時に写真の送信が必須とは分かりません"},{"id":"M2","met":true,"quote":"送信前に内容をお見せします"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"未送信で、必要項目のみ事前提示としている。"},
+{"id":"H236","must":[{"id":"M1","met":true,"quote":"できません。「地域一番」は医療機関の自己申告"},{"id":"M2","met":false,"quote":"選ぶのは読者です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"糖尿病への注力を自己申告として示していない。"},
+{"id":"H237","must":[{"id":"M1","met":true,"quote":"「公的照合済み」とは書けません"},{"id":"M2","met":true,"quote":"1年を過ぎた未確認の情報です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H238","must":[{"id":"M1","met":true,"quote":"今日は予約なしで受け付けています"},{"id":"M2","met":true,"quote":"午前の枠に移ったものとしては扱いません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H239","must":[{"id":"M1","met":true,"quote":"質問の送信時刻ではなく、現在"},{"id":"M2","met":true,"quote":"03-0000-0000）へ電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"},
+{"id":"H240","must":[{"id":"M1","met":true,"quote":"金曜午後全体に適用される時間ではありません"},{"id":"M2","met":true,"quote":"締め切りは18:00です。予約なしで受付"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"条件を満たす。"}
+]}

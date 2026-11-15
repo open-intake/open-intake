@@ -1038,6 +1038,31 @@ holdout18 で見つかった足りないところを足した（どれも仕様�
 - 救急（H218 の5歳の子どもが呼んでも反応しない、H224 の真っ黒い便）、移転の既読（H221）、病名を推定して送らない（H223）、全体の臨時の変更で午後の枠を午前に移さない（H226）、予定表の期限の前後（H227）、予約の停止は休診ではない（H228）は、6回とも ○ だった
 - H217〜H228 は、これで「見た問」になった
 
+## 未見の問の20組目（holdout20）: holdout19 の分を足したまとめで、見ていない12問（2026-11-15）
+
+holdout19 で見つかった足りないところを足した（第◯週だけの行は今週が当たらなければない・締め切りが近いときの相談先。[CHANGELOG](../CHANGELOG.md)）。この直しで20問の見本のまとめは1つも変わらず、20問を解かせ直しても26回目と同じ入力になるので、27回目は回さず、新しい未見の問で確かめた。
+
+- 問: [`cases-holdout.json`](cases-holdout.json) の H229〜H240。これまでと同じく、別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らした（文から「架空の」を外した問はない）。まとめ（holdout19 の分を足した `src/brief.js`）は、この問を見ずに作ったもの
+- 条件・判定役・基準は holdout19 と同じ
+- **決め方**: Luna は3回目の H229 が2つの判定役とも ×（答えを読んで確かめた）で、満たさない。Haiku は判定役で割れた（Claude 11・11・11、Astra 11・10・11）ので、合否が変わりうる3つの答えを読んだ。2回目の H236 は、得意分野を自己申告と書き、見出しを選ぶのは記事を書く人だと書いているので ○。3回目の H233 は、閉院の情報がみどり台だけのものだとは書いたが、閉院の日（2026年10月31日）を書いていないので △。3回目の H240 は、14:00〜15:00 の条件は金曜午後全体には効かないと書いたが、15:20 の一般外来に予約限定の印を付けるかは「判断できない」としたので △（2回目と同じ）
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 11 | 1 | 0 | 10 | 2 | 0 | 満たさない |
+| Luna | 11 | 1 | 0 | 11 | 1 | 0 | 10 | 1 | 1 | 満たさない |
+
+判定役の一致は 72 のうち 67（Haiku 33/36、Luna 34/36）。
+
+### 未見の問の20組目で分かったこと
+
+- **どちらのモデルも基準を満たさなかった**。Haiku は3回目が1つ足りない（10）。Luna は3回目に × が1つある。V1（区分 A）は、まだ「この企画として使ってよい」とは書かない
+- **× が出た問: H229（第2・第4土曜は「14日おき」か。1月23日の次は2月6日か）**: Luna の3回目は、「14日おき」ではないと書いたうえで、「1月23日の次の第2・第4土曜は2月6日」と書いた（2月6日は第1土曜。2月の対象は13日と27日）。Luna の1回目も、2月の対象日を書かなかった（△）。**まとめは、第◯週だけの行が次に当たる日を渡していない**。答える側が月の第何週かを数え違える
+- △ が多かった問:
+  - **H240（14:00〜15:00 の小児科の「予約の人だけ」は、15:20 の一般外来にも効くか）**: Haiku の3回すべてで、金曜午後全体には効かないとは書いたが、15:20 の一般外来に予約限定を当てはめないとは言い切らず「判断できない」とした。**まとめは、対象を絞った行の条件（予約制など）は、その時間だけで、ほかの時間の全員向けの診療に当てはめないことを、はっきり渡していない**
+  - H236（得意分野を自己申告と示す。Luna 2回は Claude の判定だけ △）、H233（閉院の日を書く。Haiku 1回）
+- 救急（H230 の急に二重に見える・話しにくい）、Web の順番取りはオンライン診察ではない（H231）、問診の答えから病名を決めない（H232）、伏せ字で番号の食い違いは消えない（H234）、持ち物を送る項目にしない（H235）、名簿と結びつかない古い情報（H237）、全体の臨時の変更に絞った条件を移さない（H238）、予定表の期限は質問の送信時刻で延びない（H239）は、6回とも ○ だった
+- H229〜H240 は、これで「見た問」になった
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
@@ -1065,7 +1090,8 @@ holdout18 で見つかった足りないところを足した（どれも仕様�
 - holdout16 で見つかった足りないところ（一覧の1つの項目で救急の目安、全体の休診は絞った時間にも当てはまる、全体の変更の中身）を足した。20問（上の25回目）では2つとも満たし、新しい未見の問（上の holdout17）では、**2つのモデルとも3回とも満たした**（Haiku 11・11・12、Luna 12・11・11、× 0）。**Haiku は holdout16 に続いて2組続けて満たした**（同じモデルが続けて満たしたのは初めて）
 - 作者の判断で、まとめを変えずにもう1組（上の holdout18）で確かめた。どちらのモデルも満たさなかった（Haiku 6・7・7、Luna 9・9・7、× 0）。Haiku は3組続けては満たさず、V1 はまだ「使ってよい」と書かない
 - 作者の判断「直して進める」で、holdout18 で見つかった足りないところ（閉院と withdrawn の違い、`notHandled`、名簿の番号で確かめる、入口の URL、名簿で閉院のときの古さ）を足した。20問（上の26回目）では2つとも満たし、新しい未見の問（上の holdout19）では、どちらも満たさなかった（Haiku 12・10・10、Luna 10・11・11、× 0）。△ は H217・H219 の2問に集まった
-- 次は、holdout19 で見つかった足りないところ（第◯週だけの行が今日の曜日に合っても今週は当たらないことを渡すこと（H217）、受付の締め切りが近いときに、間に合わない場合の相談先（決まり17）を渡すこと（H219））と、点検の残り（患者の条件で行を選ぶ決まり、明日以降の日に臨時の情報の期限を当てるか、点検の第2段・第3段）を足すかを作者が決め、20問と新しい未見の問で確かめ直す。V1 を「使ってよい」と書くかは、同じモデルが未見の問で続けて満たすかを見てから作者が決める。
+- 作者の判断「直して進める」で、holdout19 で見つかった足りないところ（第◯週だけの行・締め切りが近いときの相談先）を足した。20問の見本のまとめは変わらないので27回目は回さず、新しい未見の問（上の holdout20）で確かめた。どちらも満たさなかった（Haiku 11・11・10、Luna 11・11・10 で3回目に × が1つ）
+- 次は、holdout20 で見つかった足りないところ（第◯週だけの行が次に当たる日を渡すこと（H229）、対象を絞った行の条件はその時間だけで、ほかの時間の全員向けの診療に当てはめないと渡すこと（H240））と、点検の残り（患者の条件で行を選ぶ決まり、明日以降の日に臨時の情報の期限を当てるか、点検の第2段・第3段）を足すかを作者が決め、新しい未見の問で確かめ直す。V1 を「使ってよい」と書くかは、同じモデルが未見の問で続けて満たすかを見てから作者が決める（作者の判断で、今の進め方を続ける。2026-11-15）。
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
@@ -2112,6 +2138,31 @@ The judges agreed on 71 of 72 (Haiku 35/36, Luna 36/36). Haiku's row shows the s
 - The emergencies (H218, a 5-year-old who does not respond; H224, black stools), a read move notice (H221), not guessing a diagnosis to send (H223), not moving the afternoon slot to the morning under a whole-day change (H226), before and after the schedule's expiry (H227) and a booking pause not being a closure (H228) were ○ in all 6 runs
 - H217 to H228 now count as seen
 
+### Twentieth set of unseen cases (holdout20): 12 cases not seen, with the summary after the holdout19 fixes (15 November 2026)
+
+The gaps found in holdout19 were filled (a row limited to certain weeks does not apply when this week does not match; where to turn when the deadline is near; [CHANGELOG](../CHANGELOG.md)). These fixes changed none of the 20 sample summaries, so re-running the 20 cases would have given the same inputs as round 26. Round 27 was therefore not run, and the summary was checked directly on new unseen cases.
+
+- Cases: H229 to H240 in [`cases-holdout.json`](cases-holdout.json). As before, drafted by another AI family (Astra) and checked by the author's side against the files and the spec (no case had "fictional" removed). The summary (`src/brief.js` with the holdout19 fixes) was made without seeing these cases
+- Same conditions, judges and criteria as holdout19
+- **How it was decided**: Luna run 3 H229 is × from both judges (confirmed by reading the answer), so Luna does not meet the criteria. For Haiku the judges split (Claude 11, 11, 11; Astra 11, 10, 11), so the three answers that could change the result were read. Run 2 H236 says the focus areas are self-reported and that the article's writer chooses the headline, so ○. Run 3 H233 says the closure information concerns Midoridai only but does not give the closure date (31 October 2026), so △. Run 3 H240 says the 14:00-15:00 conditions do not cover the whole Friday afternoon but calls it "impossible to judge" whether to mark the 15:20 general clinic as appointment-only, so △ (as in run 2)
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 11 | 1 | 0 | 11 | 1 | 0 | 10 | 2 | 0 | Not met |
+| Luna | 11 | 1 | 0 | 11 | 1 | 0 | 10 | 1 | 1 | Not met |
+
+The judges agreed on 67 of 72 (Haiku 33/36, Luna 34/36).
+
+#### Findings on the twentieth set of unseen cases
+
+- **Neither model met the criteria**. Haiku run 3 is one short (10). Luna run 3 has one ×. V1 (group A) is still not described as "may be used" by the project
+- **The case with an ×: H229 (whether the 2nd and 4th Saturdays mean "every 14 days", so the next after 23 January is 6 February)**: Luna run 3 said it is not "every 14 days" but then said "the next 2nd or 4th Saturday after 23 January is 6 February" (6 February is the first Saturday; the February dates are the 13th and 27th). Luna run 1 also did not give the February dates (△). **The summary does not pass on the next dates a week-limited row applies**, and the answering model miscounts the week of the month
+- Cases with many △:
+  - **H240 (whether the paediatric "appointment only" condition at 14:00-15:00 also applies to the 15:20 general clinic)**: in all 3 Haiku runs, the answer said it does not cover the whole Friday afternoon but did not say outright that the appointment-only condition does not apply at 15:20, calling it "impossible to judge". **The summary does not clearly pass on that a scoped row's conditions (such as appointment only) apply only to its own time and not to general care at other times**
+  - H236 (presenting focus areas as self-reported; Luna twice, △ from Claude only) and H233 (giving the closure date; Haiku once)
+- The emergency (H230, sudden double vision and difficulty speaking), Web queueing not being an online consultation (H231), not deciding a disease from a questionnaire answer (H232), masking digits not resolving a number mismatch (H234), not treating the items to bring as items to send (H235), old information not linked to the register (H237), not moving scoped conditions onto a whole-day change (H238) and a schedule's expiry not being extended by the time the question was sent (H239) were ○ in all 6 runs
+- H229 to H240 now count as seen
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
@@ -2139,7 +2190,8 @@ The judges agreed on 71 of 72 (Haiku 35/36, Luna 36/36). Haiku's row shows the s
 - The gaps found in holdout16 (a single list item as a warning sign; a whole closure also covering scoped slots; the content of a whole-day change) were filled. On the 20 cases (round 25 above) both models met the criteria; on new unseen cases (holdout17 above) **both models met them in all 3 runs** (Haiku 11, 11, 12; Luna 12, 11, 11; no ×). **Haiku met them for the second set in a row, after holdout16** (the first time the same model has done so)
 - At the author's choice, the unchanged summary was checked on one more set (holdout18 above). Neither model met the criteria (Haiku 6, 7, 7; Luna 9, 9, 7; no ×). Haiku did not meet them on three consecutive sets, so V1 is still not described as "may be used"
 - At the author's choice ("fix and continue"), the gaps found in holdout18 were filled (`closed` versus `withdrawn`; `notHandled`; checking with the register's number; the endpoint URL; the age of the information when the register says closed). On the 20 cases (round 26 above) both models met the criteria; on new unseen cases (holdout19 above) neither did (Haiku 12, 10, 10; Luna 10, 11, 11; no ×). The △ fell on two cases, H217 and H219
-- Next, the author decides whether to fill the gaps found in holdout19 (passing on that a row limited to certain weeks does not apply this week even when the weekday matches (H217); passing on where to turn if they cannot make a near deadline (rule 17) (H219)) and the rest of the review (rules for choosing rows by the patient's conditions; whether to apply the temporary file's expiry to later days; stages 2 and 3), then check again on the 20 cases and new unseen cases. Whether to describe V1 as "may be used" is for the author to decide after seeing whether the same model meets the criteria on consecutive unseen sets.
+- At the author's choice ("fix and continue"), the gaps found in holdout19 (week-limited rows; where to turn near a deadline) were filled. The 20 sample summaries did not change, so round 27 was not run and the summary was checked on new unseen cases (holdout20 above). Neither model met the criteria (Haiku 11, 11, 10; Luna 11, 11, 10 with one × in run 3)
+- Next, the author decides whether to fill the gaps found in holdout20 (passing on the next dates a week-limited row applies (H229); passing on that a scoped row's conditions apply only to its own time and not to general care at other times (H240)) and the rest of the review (rules for choosing rows by the patient's conditions; whether to apply the temporary file's expiry to later days; stages 2 and 3), then check again on new unseen cases. Whether to describe V1 as "may be used" is for the author to decide after seeing whether the same model meets the criteria on consecutive unseen sets (the author chose to continue this approach on 15 November 2026).
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
