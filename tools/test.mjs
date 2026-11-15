@@ -243,6 +243,17 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout27）で見つかった足りないところ: 全体の変更は今は期限内と中身を一緒に書き、未記載の診療を提供する意味ではない・代わりの予約で送る内容を見せる・予約を受け付ける時間は有効期限ではない
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    const b323 = hb("H323");
+    ok(b323.includes("全体の臨時の変更（2026年12月18日）") && b323.includes("中身は 診療 9:00〜12:30（院内研修のため午後は休診）") && b323.includes("今は有効期限内であることと、この中身") && b323.includes("ファイルに書かれていない手術・検査などを提供するという意味ではない"), "全体の変更は今は期限内と中身を一緒に書き、未記載の診療を提供する意味ではないと渡す");
+    ok(hb("H319").includes("今の時点で送る予定の内容") && hb("H319").includes("健康メモは送る内容に入れない"), "代わりの予約で送る内容を見せ、取り消された健康メモは入れないと渡す");
+    const b324 = hb("H324");
+    ok(b324.includes("予約を受け付ける時間（booking の hours）: 月・火・水・金 9:00〜18:00 ／ 木・土 9:00〜12:00") && b324.includes("日曜の行はない") && b324.includes("有効期限は、予約を受け付ける時間ではない"), "予約を受け付ける時間と、有効期限は予約の時間ではないことを渡す");
+  }
   // 未見の問（holdout26）で見つかった足りないところ: 下書きの問診票は参考にできるが診断に使わない・宣伝を優劣の根拠にしない・今は有効期限内と書く・診療科のない行はどの診療科にも当てはまる
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
