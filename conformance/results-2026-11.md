@@ -1238,6 +1238,49 @@ holdout23 と29回目で見つかった足りないところを足した（ど�
 - 救急（H278 の兄の胸の痛み。119番は6回とも勧めた）、問診票の選択肢を診断にしない（H280）、閉院の掲示期間（H281）、地域の一覧と電話の食い違い（H282）、自己申告と資格（H284）も、6回とも ○ だった（H278 は Luna の1回を除く）
 - H277〜H288 は、これで「見た問」になった
 
+## 31回目: holdout24 で見つかった足りないところを足して、20問すべて（2026-11-15）
+
+holdout24 で見つかった足りないところを足した（どれも仕様書にある決まり。[CHANGELOG](../CHANGELOG.md)）。まとめは、時間の意味や着く時刻を聞かれたら、答えに、受付の締め切りは受診の約束ではないことと、一人ずつの診察の長さは書かれていないことを書くよう渡す（§5 の決まり11）。予約の入口は予約の入口で、問診の回答の提出を受け付けるとはファイルに書かれていないこと、問診の回答も送るよう頼まれたら送らず、確かめられないと書くことを渡す（§7）。20問の見本のまとめは11問（C06・C08・C11〜C19）が変わったので、このまとめで20問を3回ずつ解かせた。
+
+- 条件・判定役は30回目と同じ
+- 2つの判定役は 120 のうち 120 で一致した
+- Haiku の1回目の C13 を受け持った子エージェントが、使わないよう頼んだ道具（作業のまとめの道具）を1回使ったらしい（呼び出しの並びからの推測）。答えの中身は患者への返事だけだったので、そのまま使った
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | 満たす |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | 満たす |
+
+### 31回目で分かったこと
+
+- Haiku も Luna も、3回とも満たした（× 0）
+- Haiku の △ は、3回目の C03（受付の締め切り 12:00 と並べて、診療の終わり 12:30 を書かない）だけ
+
+## 未見の問の25組目（holdout25）: 31回目のまとめで、見ていない12問（2026-11-15）
+
+- 問: [`cases-holdout.json`](cases-holdout.json) の H289〜H300。これまでと同じく、別の系統の AI（Astra）に下書きさせ、作者の側でファイル・仕様書と照らした（外した文はない）。まとめ（31回目と同じ `src/brief.js`）は、この問を見ずに作ったもの
+- 作者の決めた読み方（[criteria.md](criteria.md)）に合わせ、期限の日の診療時間の中に臨時の変更がある問を頼んだが、今のファイルでは作れなかった（期限の日 2027年1月31日は日曜で、その日の臨時の記載がない）。H300 は、期限の前と後を分ける問にした
+- 条件・判定役・基準は holdout24 と同じ
+- **決め方**: 割れたのは Haiku の H295（1〜3回目）・H299（1・2回目）・H300（3回目）だけで、どれも合否を変えない（Haiku の3回目は、2つの判定役とも △ とした H289・H297・H299 があり、どう読んでも 9 を超えない。1・2回目も、割れたものをすべて ○ と読んで 10・9）。割れたものは厳しいほうの判定を残した
+
+| | 1回目 ○ | △ | × | 2回目 ○ | △ | × | 3回目 ○ | △ | × | 基準 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 8 | 4 | 0 | 7 | 5 | 0 | 7 | 5 | 0 | 満たさない |
+| Luna | 10 | 2 | 0 | 11 | 1 | 0 | 10 | 2 | 0 | 満たさない |
+
+判定役の一致は 72 のうち 66（Haiku 30/36、Luna 36/36）。
+
+### 未見の問の25組目で分かったこと
+
+- **Haiku も Luna も満たさなかった**（× 0）。Haiku は holdout24 に続けては満たさなかった。V1（区分 A）は、まだ「この企画として使ってよい」とは書かない
+- △ だった問:
+  - **H289（2026-12-05 の代診の行を「毎月第5土曜の担当」として、第5土曜の今日にも出してよいか）**: Haiku が3回とも、この行から今日の担当医は分からないことを書かなかった（特定の日の予定で、毎月の予定ではないとは書いた）
+  - **H300（期限の日が日曜なので、予定表の期限を前の土曜の診療の終わりに繰り上げてよいか）**: Haiku が、繰り上げないと言い切らず、医療機関に確かめるよう任せた（3つの時刻の期限内・期限後は分けた）。Luna の3回目は、1月31日12:31 を期限内と言わなかった
+  - **H294（急な息苦しさで、名簿と電話番号が違うときの順番）**: 119番は12回とも先に勧めたが、Luna が3回とも、Haiku が1回、名簿の番号 03-0000-0001 を示さなかった
+  - H295（予約の基盤の医院 ID に医療機関コードを使ってよいか。Haiku 3回、Astra の判定だけ。`platform.id` が書かれていないとは書かない）、H299（全体の変更は対象を絞った時間にも届く。Haiku 3回、うち2回は Astra の判定だけ）、H297（詳しいファイルがないことを理由に下位に置かない。Haiku 1回）、H296（「地域一番の名医」の宣伝は根拠にならない。Luna 1回）
+- 高いところから落ちた子の救急（H290。119番は6回とも勧めた）、予約なしの受付の締め切り（H291）、問診の必須は条件付きの項目に引き継がない（H292）、閉院の印を電話番号の修正で外さない（H293）、移転と名簿の廃止（H298）は、6回とも ○ だった
+- H289〜H300 は、これで「見た問」になった
+
 ## これから
 
 - 問題のファイルから「架空の例」を外した（同じ日。架空であることは README に書く）。上の2回は、外す前のファイルで解いている
@@ -1270,7 +1313,8 @@ holdout23 と29回目で見つかった足りないところを足した（ど�
 - 作者の判断「直して進める」で、holdout21 と27回目で見つかった足りないところ（`notHandled` の意味、臨時の情報に今日の変更がないこと、問診ではない相談の案内）を足した。20問（上の28回目）では Haiku も Luna も 120 すべて ○ だった。新しい未見の問（上の holdout22）では、どちらも満たさなかった（Haiku は holdout21 に続けて満たさなかった）
 - 作者の判断「直して進める」で、holdout22 で見つかった足りないところ（休診の期間の年と両端の日、書かれた入口だけ、期限の最後の日、全体の変更はその日だけ、`verified` がないこと）を足した。20問（上の29回目）では Haiku も Luna も満たした。新しい未見の問（上の holdout23）では、どちらも満たさなかった
 - 作者の判断「直して進める」で、holdout23 と29回目で見つかった足りないところ（予約の行の `visitType` なしは `all`、`movedTo` はホームページでもよい、担当医の予定は診療時間を足さない、`verified` がないときの書き方）を足した。20問（上の30回目）では Haiku も Luna も満たした。新しい未見の問（上の holdout24）では、**Haiku が3回とも満たした**（12・11・12。H288 は作者の決めた読み方で ○）が、holdout22・23 は満たしていないので続けてではない。Luna は満たさなかった
-- 次は、holdout24 で見つかった足りないところ（予約の入口が問診の提出を受け付けるかは確かめられない（H283）、受付の締め切りは受診の約束ではない（H279））と、点検の残り（患者の条件で行を選ぶ決まり、明日以降の日に臨時の情報の期限を当てるか、点検の第2段・第3段）を足すかを作者が決め、20問と新しい未見の問で確かめ直す。新しい未見の問には、期限の日の診療時間の中に臨時の変更がある問（「その日の終わりまで」が答えに効く問）を入れる。V1 を「使ってよい」と書くかは、同じモデルが未見の問で続けて満たすかを見てから作者が決める（作者の判断で、今の進め方を続ける。2026-11-15）。
+- 作者の判断「直して進める」で、holdout24 で見つかった足りないところ（受付の締め切りは受診の約束ではない、予約の入口は問診の提出を受け付けるとは書かれていない）を足した。20問（上の31回目）では Haiku も Luna も満たした。新しい未見の問（上の holdout25）では、どちらも満たさなかった（Haiku 8・7・7、Luna 10・11・10、× 0）。Haiku は holdout24 に続けては満たさなかった
+- 次は、holdout25 で見つかった足りないところ（特定の日の担当医の行からは、ほかの日の担当医は分からない（H289）、有効期限を休診日に合わせて繰り上げない（H300）、救急を先に勧めるときも名簿の番号を数字で示す（H294）、`platform.id` が書かれていないと書く（H295）、全体の変更は対象を絞った時間にも届くと言い切る（H299））と、点検の残り（患者の条件で行を選ぶ決まり、明日以降の日に臨時の情報の期限を当てるか、点検の第2段・第3段）を足すかを作者が決め、20問と新しい未見の問で確かめ直す。期限の日の診療時間の中に臨時の変更がある問は、今のファイルでは作れなかった（期限の日が日曜）。V1 を「使ってよい」と書くかは、同じモデルが未見の問で続けて満たすかを見てから作者が決める（作者の判断で、今の進め方を続ける。2026-11-15）。
 - まとめを作る手順は、仕様書 §8 に参考として書き、`src/brief.js`（まとめ）・`tools/kit.mjs`（渡す文）・`tools/judge-input.mjs`（判定の資料）をリポジトリに置いた（2026-11-13）
 - 救急の確認を、どの問いでも最初に置くかを、指示書の側で考え直す（安全を下げない範囲で）
 - 判定を自動にするか（2つの判定役と、食い違ったときの読み合わせ）を決める
@@ -2517,6 +2561,49 @@ The judges agreed on 68 of 72 (Haiku 32/36, Luna 36/36).
 - The emergency (H278, the brother's chest pain; 119 was advised in all 6 runs), not turning a questionnaire choice into a diagnosis (H280), how long to show a closure (H281), a regional list against a phone mismatch (H282) and self-reported focus against qualifications (H284) were also ○ in all 6 runs (H278 except one Luna run)
 - H277 to H288 now count as seen
 
+### Round 31: the gaps found in holdout24 filled, on all 20 cases (15 November 2026)
+
+The gaps found in holdout24 were filled (all are rules in the spec; [CHANGELOG](../CHANGELOG.md)). When asked what the times mean or when to arrive, the summary now says to write that a reception deadline is not a promise of being seen and that the length of each consultation is not given (§5, rule 11). It says that the booking endpoint is for booking and the file does not say it accepts questionnaire submissions; if asked to send the answers too, do not send them and say this cannot be confirmed (§7). Eleven sample summaries (C06, C08, C11 to C19) changed, so all 20 cases were run 3 times each with this summary.
+
+- Same conditions and judges as round 30
+- The two judges agreed on 120 of 120
+- The subagent for Haiku's C13 in run 1 seems to have used a tool it was asked not to use (the work wrap-up tool), once; this is inferred from the order of calls. The answer itself was only a reply to the patient, so it was used as is
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 20 | 0 | 0 | 20 | 0 | 0 | 19 | 1 | 0 | Met |
+| Luna | 20 | 0 | 0 | 20 | 0 | 0 | 20 | 0 | 0 | Met |
+
+#### Findings in round 31
+
+- Haiku and Luna met the criteria in all 3 runs (no ×)
+- Haiku's only △ was C03 in run 3 (not giving the 12:30 end of consultation alongside the 12:00 reception deadline)
+
+### Twenty-fifth set of unseen cases (holdout25): 12 cases not seen, with the round 31 summary (15 November 2026)
+
+- Cases: H289 to H300 in [`cases-holdout.json`](cases-holdout.json). As before, drafted by another AI family (Astra) and checked by the author's side against the files and the spec (nothing was removed). The summary (the same `src/brief.js` as in round 31) was made without seeing these cases
+- Following the reading the author decided ([criteria.md](criteria.md)), a case with a temporary change within consultation hours on the expiry day was requested, but the current files cannot support one (the expiry day, 31 January 2027, is a Sunday with no temporary entry). H300 instead separates times before and after the expiry
+- Same conditions, judges and criteria as holdout24
+- **How it was decided**: The only splits were Haiku's H295 (runs 1 to 3), H299 (runs 1 and 2) and H300 (run 3), and none could change the result (Haiku's run 3 has H289, H297 and H299 as △ under both judges, so it cannot exceed 9; runs 1 and 2 reach only 10 and 9 even with every split read as ○). The stricter verdict is kept for each split
+
+| | Run 1 ○ | △ | × | Run 2 ○ | △ | × | Run 3 ○ | △ | × | Criteria |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku | 8 | 4 | 0 | 7 | 5 | 0 | 7 | 5 | 0 | Not met |
+| Luna | 10 | 2 | 0 | 11 | 1 | 0 | 10 | 2 | 0 | Not met |
+
+The judges agreed on 66 of 72 (Haiku 30/36, Luna 36/36).
+
+#### Findings on the twenty-fifth set of unseen cases
+
+- **Neither Haiku nor Luna met the criteria** (no ×). Haiku did not meet them again after holdout24. V1 (group A) is still not described as "may be used" by the project
+- Cases with △:
+  - **H289 (whether a substitute-clinician row dated 2026-12-05 may be shown as "every fifth Saturday", including today, a fifth Saturday)**: in all 3 runs, Haiku did not say that this row does not show today's clinician (it did say the row is for one date, not every month)
+  - **H300 (whether to bring the schedule's expiry forward to the end of consultation on the Saturday before, because the expiry day is a Sunday)**: Haiku did not say firmly not to bring it forward and left it to the clinic (it did separate the three times into within and after the expiry). Luna's run 3 did not say that 31 January at 12:31 is within the expiry
+  - **H294 (sudden breathlessness, with a phone number that differs from the register)**: 119 was advised first in all 12 runs, but Luna in all 3 runs and Haiku once did not give the register number 03-0000-0001
+  - H295 (whether the medical institution code may be used as the booking platform's clinic ID; Haiku 3 times, from Astra only; not saying that `platform.id` is not given), H299 (a whole-day change also replaces the narrowed hours; Haiku 3 times, twice from Astra only), H297 (not ranking a clinic lower only because its detailed file is not at hand; Haiku once) and H296 (the "best doctor in the area" promotion is no basis; Luna once)
+- The emergency for a child who fell from a height (H290; 119 was advised in all 6 runs), the reception deadline for walk-ins (H291), a questionnaire's required flag not carrying over to a conditional item (H292), not removing the closure mark because of a phone correction (H293) and a move against a register abolition (H298) were ○ in all 6 runs
+- H289 to H300 now count as seen
+
 ### Next
 
 - "Fictional example" was removed from the case files (same day; the README says they are fictional). Both rounds above used the files before this change
@@ -2549,7 +2636,8 @@ The judges agreed on 68 of 72 (Haiku 32/36, Luna 36/36).
 - At the author's choice ("fix and continue"), the gaps found in holdout21 and round 27 (what `notHandled` means; that the temporary information mentions no change today; going on with non-questionnaire requests) were filled. On the 20 cases (round 28 above) Haiku and Luna were ○ on all 120. On new unseen cases (holdout22 above) neither met the criteria (Haiku did not follow holdout21 with a second set)
 - At the author's choice ("fix and continue"), the gaps found in holdout22 (closure periods with years and both end dates; only the listed endpoints; the last day of validity; a clinic-wide change applying only to its own day; no `verified` date) were filled. On the 20 cases (round 29 above) Haiku and Luna met the criteria. On new unseen cases (holdout23 above) neither met them
 - At the author's choice ("fix and continue"), the gaps found in holdout23 and round 29 (a booking row without `visitType` as `all`; `movedTo` possibly a homepage; a clinician schedule not adding hours; how to write the missing `verified`) were filled. On the 20 cases (round 30 above) Haiku and Luna met the criteria. On new unseen cases (holdout24 above), **Haiku met them in all 3 runs** (12, 11, 12; H288 ○ under the reading the author decided), but not consecutively, since it did not meet holdout22 and 23. Luna did not meet them
-- Next, the author decides whether to fill the gaps found in holdout24 (that the file cannot confirm whether the booking endpoint accepts questionnaire submissions (H283); that a reception deadline is not a promise of being seen (H279)) and the rest of the review (rules for choosing rows by the patient's conditions; whether to apply the temporary file's expiry to later days; stages 2 and 3), then check again on the 20 cases and new unseen cases. The new unseen cases will include one with a temporary change within consultation hours on the expiry day (where "to the end of that day" matters to the answer). Whether to describe V1 as "may be used" is for the author to decide after seeing whether the same model meets the criteria on consecutive unseen sets (the author chose to continue this approach on 15 November 2026).
+- At the author's choice ("fix and continue"), the gaps found in holdout24 (a reception deadline is not a promise of being seen; the booking endpoint is not said to accept questionnaire submissions) were filled. On the 20 cases (round 31 above) Haiku and Luna met the criteria. On new unseen cases (holdout25 above) neither met them (Haiku 8, 7, 7; Luna 10, 11, 10; no ×). Haiku did not meet them again after holdout24
+- Next, the author decides whether to fill the gaps found in holdout25 (a clinician row for one date does not show the clinician on other days (H289); the expiry is not brought forward to fit closed days (H300); the register number is given in digits even when 119 is advised first (H294); saying that `platform.id` is not given (H295); saying firmly that a whole-day change also replaces the narrowed hours (H299)) and the rest of the review (rules for choosing rows by the patient's conditions; whether to apply the temporary file's expiry to later days; stages 2 and 3), then check again on the 20 cases and new unseen cases. A case with a temporary change within consultation hours on the expiry day could not be made with the current files (the expiry day is a Sunday). Whether to describe V1 as "may be used" is for the author to decide after seeing whether the same model meets the criteria on consecutive unseen sets (the author chose to continue this approach on 15 November 2026).
 - How the summary is made is now described in spec §8 as a reference, and `src/brief.js` (the summary), `tools/kit.mjs` (the prompts) and `tools/judge-input.mjs` (the judging document) are in the repository (13 November 2026)
 - Reconsider, in the instructions, whether the warning-sign check must come first in every reply (without lowering safety)
 - Decide whether to automate judging (two judges, with the disagreements read by a person)

@@ -89,6 +89,7 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
 - holdout21 と27回目の分を足した28回目では、20問で Haiku も Luna も 120 すべて ○ だった。**未見の問の22組目（holdout22）では、どちらも満たさなかった**（Haiku 10・8・9、Luna 10・9・8、× 0）。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の22組目」）。
 - holdout22 の分を足した29回目では、20問で Haiku も Luna も満たした。**未見の問の23組目（holdout23）では、どちらも満たさなかった**（Haiku 10・10・11、Luna 9・9・8、× 0）。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の23組目」）。
 - holdout23 と29回目の分を足した30回目では、20問で Haiku も Luna も満たした。**未見の問の24組目（holdout24）では、Haiku が3回とも満たした**（12・11・12、× 0。H288 は上の読み方で ○）が、holdout22・23 は満たしていないので続けてではない。Luna は満たさなかった（11・10・11）。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の24組目」）。
+- holdout24 の分を足した31回目では、20問で Haiku も Luna も満たした。**未見の問の25組目（holdout25）では、どちらも満たさなかった**（Haiku 8・7・7、Luna 10・11・10、× 0）。Haiku は holdout24 に続けては満たさなかった。V1 はまだ「使ってよい」と書かない（[結果](results-2026-11.md)の「未見の問の25組目」）。
 - 区分 B〜D は、問がまだないので使わない。
 
 ## あとで検討すること
@@ -191,6 +192,7 @@ Results are kept in `conformance/results-*.md`.
 - In round 28, with the holdout21 and round 27 gaps filled, Haiku and Luna were ○ on all 120 of the 20 cases. **On the twenty-second set of unseen cases (holdout22), neither met the criteria** (Haiku 10, 8, 9; Luna 10, 9, 8; no ×). V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-second set of unseen cases").
 - In round 29, with the holdout22 gaps filled, Haiku and Luna met the criteria on the 20 cases. **On the twenty-third set of unseen cases (holdout23), neither met the criteria** (Haiku 10, 10, 11; Luna 9, 9, 8; no ×). V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-third set of unseen cases").
 - In round 30, with the holdout23 and round 29 gaps filled, Haiku and Luna met the criteria on the 20 cases. **On the twenty-fourth set of unseen cases (holdout24), Haiku met them in all 3 runs** (12, 11, 12; no ×; H288 ○ under the reading above), but not consecutively, since it did not meet holdout22 and 23. Luna did not meet them (11, 10, 11). V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-fourth set of unseen cases").
+- In round 31, with the holdout24 gaps filled, Haiku and Luna met the criteria on the 20 cases. **On the twenty-fifth set of unseen cases (holdout25), neither met the criteria** (Haiku 8, 7, 7; Luna 10, 11, 10; no ×). Haiku did not meet them again after holdout24. V1 is still not described as "may be used" ([results](results-2026-11.md), "Twenty-fifth set of unseen cases").
 - Groups B–D have no cases yet and are not used.
 
 ### To consider later
