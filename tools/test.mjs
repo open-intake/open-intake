@@ -243,6 +243,18 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout22）で見つかった足りないところ: 休診の期間は年と両端の日（§6b）・書かれた入口だけ（§7）・期限の最後の日（§6b）・全体の変更はその日だけ（§6b）・verified がないこと（§3）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H257").includes("年を付け、2026年12月29日〜2027年1月3日で両端の日を含むと書く）。毎年繰り返すとは書かれていない"), "何日かの休診は、年と両端の日を書き、毎年の繰り返しと読まないよう渡す");
+    ok(hb("H259").includes("ファイルに書かれた入口は、この 1 つ（種類: mcp）だけ。URL を書き換えた入口（末尾を変えるなど）はファイルにないので、作らず、使わない"), "書かれた入口だけを使い、URL を書き換えないよう渡す");
+    ok(hb("H264").includes("今日 1月31日（日） が有効期限の最後の日で、今（23時08分）は期限内") && hb("H264").includes("期限は日曜・祝日でも翌営業日に延びない"), "有効期限の最後の日は期限内で、休日でも延びないと渡す");
+    ok(hb("H263").includes("全体の変更は 2026年12月18日 だけのもの。ほかの日のこの時間は、この変更でなくならない"), "全体の変更はその日だけで、ほかの日の対象を絞った時間はなくならないと渡す");
+    ok(hb("H261").includes("確かめた日（verified）: ファイルに書かれていない"), "確かめた日がないことを渡す");
+    ok(!hb("H259").includes("確かめた日（verified）: ファイルに書かれていない"), "確かめた日があるときは、その行を出さない");
+  }
   // 未見の問（holdout21）と27回目で見つかった足りないところ: notHandled の意味（§1b）・臨時の情報に今日の変更がないことを書く（§6b）・問診ではない相談は続けて案内する（決まり1）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));

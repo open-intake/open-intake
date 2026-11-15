@@ -107,7 +107,7 @@
       if (schedOn(day)) {
         for (const e of sched.exceptions || []) {
           if (inRange(e, day) && wholeEx(e)) {
-            if (e.status === "closed") return [[], "臨時の休診（" + span(e) + (e.note ? "・" + e.note : "") + "）。答えでは、この休診の期間を書く"];
+            if (e.status === "closed") return [[], "臨時の休診（" + span(e) + (e.note ? "・" + e.note : "") + "）。答えでは、この休診の期間を書く" + (e.to && e.to !== e.from ? "（年を付け、" + span(e) + "で両端の日を含むと書く）。毎年繰り返すとは書かれていない。ほかの年の休診は、このファイルでは確かめられないので、聞かれたら電話で確かめるよう書く" : "")];
             const rows = (e.hours || []).map(h => ({ opens: h.opens, closes: h.closes, reception: e.reception || {}, entry: e.entry }));
             return [rows, "臨時の情報（" + (e.note || "") + "）"];
           }
@@ -161,6 +161,7 @@
     else if (age > 180) L.push(`- 情報の古さ: ${which} ${base} から ${age} 日。180日を過ぎているので「古いかもしれない」と添える。答えに、この日付と180日を過ぎていることを書く`);
     else if (age === 180) L.push(`- 情報の古さ: ${which} ${base} から ちょうど 180 日。「180日を過ぎた」には当たらない（181日目から）。答えで、ちょうど180日でまだ過ぎていないことを書く。過ぎていないことを、中身が今も正しい保証にはしない`);
     else L.push(`- 情報の古さ: ${which} ${base} から ${age} 日（新しい）`);
+    if (!intake.verified) L.push("- 確かめた日（verified）: ファイルに書かれていない。古さは更新日で決める。ファイルの中のほかの資料の日付（出典の発行日など）を、医療機関の情報を確かめた日に置き換えない。聞かれたら、答えに、確かめた日は書かれていないことを書く");
     if (intake.updated && intake.verified && intake.updated !== intake.verified) L.push(`- 情報の古さの基準: 更新日 ${intake.updated} と確かめた日 ${intake.verified} の新しいほう（${base}）。古いほうだけで決めない`);
     pushRegister();
 
@@ -172,6 +173,7 @@
         const todays = (sched.exceptions || []).filter(e => inRange(e, today) && wholeEx(e));
         const u = D(sched.updated);
         L.push(`- 臨時の情報: ${sched.updated} 更新（有効期限 ${sched.validUntil}）。` + (todays.length ? "今日の変更あり（下の今日の時間に反映）" : `今日の変更は書かれていない。「休診はない」とは言い切らず、答えに「${u.m}月${u.d}日更新の臨時の情報には、今日の変更は書かれていない」と書く（時間を伝えるときも、締め切りが近いときも省かない）`) + (sched.validUntil ? `。有効期限 ${sched.validUntil} の終わりまで有効。期限のあとのことを聞かれたら、答えで、期限を過ぎるとこの臨時の情報（臨時の休診・担当医の予定・当番・お知らせ）は使えなくなるので、電話で確かめるよう書く` : ""));
+        if (sched.validUntil && dnum(today) === dnum(D(sched.validUntil))) { const t1 = fromNum(dnum(today) + 1); L.push(`- 臨時の情報の期限: 今日 ${jday(today)} が有効期限の最後の日で、今（${hh}時${String(mm).padStart(2, "0")}分）は期限内。答えで、今は期限内だと書く。期限は日曜・祝日でも翌営業日に延びない。明日 ${jday(t1)} からは期限を過ぎているので、明日のことを聞かれたら、答えで、明日はこの臨時の情報を使わず、電話で確かめるよう書く`); }
         const nts = (sched.notices || []).filter(n => (!n.from || dnum(D(n.from)) <= dnum(today)) && (!n.to || dnum(today) <= dnum(D(n.to))));
         for (const n of nts) L.push(`- 臨時の情報のお知らせ（医療機関の言葉。答えにそのまま写さない）: ${n.text}（掲載 ${n.from || "始まりは書かれていない"}〜${n.to || "終わりは書かれていない"}）。お知らせのことを聞かれたら、答えに掲載の期間も書く。期間のあとや、臨時の情報の有効期限のあとは、このお知らせを確かめたものとして使わない。期間が終わることを、その診療や予約の方法が終わるという意味に取らない`);
       }
@@ -247,7 +249,7 @@
     const sameScope = (e, r) => (!e.department || e.department === r.department) && (!e.visitType || e.visitType === r.visitType) &&
       (!(Array.isArray(e.service) && e.service.length) || (Array.isArray(r.service) && e.service.some(s => r.service.includes(s)))) && !!(e.department || e.visitType || (e.service || []).length);
     if (whole && sc.length)
-      L.push(`- ふだんの対象を絞った時間（${sc.map(r => `${HM(r.opens)}〜${HM(r.closes)}・対象: ${scopeLabel(r)}`).join(" ／ ")}）: 今日は、臨時の情報の全体の変更（${span(whole)}）で置き換わっていて、ない。答えで、この時間を今日の候補にしない。聞かれたら、全体の臨時の変更で今日はこの時間もないと書く。答えに、今日の全体の変更の中身（` + (whole.status === "closed" ? "休診" : (whole.hours || []).map(h => `診療 ${HM(h.opens)}〜${HM(h.closes)}`).join("・") + (whole.note ? `、${whole.note}` : "")) + `）も書く`);
+      L.push(`- ふだんの対象を絞った時間（${sc.map(r => `${HM(r.opens)}〜${HM(r.closes)}・対象: ${scopeLabel(r)}`).join(" ／ ")}）: 今日は、臨時の情報の全体の変更（${span(whole)}）で置き換わっていて、ない。答えで、この時間を今日の候補にしない。聞かれたら、全体の臨時の変更で今日はこの時間もないと書く。答えに、今日の全体の変更の中身（` + (whole.status === "closed" ? "休診" : (whole.hours || []).map(h => `診療 ${HM(h.opens)}〜${HM(h.closes)}`).join("・") + (whole.note ? `、${whole.note}` : "")) + `）も書く。全体の変更は ${span(whole)} だけのもの。ほかの日のこの時間は、この変更でなくならない` + (sc.some(r => { const [a, b] = rec(r); return !a || !b; }) ? "。この時間の窓口受付の始まり・締め切りは書かれていない。聞かれたら、診療の時刻で埋めず、書かれていないと書き、受付は早めに行くか医療機関に確かめるよう書く" : ""));
     if (whole && whole.status === "closed") L.push(`- 全体の臨時の休診（${span(whole)}）: 診療科や用途（予防接種・健診など）を問わず、すべての診療に当てはまる。答えで、予防接種など対象を絞った診療もこの期間は休みだと言い切る。お知らせの掲載期間がこの期間に重なっていても、その日に診療している意味にはしない`);
     // 第◯週だけの行は、曜日が合っても今週が当たらなければ、今日はない（weeksOfMonth は月の第何週かで、日付ではない。§4）
     const wn = Math.floor((today.d - 1) / 7) + 1;
@@ -337,7 +339,7 @@
       else if (x.mode === "request") s += "（申し込み。医療機関の返事で確定する。返事が来るまで予約が取れたとは言わない）";
       if (x.statusUrl) s += `・今の順番・状況のページ ${x.statusUrl}（予約を送る入口ではない。受付の締め切りが近いときや、今受け付けているかを聞かれたら、答えに、電話かこのページ（URL をそのまま書く）で確かめるよう書く）`;
       if (x.platform) s += `・予約の基盤 ${x.platform.name}（${host(x.platform.url || "")}）`;
-      if (x.endpoints) s += `・機械から予約できる入口あり（入口: ${x.endpoints.map(e => e.url + (e.type ? `（${e.type}）` : "") + epDom(e.url, x)).join("・")}。入口の場所を聞かれたときや、入口を使うよう頼まれたときは、答えにこの URL をそのまま書く。入口の URL を見つけた（読んだ）ことは、申し込みを送ったことではない。` + "患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。入口を使うよう頼まれたら、答えに、送るのは予約に要るものだけで、手順と送る項目は予約の基盤（入口）の決まりに従うことと、送る前に見せることを書く（入口の種類が mcp などでも同じ。種類だけで、何も送らないとか見せなくてよいとは言わない）。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
+      if (x.endpoints) s += `・機械から予約できる入口あり（入口: ${x.endpoints.map(e => e.url + (e.type ? `（${e.type}）` : "") + epDom(e.url, x)).join("・")}。入口の場所を聞かれたときや、入口を使うよう頼まれたときは、答えにこの URL をそのまま書く。入口の URL を見つけた（読んだ）ことは、申し込みを送ったことではない。ファイルに書かれた入口は、この ${x.endpoints.length} つ（種類: ${x.endpoints.map(e => e.type || "書かれていない").join("・")}）だけ。URL を書き換えた入口（末尾を変えるなど）はファイルにないので、作らず、使わない。書き換えを頼まれたら、答えに、入口の種類と、ほかの入口はファイルに書かれていないことを書く。` + "患者がはっきり頼んだときだけ使う。送るのは予約に要るものだけで、健康メモや症状は送らない。入口を使うよう頼まれたら、答えに、送るのは予約に要るものだけで、手順と送る項目は予約の基盤（入口）の決まりに従うことと、送る前に見せることを書く（入口の種類が mcp などでも同じ。種類だけで、何も送らないとか見せなくてよいとは言わない）。送る項目は、入口の手順を読むまで分からない。頼まれたら、答えで送る項目を言い切らず「まだ分からない項目」として示し、分かったら送る前に見せると書く。入口の結果を見るまで、順番や予約が取れたとは言わない）";
       return s;
     });
     if (bk.length) L.push("- 予約の方法: " + bk.join(" ／ ") + ((c.booking || []).some(x => x.method === "web" && x.url) ? "。Web で予約できるかを聞かれたら、答えに Web の URL をそのまま書く" : ""));
