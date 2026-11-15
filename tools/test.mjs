@@ -243,6 +243,18 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout23）と29回目で見つかった足りないところ: booking の visitType がないときは all（§4）・movedTo はホームページでもよい（§3d）・担当医の予定は診療時間を足さない（§6b）・verified がないときは更新日を最後に確かめた日として書く（§3）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H271").includes("予約の方法の行に初診・再診の指定（visitType）がないときは all（初診・再診のどちらにも当てはまる）として扱い、再診専用や初診専用とは読まない"), "予約の方法の行に visitType がないときは all と渡す");
+    ok(hb("H269").includes("movedTo は、移転先の新しいファイルかホームページの URL。.json で終わらなくてよく"), "movedTo はホームページの URL でもよいと渡す");
+    ok(hb("H275").includes("担当医の予定（doctorSchedule）: 誰が診るかの予定で、診療時間を足さない"), "担当医の予定は診療時間を足さないと渡す");
+    ok(!hb("H269").includes("担当医の予定（doctorSchedule）"), "臨時の情報がないときは、担当医の予定の行を出さない");
+    const c11 = fs.readFileSync("conformance/briefs/C11.txt", "utf8");
+    ok(c11.includes("この更新日をこの情報を最後に確かめた日として書く（「確かめた日は分からない」とは書かない）"), "C11 で、更新日を最後に確かめた日として書くよう渡す");
+  }
   // 未見の問（holdout22）で見つかった足りないところ: 休診の期間は年と両端の日（§6b）・書かれた入口だけ（§7）・期限の最後の日（§6b）・全体の変更はその日だけ（§6b）・verified がないこと（§3）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
@@ -252,8 +264,8 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(hb("H259").includes("ファイルに書かれた入口は、この 1 つ（種類: mcp）だけ。URL を書き換えた入口（末尾を変えるなど）はファイルにないので、作らず、使わない"), "書かれた入口だけを使い、URL を書き換えないよう渡す");
     ok(hb("H264").includes("今日 1月31日（日） が有効期限の最後の日で、今（23時08分）は期限内") && hb("H264").includes("期限は日曜・祝日でも翌営業日に延びない"), "有効期限の最後の日は期限内で、休日でも延びないと渡す");
     ok(hb("H263").includes("全体の変更は 2026年12月18日 だけのもの。ほかの日のこの時間は、この変更でなくならない"), "全体の変更はその日だけで、ほかの日の対象を絞った時間はなくならないと渡す");
-    ok(hb("H261").includes("確かめた日（verified）: ファイルに書かれていない"), "確かめた日がないことを渡す");
-    ok(!hb("H259").includes("確かめた日（verified）: ファイルに書かれていない"), "確かめた日があるときは、その行を出さない");
+    ok(hb("H261").includes("確かめた日（verified）の欄: ファイルにない。古さは更新日 2025-09-01 で決め、答えでは、この更新日をこの情報を最後に確かめた日として書く"), "確かめた日がないときは、更新日を最後に確かめた日として書くよう渡す");
+    ok(!hb("H259").includes("確かめた日（verified）の欄"), "確かめた日があるときは、その行を出さない");
   }
   // 未見の問（holdout21）と27回目で見つかった足りないところ: notHandled の意味（§1b）・臨時の情報に今日の変更がないことを書く（§6b）・問診ではない相談は続けて案内する（決まり1）
   {
