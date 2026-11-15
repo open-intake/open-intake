@@ -243,6 +243,18 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout25）で見つかった足りないところ: 日付のある担当医の行はその日だけ・有効期限は書かれた日のまま・救急でも名簿の番号を書く・platform.id がない・全体の変更は置き場所が別でも届く
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H289").includes("（2026-12-05 内科・鈴木医師）は、その日だけの予定") && hb("H289").includes("その日の担当医はこの行からは分からない"), "日付のある担当医の行はその日だけと渡す");
+    ok(hb("H300").includes("期限は書かれた日のままで、その日が日曜・祝日・休診日でも、前の診療日に繰り上げず"), "有効期限を休診日に合わせて繰り上げないと渡す");
+    ok(hb("H294").includes("救急で119番を先に勧める答えでも、そのあとに、この2つの番号を数字で書く"), "救急でも名簿の番号を数字で書くよう渡す");
+    ok(hb("H295").includes("platform.id はファイルに書かれていないことを書く"), "platform.id がないと渡す");
+    ok(hb("H299").includes("書かれている場所（scopedOpeningHours と exceptions）が別でも、全体の変更は対象を絞った時間も置き換える"), "全体の変更は置き場所が別でも届くと渡す");
+    ok(hb("H299").includes("今がこの臨時の情報の有効期限内であることも書く"), "今日の変更を使うときは期限内と書くよう渡す");
+  }
   // 未見の問（holdout24）で見つかった足りないところ: 受付の締め切りは受診の約束ではない（§5 の決まり11）・予約の入口は問診の提出を受け付けるとは書かれていない（§7）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
@@ -377,7 +389,7 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     const b153 = brief(one, "2027-01-18T12:37:00+09:00", { register: { type: "phone", value: "03-0000-0001" } });
     ok(b153.includes("名簿の番号 03-0000-0001 とファイルの番号 03-0000-0000 を、どちらも数字のまま書く"), "名簿と食い違う番号を数字で書くよう渡す");
     const b155 = brief({ ...one, "https://example.com/clinic-schedule.json": rd("conformance/files/clinic-schedule.json") }, "2027-01-31T23:56:20+09:00");
-    ok(b155.includes("有効期限 2027-01-31 の終わりまで有効。期限のあとのことを聞かれたら"), "予定のファイルの期限のあとは電話で確かめるよう渡す");
+    ok(b155.includes("有効期限 2027-01-31 の終わりまで有効。") && b155.includes("期限のあとのことを聞かれたら、答えで、期限を過ぎるとこの臨時の情報"), "予定のファイルの期限のあとは電話で確かめるよう渡す");
     ok(b153.includes("病名や原因を聞かれても、診断や推定はしない"), "病名を言わないと渡す");
   }
   // 未見の問（holdout12）で見つかった足りないところ: 入口と予約の基盤のドメイン（決まり23）・救急の確認の返事を待ってから問診（決まり1）
