@@ -251,15 +251,17 @@
     if (whole && whole.status === "closed") L.push(`- 全体の臨時の休診（${span(whole)}）: 診療科や用途（予防接種・健診など）を問わず、すべての診療に当てはまる。答えで、予防接種など対象を絞った診療もこの期間は休みだと言い切る。お知らせの掲載期間がこの期間に重なっていても、その日に診療している意味にはしない`);
     // 第◯週だけの行は、曜日が合っても今週が当たらなければ、今日はない（weeksOfMonth は月の第何週かで、日付ではない。§4）
     const wn = Math.floor((today.d - 1) / 7) + 1;
+    const nextOn = r => { const o = []; for (let k = 1; k <= 62 && o.length < 2; k++) { const x = fromNum(dnum(today) + k); if (matches(r, x)) o.push(jday(x)); } return o; };
     for (const r of whole ? [] : allRows().filter(r => scoped(r) && Array.isArray(r.weeksOfMonth) && !matches(r, today) && matches({ ...r, weeksOfMonth: null }, today)))
-      L.push(`- 週の指定で今日はない対象を絞った時間: ${HM(r.opens)}〜${HM(r.closes)}（対象: ${scopeLabel(r)}）。今日 ${jday(today)} は、その月の第${wn}週の同じ曜日で、この行（第${r.weeksOfMonth.join("・第")}週だけ）には当たらない。weeksOfMonth の数は、その月の第何週の曜日かで、日付（${r.weeksOfMonth.join("日・")}日など）ではない。答えで、今日が第${wn}週でこの行に当たらないことを書く`);
+      L.push(`- 週の指定で今日はない対象を絞った時間: ${HM(r.opens)}〜${HM(r.closes)}（対象: ${scopeLabel(r)}）。今日 ${jday(today)} は、その月の第${wn}週の同じ曜日で、この行（第${r.weeksOfMonth.join("・第")}週だけ）には当たらない。weeksOfMonth の数は、その月の第何週の曜日かで、日付（${r.weeksOfMonth.join("日・")}日など）ではない。答えで、今日が第${wn}週でこの行に当たらないことを書く` + (nextOn(r).length ? `。次にこの行が当たる日: ${nextOn(r).join("・")}（祝日などの臨時の変更は別に確かめる）。次の日を聞かれたら、この日付を書き、日数を足して数えない` : ""));
     for (const r of whole ? [] : sc) {
       const nowIn = T(r.opens) <= nm && nm < T(r.closes);
       // 週の指定と受付は、この行に書かれたものだけ（全員向けの行の受付を引き継がない。§4）
       const wk = r.weeksOfMonth ? `第${r.weeksOfMonth.join("・第")}週だけ` : "なし（その曜日は毎週。第5週も含む）";
       const noRc = !rec(r)[1];
       const rep = scEx.find(e => sameScope(e, r));
-      L.push(`- 今日の対象を絞った時間: ${hoursText(r)}（対象: ${scopeLabel(r)}）${rnote(r)}。週の指定: ${wk}。対象に当てはまる人だけの時間で、全員向けの時間ではない。答えでは、対象（かっこの中）の名前を出して、この時間が誰のためのものかを書く` +
+      L.push(`- 今日の対象を絞った時間: ${hoursText(r)}（対象: ${scopeLabel(r)}）${rnote(r)}。週の指定: ${wk}。対象に当てはまる人だけの時間で、全員向けの時間ではない。答えでは、対象（かっこの中）の名前を出して、この時間が誰のためのものかを書く。この行の条件（対象・予約制・初診だけ・再診だけなど）は ${HM(r.opens)}〜${HM(r.closes)} だけのもの。同じ曜日のほかの時間の全員向けの診療には当てはめない。聞かれたら、答えで、当てはめないと言い切る（「判断できない」としない）` +
+        (r.weeksOfMonth && nextOn(r).length ? `。次にこの行が当たる日: ${nextOn(r).join("・")}` : "") +
         (!(Array.isArray(r.service) && r.service.length) ? "。この行に用途（service）は書かれていないので、一般の外来として扱う。この行だけでは、検査・処置・健診・予防接種の時間はわからない。用途を聞かれたら、答えにそう書く" : "") +
         (rep ? (() => {
           const rs = Array.isArray(r.service) ? r.service.filter(x => SERVICE[x]) : [], es = Array.isArray(rep.service) ? rep.service : [];

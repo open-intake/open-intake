@@ -243,6 +243,14 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout20）で見つかった足りないところ: 第◯週だけの行が次に当たる日・対象を絞った行の条件はその時間だけ（§4）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H229").includes("次にこの行が当たる日: 2月13日（土）・2月27日（土）"), "第◯週だけの行が次に当たる日を渡す（第1土曜を数えない）");
+    ok(hb("H240").includes("は 14:00〜15:00 だけのもの。同じ曜日のほかの時間の全員向けの診療には当てはめない"), "対象を絞った行の条件はその時間だけと渡す");
+  }
   // 未見の問（holdout19）で見つかった足りないところ: 第◯週だけの行は今週が当たらなければない（§4）・締め切りが近いときの相談先（決まり17）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
