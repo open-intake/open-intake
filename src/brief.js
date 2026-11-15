@@ -208,7 +208,8 @@
       }
       // 着く時刻の目安は、受付の締め切り（§5 の決まり10）
       const openRc = rows.filter(r => { const rc = rec(r)[1]; return rc && recStart(r) <= nm && nm < T(rc) && rc !== r.closes; });
-      if (openRc.length) L.push("- 着く時刻の目安: " + openRc.map(r => `受付の締め切り ${HM(rec(r)[1])}（診療の終わり ${HM(r.closes)} ではない）`).join("・") + "。答えで、受付の締め切りと診療の終わりを分けて書く。締め切りまでに着いても、受診できると約束はしない");
+      if (openRc.length) L.push("- 着く時刻の目安: " + openRc.map(r => `受付の締め切り ${HM(rec(r)[1])}（診療の終わり ${HM(r.closes)} ではない）`).join("・") + "。答えで、受付の締め切りと診療の終わりを分けて書く。締め切りまでに着いても、受診できると約束はしない" +
+        (openRc.some(r => T(rec(r)[1]) - nm <= 30) ? "。締め切りまで30分もない。窓口に着く時刻が締め切りを過ぎそうなら、間に合うとは言わない。答えに、医療機関に電話して今日相談したいと伝えることと、当番やほかの医療機関に相談できることと、急ぐとき・悪くなるときは救急相談（#7119 など）を使えることを書く" : ""));
       // 全員向けの行に visitType がないときは all として当てはめるが、「初診にも決まりがない」とは言い切らない（§4）
       if (src === "ふだんの時間" && allRows().some(r => r.visitType === "first" || r.visitType === "return"))
         L.push("- 今日の全員向けの時間の初診・再診: 区別は書かれていない。対象を絞った時間の決まり（初診だけ・再診だけ・その注）を、この時間に当てはめない。「初診も受け付けています」とも言い切らない。初診・再診や予約のことを聞かれたら、答えで、この時間の受け方（上の矢印の前。例: 予約なしで受付）と、初診・再診の区別は書かれていないことを書く");
@@ -248,6 +249,10 @@
     if (whole && sc.length)
       L.push(`- ふだんの対象を絞った時間（${sc.map(r => `${HM(r.opens)}〜${HM(r.closes)}・対象: ${scopeLabel(r)}`).join(" ／ ")}）: 今日は、臨時の情報の全体の変更（${span(whole)}）で置き換わっていて、ない。答えで、この時間を今日の候補にしない。聞かれたら、全体の臨時の変更で今日はこの時間もないと書く。答えに、今日の全体の変更の中身（` + (whole.status === "closed" ? "休診" : (whole.hours || []).map(h => `診療 ${HM(h.opens)}〜${HM(h.closes)}`).join("・") + (whole.note ? `、${whole.note}` : "")) + `）も書く`);
     if (whole && whole.status === "closed") L.push(`- 全体の臨時の休診（${span(whole)}）: 診療科や用途（予防接種・健診など）を問わず、すべての診療に当てはまる。答えで、予防接種など対象を絞った診療もこの期間は休みだと言い切る。お知らせの掲載期間がこの期間に重なっていても、その日に診療している意味にはしない`);
+    // 第◯週だけの行は、曜日が合っても今週が当たらなければ、今日はない（weeksOfMonth は月の第何週かで、日付ではない。§4）
+    const wn = Math.floor((today.d - 1) / 7) + 1;
+    for (const r of whole ? [] : allRows().filter(r => scoped(r) && Array.isArray(r.weeksOfMonth) && !matches(r, today) && matches({ ...r, weeksOfMonth: null }, today)))
+      L.push(`- 週の指定で今日はない対象を絞った時間: ${HM(r.opens)}〜${HM(r.closes)}（対象: ${scopeLabel(r)}）。今日 ${jday(today)} は、その月の第${wn}週の同じ曜日で、この行（第${r.weeksOfMonth.join("・第")}週だけ）には当たらない。weeksOfMonth の数は、その月の第何週の曜日かで、日付（${r.weeksOfMonth.join("日・")}日など）ではない。答えで、今日が第${wn}週でこの行に当たらないことを書く`);
     for (const r of whole ? [] : sc) {
       const nowIn = T(r.opens) <= nm && nm < T(r.closes);
       // 週の指定と受付は、この行に書かれたものだけ（全員向けの行の受付を引き継がない。§4）

@@ -243,6 +243,18 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout19）で見つかった足りないところ: 第◯週だけの行は今週が当たらなければない（§4）・締め切りが近いときの相談先（決まり17）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    const b217 = hb("H217");
+    ok(b217.includes("その月の第5週の同じ曜日で、この行（第2・第4週だけ）には当たらない") && b217.includes("日付（2日・4日など）ではない"), "第◯週だけの行が今週は当たらないことを渡す");
+    ok(!hb("H205").includes("週の指定で今日はない"), "第◯週だけの行が今日に当たる日は、当たらない行として渡さない");
+    ok(hb("H219").includes("締め切りまで30分もない") && hb("H219").includes("当番やほかの医療機関に相談できること"), "締め切りが近いとき、間に合わない場合の相談先を渡す");
+    const one = { "https://example.com/clinic-intake.json": rd("conformance/files/clinic-intake.json") };
+    ok(!brief(one, "2026-11-27T16:00:00+09:00").includes("締め切りまで30分もない"), "締め切りまで30分より前は、相談先の行を足さない");
+  }
   // 未見の問（holdout18）で見つかった足りないところ: closed と withdrawn・notHandled・名簿の番号で確かめる・入口の URL・名簿で閉院のときの古さ
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
