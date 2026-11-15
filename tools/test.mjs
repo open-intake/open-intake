@@ -243,6 +243,14 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout24）で見つかった足りないところ: 受付の締め切りは受診の約束ではない（§5 の決まり11）・予約の入口は問診の提出を受け付けるとは書かれていない（§7）
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H279").includes("答えに、受付の締め切りは受診の約束ではないことと、一人ずつの診察の長さは書かれていないことを書く"), "受付の締め切りは受診の約束ではないと答えに書くよう渡す");
+    ok(hb("H283").includes("この入口は予約の入口で、問診の回答の提出を受け付けるとはファイルに書かれていない"), "予約の入口が問診の提出を受け付けるとは書かれていないと渡す");
+  }
   // 未見の問（holdout23）と29回目で見つかった足りないところ: booking の visitType がないときは all（§4）・movedTo はホームページでもよい（§3d）・担当医の予定は診療時間を足さない（§6b）・verified がないときは更新日を最後に確かめた日として書く（§3）
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
