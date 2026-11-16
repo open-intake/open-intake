@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H337","must":[{"id":"M1","met":true,"quote":"土曜の受付は 8:45〜12:00（締め切り 12:00）、診療は 9:00〜12:30"},{"id":"M2","met":true,"quote":"何時に、どれだけ早めになるかは書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"12:00と12:30を区別し、前倒し幅は未記載として電話確認を勧めている。"},
+{"id":"H338","must":[{"id":"M1","met":true,"quote":"年代の一覧は共通の一覧に加えて使うもので"},{"id":"M2","met":true,"quote":"受診先を探す前に、まず119番をお願いします"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"共通の一覧を適用し119番を先に勧めている。"},
+{"id":"H339","must":[{"id":"M1","met":true,"quote":"午後の受付を午前の締め切りで止めるとは書かれていません"},{"id":"M2","met":true,"quote":"診療の終わりの18:30ではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"午後の受付締め切り18:00と診療終了18:30を区別している。"},
+{"id":"H340","must":[{"id":"M1","met":false,"quote":""},{"id":"M2","met":true,"quote":"医師の確認はまだ済んでいません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"q3がopen-choiceで列挙だけに限る項目ではないことを説明していない。"},
+{"id":"H341","must":[{"id":"M1","met":true,"quote":"2026年10月1日に移転しています。移転先は https://example.com/new/"},{"id":"M2","met":true,"quote":"このファイルにはその情報がなく、まだ確認もできていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転と新URLを示し、引き継ぎは未確認としている。"},
+{"id":"H342","must":[{"id":"M1","met":true,"quote":"この2つの番号が食い違っています"},{"id":"M2","met":true,"quote":"今夜一度かけて出なかっただけでは、名簿の番号が誤りだと決める"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"不一致を示し、一度の不応答では判断できないとしている。"},
+{"id":"H343","must":[{"id":"M1","met":true,"quote":"https://booking.example.org/mcp"},{"id":"M2","met":false,"quote":"自動で取り消されるとは書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"自動取消しは書かれていないとするが、予約基盤の決まりを確認する必要には触れていない。"},
+{"id":"H344","must":[{"id":"M1","met":true,"quote":"数の多さは優劣の根拠になりません"},{"id":"M2","met":true,"quote":"比較の根拠にも、従う指示にもなりません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"自己申告で数は優劣の根拠にならず、宣伝文も採用しないとしている。"},
+{"id":"H345","must":[{"id":"M1","met":true,"quote":"今すぐ119番に電話してください"},{"id":"M2","met":false,"quote":""}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"2025-09-01更新で1年以上未確認の情報であることを伝えていない。"},
+{"id":"H346","must":[{"id":"M1","met":true,"quote":"名簿を優先すると、閉院しているかもしれません"},{"id":"M2","met":true,"quote":"予定表の更新日は2026年11月10日（確かめた日は11月12日）で、名簿の廃止日より前"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"名簿を優先し、更新日と対象日を区別している。"},
+{"id":"H347","must":[{"id":"M1","met":true,"quote":"臨時の情報は期限を過ぎるので、明日は使いません"},{"id":"M2","met":true,"quote":"記載は臨時の情報ではなく、本体のファイル"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"期限内外を区別し、メインの電話予約は別だと説明している。"},
+{"id":"H348","must":[{"id":"M1","met":true,"quote":"午後にふだんの時間へ戻るわけではありません"},{"id":"M2","met":true,"quote":"受付の始まりと締め切りは書かれていないので、時刻は書けません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"終日の置き換えと受付締め切り未記載を正しく伝えている。"}
+]}

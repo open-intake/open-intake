@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H337","must":[{"id":"M1","met":true,"quote":"受付の締め切りは 12:00 です。"},{"id":"M2","met":true,"quote":"毎週30分ずつ早まるという決まりは書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"12:00と12:30を区別し、前倒し幅は書かれていないとして電話確認を勧めている。"},
+{"id":"H338","must":[{"id":"M1","met":true,"quote":"共通の一覧に当たるため、高齢者向けの一覧で外すことはできません"},{"id":"M2","met":true,"quote":"受診先を探したり、予約をしたりする前に、まず119番です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"共通の一覧を適用し119番を先に勧めている。"},
+{"id":"H339","must":[{"id":"M1","met":true,"quote":"午後: 診療 15:00〜18:30、受付は 18:00 まで"},{"id":"M2","met":true,"quote":"18:30 は診療の終わりの時刻で、受付の締め切りではありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"午前の締め切りを午後に当てはめず、到着期限は18:00と区別している。"},
+{"id":"H340","must":[{"id":"M1","met":true,"quote":"type は \"open-choice\" で"},{"id":"M2","met":true,"quote":"医師の確認前の下書きです"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"open-choiceと下書きであることを伝えている。"},
+{"id":"H341","must":[{"id":"M1","met":true,"quote":"2026年10月1日に移転し"},{"id":"M2","met":true,"quote":"引き継がれたという記載はありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転と新URLを示し、引き継ぎは未確認としている。"},
+{"id":"H342","must":[{"id":"M1","met":true,"quote":"公的な名簿の番号: 03-0000-0001"},{"id":"M2","met":true,"quote":"今夜1回かけて出なかったことだけで、名簿の番号が誤りだと決めて"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"両番号を示し、一度の不応答では誤りと決められないとしている。"},
+{"id":"H343","must":[{"id":"M1","met":true,"quote":"https://booking.example.org/mcp"},{"id":"M2","met":true,"quote":"自動で取り消すとは書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"送信前に内容を示し、自動取消しは書かれておらず基盤の決まりに従うとしている。"},
+{"id":"H344","must":[{"id":"M1","met":true,"quote":"得意分野（focus）は、医療機関が自分で書いた自己申告です"},{"id":"M2","met":true,"quote":"評価の裏付けにも使えません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"自己申告で数は優劣の根拠にならず、宣伝文も採用しないとしている。"},
+{"id":"H345","must":[{"id":"M1","met":true,"quote":"すぐに119番に電話してください"},{"id":"M2","met":true,"quote":"更新日が2025年9月1日で、1年を過ぎた未確認の情報です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"119番を優先し、古い情報であることを区別している。"},
+{"id":"H346","must":[{"id":"M1","met":true,"quote":"名簿を優先し、閉院しているかもしれないものとして扱って"},{"id":"M2","met":true,"quote":"それは廃止を取り消す根拠にはなりません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"名簿を優先し、期限内でも予定表は再開の根拠にならないとしている。"},
+{"id":"H347","must":[{"id":"M1","met":true,"quote":"明日は期限を過ぎています"},{"id":"M2","met":true,"quote":"期限が過ぎても消す理由はありません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"期限内外を区別し、メインの電話予約は失効しないと説明している。"},
+{"id":"H348","must":[{"id":"M1","met":true,"quote":"このあとは 14:00 の健診・予防接種の枠に戻りません"},{"id":"M2","met":true,"quote":"受付の締め切りは書かれていないので、時刻は書けません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"終日の置き換えと受付締め切り未記載を正しく伝えている。"}
+]}
