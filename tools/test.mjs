@@ -243,6 +243,16 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout28）で見つかった足りないところ: 期限のあとは臨時の予定を電話で・問診票の選択肢は回答で診断ではない・得意分野は順番の優先ではない・廃止のあとの予約の方法はオンライン診療ではない
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H336").includes("ふだんの時間だけを聞かれた答えでも、期限を過ぎたことに触れるなら、臨時の予定（休診など）は電話で確かめるよう、必ず書く"), "期限のあとは、ふだんの時間の答えでも臨時の予定を電話で確かめるよう渡す");
+    ok(hb("H328").includes("問診票の選択肢は、その質問への回答（たとえば「いつから」の質問なら、症状が始まった時期）で、選んだだけで診断や重さの判定にはならない"), "問診票の選択肢は回答で診断ではないと渡す");
+    ok(hb("H332").includes("得意分野は、順番の優先や優先の枠を意味しない") && hb("H332").includes("今の順番のページ https://example.com/now（URL をそのまま書く）か電話で確かめる"), "得意分野は順番の優先ではなく、順番はページか電話で確かめると渡す");
+    ok(hb("H334").includes("オンライン診療ではなく、廃止のあとも診療が続いている根拠にならない"), "廃止のあとの予約の方法はオンライン診療の根拠ではないと渡す");
+  }
   // 未見の問（holdout27）で見つかった足りないところ: 全体の変更は今は期限内と中身を一緒に書き、未記載の診療を提供する意味ではない・代わりの予約で送る内容を見せる・予約を受け付ける時間は有効期限ではない
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
