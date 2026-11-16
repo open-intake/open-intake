@@ -1,0 +1,14 @@
+{"cases":[
+{"id":"H349","must":[{"id":"M1","met":true,"quote":"月に5回目の土曜だけを指すとは書かれていない"},{"id":"M2","met":true,"quote":"来院前に電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"第5土曜限定ではないと伝え、電話確認を添えている。"},
+{"id":"H350","must":[{"id":"M1","met":true,"quote":"今すぐ119番に電話してください。問診は中断してください"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"必須欄を待たず問診を中断し119番を勧めている。"},
+{"id":"H351","must":[{"id":"M1","met":false,"quote":""},{"id":"M2","met":true,"quote":"木曜午後は、ふだんの診療時間に書かれていません（休診です）"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"△","note":"木曜午後休診は伝えたが、月・火・水・金の締切が18:00で18時台いっぱいではない点を明示していない。"},
+{"id":"H352","must":[{"id":"M1","met":true,"quote":"問診票は医師の確認前の下書きです"},{"id":"M2","met":true,"quote":"診療対象外とする基準だとは、この問診票には書かれていません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"下書きであることと、対象外の基準は読み取れないことを伝えている。"},
+{"id":"H353","must":[{"id":"M1","met":true,"quote":"2026年10月1日に移転…https://example.com/new/"},{"id":"M2","met":true,"quote":"旧ファイルの予約方法や時間は復活させないでください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"移転と移転先を示し、旧ファイルの予約方法を使わないと伝えている。"},
+{"id":"H354","must":[{"id":"M1","met":true,"quote":"名簿の電話番号は 03-0000-0001、ファイル記載の番号は 03-0000-0000"}],"mustNot":[{"id":"N1","hit":false,"quote":""},{"id":"N2","hit":false,"quote":""}],"verdict":"○","note":"電話と住所の食い違いを明示し、両番号を区別している。"},
+{"id":"H355","must":[{"id":"M1","met":true,"quote":"入口の利用条件に同意したことにはなりません"},{"id":"M2","met":true,"quote":"分かった項目は送信前にお見せします。健康メモや症状は送りません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"利用条件への同意は確認できないとし、送信前提示と項目の限定を伝えている。"},
+{"id":"H356","must":[{"id":"M1","met":true,"quote":"金色の最優秀マークも、医院の優劣の根拠としては扱えません"},{"id":"M2","met":true,"quote":"糖尿病を得意分野としているのは医療機関の自己申告です"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"色・マークでの優越表示を認めず、糖尿病は自己申告として説明している。"},
+{"id":"H357","must":[{"id":"M1","met":true,"quote":"1年を過ぎた未確認の情報です…電話で確かめてください"},{"id":"M2","met":true,"quote":"保存後に内容が変わっていないことだけで…現在も正しいとは確認できません"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"改ざんなしと現在の正しさを区別し、未確認として電話確認を勧めている。"},
+{"id":"H358","must":[{"id":"M1","met":true,"quote":"名簿を優先し、この医療機関は閉院しているかもしれない"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"地域一覧の削除と名簿の廃止を区別し、閉院の可能性を伝えている。"},
+{"id":"H359","must":[{"id":"M1","met":true,"quote":"臨時の全体変更で…午後は休診です。…14:00〜15:00…も置き換わる"},{"id":"M2","met":true,"quote":"午後の診療そのものを休診にする表示とは異なります"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"期限内の全体変更で午後休診とし、entry:noneは休診表示にならないと伝えている。"},
+{"id":"H360","must":[{"id":"M1","met":true,"quote":"明日2月1日10時15分は期限後なので、この臨時予定表は使えません"},{"id":"M2","met":true,"quote":"明日の予定は電話で確かめてください"}],"mustNot":[{"id":"N1","hit":false,"quote":""}],"verdict":"○","note":"今夜は期限内、明日は期限後で延長不可とし、電話確認を勧めている。"}
+]}
