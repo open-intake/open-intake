@@ -243,6 +243,16 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 未見の問（holdout29）で見つかった足りないところ: open-choice は選択肢に限られない・救急でも古さを聞かれたら書く・入口の取り消しや重複は基盤の決まり・予定の日は更新日ではない
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H340").includes("q3「当てはまる症状をすべて選んでください」（選択肢 8 個）。選択肢のほかの答えも書ける質問で、選択肢だけに限る質問ではない"), "open-choice の質問は選択肢に限られないと渡す");
+    ok(hb("H345").includes("更新日（2025年9月1日）と1年以上確かめられていない情報であることを書き、その確かめは119番を待つ理由にならないと書く"), "救急でも、古さを聞かれたら更新日と1年以上未確認を書くと渡す");
+    ok(hb("H343").includes("前の申し込みの取り消しや重複の扱いは、ファイルに書かれていない") && hb("H343").includes("予約の基盤（入口）の決まりを確かめる必要がある"), "入口の取り消しや重複は基盤の決まりを確かめると渡す");
+    ok(hb("H346").includes("臨時の情報の更新日は 2026-11-10 で、名簿の廃止の日 2026-12-17 以前") && hb("H346").includes("予定の日（対象の日）を更新日として扱わない"), "予定の日は更新日ではなく、廃止を優先すると渡す");
+  }
   // 未見の問（holdout28）で見つかった足りないところ: 期限のあとは臨時の予定を電話で・問診票の選択肢は回答で診断ではない・得意分野は順番の優先ではない・廃止のあとの予約の方法はオンライン診療ではない
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
