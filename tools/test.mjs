@@ -243,6 +243,15 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
     ok(f29.includes("この時間の受付の締め切りは書かれていない") && f29.includes("全員向けの受付の締め切りも当てはめない"), "対象を絞った時間の受付が書かれていないことを渡し、全員向けの受付を引き継がない");
     ok(brief(two, "2027-01-23T13:30:00+09:00").includes("週の指定: 第2・第4週だけ"), "週の指定のある対象を絞った時間は、その週だけと渡す");
   }
+  // 開発用の48問（2026-11-17）で見つかった事実の出し方: 祝日の行がない理由・移転先で行き方・今日は第何週
+  {
+    const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));
+    const HC = JSON.parse(fs.readFileSync("conformance/cases-holdout.json", "utf8")).cases;
+    const hb = id => { const c = HC.find(x => x.id === id); const files = {}; for (const [u, f] of Object.entries(c.files)) files[u] = rd(f); return brief(files, c.now, { register: c.register || null }); };
+    ok(hb("H06").includes("「今日（祝日）の時間はファイルに書かれていないので、開いているかはわからない」と、書かれていないという理由といっしょに伝え"), "祝日の行がないときは、開いているかわからないことを理由といっしょに渡す");
+    ok(hb("H12").includes("そちらで今の場所・行き方・時間を確かめるよう勧める"), "移転のときは、移転先で今の場所・行き方・時間を確かめるよう渡す");
+    ok(hb("H60").includes("週の指定: なし（その曜日は毎週。第5週も含む）（今日は月の第5週）"), "対象を絞った時間に、今日が第何週かを渡す");
+  }
   // 未見の問（holdout29）で見つかった足りないところ: open-choice は選択肢に限られない・救急でも古さを聞かれたら書く・入口の取り消しや重複は基盤の決まり・予定の日は更新日ではない
   {
     const rd = f => JSON.parse(fs.readFileSync(f, "utf8"));

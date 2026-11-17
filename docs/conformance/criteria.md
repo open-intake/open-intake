@@ -110,6 +110,8 @@ B〜D は、それぞれの問を足すまで**使わない**。足したあと�
   - まとめを固めたまま、新しい36問を3回ずつ解かせ、**× が 0、○ が全体で 9割以上、各回で 85% 以上**のとき満たすとする
 - **判定役**: 上の基準5（答えたモデルと別の系統の AI 二つ）に揃える。これまで Haiku（Anthropic）の判定役は Claude（Anthropic）と Astra（OpenAI）で、別の系統は Astra だけだった。新しい問での確かめでは、Haiku は Astra と Carbon で判定する。開発用の組での比べは、同じ判定役（Astra）一つで行う
 - これまでの基準と30組までの結果は、そのまま残す。上の「基準」の 2〜4 は、20問（C01〜C20）での確かめに使う
+- **判定の読み方**（2026-11-17、作者の判断）: 判定役への指示（[judge-prompt.txt](judge-prompt.txt)）に書いた。ファイルの欄の名前（PH・verified など）は答えに出なくてよく、同じ意味の言葉でよい。理由つきの項目は、同じ意味の理由が言えていればよい。「日本時間」は求めない。救急の項目（問診をやめる・予約や問診より先に119番・確かめを待たない）は、今すぐ119番を勧めて予約や問診に進んでいなければ満たす。文脈で年が分かる日付は、年がなくてよい。開発用の48問で、正しい答えが文字どおりの読みで欠けとされた例（祝日の理由・年のない日付・救急の「問診をやめる」）から決めた
+- **開発用の組での比べ**（2026-11-17）: 360問から選んだ48問で、いまのまとめ（36回目）は Haiku 88%・Luna 73%（上の読み方で、3回の平均）。まとめを3つに並べ替える組み直しは、Luna で上がり Haiku で下がったので採らなかった。祝日の行がない理由・移転先で行き方を確かめる・今日が第何週か、の3か所を直したまとめでは Haiku 89%・Luna 76% で、× も減った。新しい基準にはまだ届いていない
 
 ## あとで検討すること
 
@@ -232,6 +234,8 @@ Based on the results up to the thirtieth set of unseen cases and reviews by two 
   - With the summary frozen, 36 new cases are answered 3 times each; the criteria are met with **no ×, ○ for at least 90% overall and at least 85% in each run**
 - **Judges**: aligned with criterion 5 above (two AIs of families other than the answering model). So far Haiku (Anthropic) was judged by Claude (Anthropic) and Astra (OpenAI), only Astra being of another family. In the check on new cases, Haiku is judged by Astra and Carbon. Comparisons on the development set use one judge (Astra)
 - The earlier criteria and the results up to set 30 are kept as they are. Criteria 2 to 4 above are used for the check on the 20 cases (C01 to C20)
+- **Reading rules** (17 November 2026, the author's decision): written into the judges' instructions ([judge-prompt.txt](judge-prompt.txt)). Field names from the files (PH, verified and so on) need not appear in the answer; words with the same meaning count. An item with a reason is met by a reason with the same meaning. "Japan time" is not required. Emergency items (stopping the questionnaire, 119 before booking or the questionnaire, not waiting for a check) are met if the answer tells the person to call 119 now and does not go on to booking or questionnaire steps. A date whose year is clear from the context need not give the year. These were decided from cases in the development set where a correct answer was marked missing by a literal reading (the reason for a holiday, a date without the year, "stop the questionnaire" in an emergency)
+- **Comparisons on the development set** (17 November 2026): on 48 cases chosen from the 360, the current summary (round 36) gives Haiku 88% and Luna 73% (with the reading rules above, mean of 3 runs). Reordering the summary into three parts raised Luna but lowered Haiku, so it was not adopted. A summary with three fixes (the reason when there is no holiday row, checking the way to a new location, which week of the month today is) gives Haiku 89% and Luna 76%, with fewer ×. The new criteria are not yet met
 
 ### To consider later
 
