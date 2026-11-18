@@ -73,6 +73,7 @@
 | `holdout29/` | 未見の問の29組目 | 35回目のまとめで、見ていない12問（H337〜H348）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
 | `round36/` | 36回目 | holdout29 で見つかった足りないところを足して、20問すべてを3回ずつ。Luna の `judge2/` は Fable の判定 |
 | `holdout30/` | 未見の問の30組目 | 36回目のまとめで、見ていない12問（H349〜H360）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
+| `final-check/` | 最後の36問 | まとめを固めて、設計表に沿った新しい36問（N01〜N36、`final36.json`）で一度だけ。判定役は Haiku が Astra・Carbon、Luna が Carbon・Claude。`score.py` で集計、`by_rule.py` で問ごと |
 
 各回のフォルダの中:
 
@@ -171,6 +172,7 @@ Published from 13 November 2026. Until then the results said "the full answers a
 | `holdout29/` | Twenty-ninth set of unseen cases | 12 cases not seen (H337–H348), with the round 35 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
 | `round36/` | Round 36 | All 20 cases, 3 runs each, after filling the gaps found in holdout29. Luna's `judge2/` holds Fable's verdicts |
 | `holdout30/` | Thirtieth set of unseen cases | 12 cases not seen (H349–H360), with the round 36 summary. Used once. Luna's `judge2/` holds Fable's verdicts |
+| `final-check/` | Final 36 cases | 36 new cases from the design table (N01–N36, `final36.json`), with the summary frozen, used once. Haiku judged by Astra and Carbon, Luna by Carbon and Claude. `score.py` totals, `by_rule.py` per case |
 
 In each round folder:
 

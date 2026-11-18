@@ -1,0 +1,186 @@
+{
+  "cases": [
+    {
+      "id": "N13",
+      "must": [
+        {"id": "M1", "met": true, "quote": "予防接種だけの変更なので、小児科の予約全体が休みという意味ではありません。"},
+        {"id": "M2", "met": false, "quote": ""},
+        {"id": "M3", "met": true, "quote": "12月16日以降に予防接種の予約が確実に再開するとは言えません。"},
+        {"id": "M4", "met": true, "quote": "電話予約の受付時間は月・火・水・金の9:00〜18:00"}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "相談先の電話番号（03-0000-0000）の記載がなくM2を満たさない。"
+    },
+    {
+      "id": "N14",
+      "must": [
+        {"id": "M1", "met": false, "quote": ""},
+        {"id": "M2", "met": false, "quote": ""},
+        {"id": "M3", "met": true, "quote": "今日1月31日（日）は臨時情報の有効期限内ですが"},
+        {"id": "M4", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "電話番号（M1）、メイン案内の電話予約規定（M2）、月曜以降の電話予約受付時間等（M4）の記載がない。"
+    },
+    {
+      "id": "N15",
+      "must": [
+        {"id": "M1", "met": true, "quote": "基本の水曜午前は診療9:00〜12:30、受付8:45〜12:00、予約なしで受付です。"},
+        {"id": "M2", "met": true, "quote": "1月31日の終わりまで有効でしたが、期限を過ぎているため、明日の臨時休診や変更はわかりません。"},
+        {"id": "M3", "met": true, "quote": "休暇を申請する前に、クリニックへ電話（03-0000-0000）で"},
+        {"id": "M4", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "電話での受付時間（火・水09:00〜18:00）の記載（M4）がない。"
+    },
+    {
+      "id": "N16",
+      "must": [
+        {"id": "M1", "met": true, "quote": "今は有効期限内ですが、それだけで急な休診がないとは言い切れません。"},
+        {"id": "M2", "met": true, "quote": "1時間かけて向かう前に、電話 **03-0000-0000** で今日の診療状況を確かめてください。"},
+        {"id": "M3", "met": true, "quote": "今日の全員向けの診療時間は **9:00〜12:30**、受付は **8:45〜12:00** です。"},
+        {"id": "M4", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "木曜の午後は休診である旨（M4）の記載がない。"
+    },
+    {
+      "id": "N17",
+      "must": [
+        {"id": "M1", "met": true, "quote": "昼休みに窓口で午後の分を先に受け付けてもらえるかは、情報からは分かりません。"},
+        {"id": "M2", "met": false, "quote": ""},
+        {"id": "M3", "met": false, "quote": ""},
+        {"id": "M4", "met": false, "quote": ""},
+        {"id": "M5", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "午後の診療終了時刻18:30（M2）、電話番号（M3）、救急・救急相談（M4）、当番・ほかの医療機関（M5）の記載がない。"
+    },
+    {
+      "id": "N18",
+      "must": [
+        {"id": "M1", "met": true, "quote": "12時前に診察まで終わるとはお約束できません。混雑状況もこの情報からは分かりません。"},
+        {"id": "M2", "met": false, "quote": ""},
+        {"id": "M3", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "午前の診療開始時刻09:00（M2）およびWebの当日順番取り（https://example.com/reserve）（M3）の記載がない。"
+    },
+    {
+      "id": "N19",
+      "must": [
+        {"id": "M1", "met": true, "quote": "今日の診療は9:00〜12:30、受付は8:45〜12:00で"},
+        {"id": "M2", "met": false, "quote": ""},
+        {"id": "M3", "met": false, "quote": ""},
+        {"id": "M4", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "早めの便の勧奨（M2）、電話番号・混雑不明の旨（M3）、鈴木医師の代診（M4）の記載がない。"
+    },
+    {
+      "id": "N20",
+      "must": [
+        {"id": "M1", "met": true, "quote": "地域の当番医やほかの医療機関にも相談できます。"},
+        {"id": "M2", "met": true, "quote": "今からみどり台内科クリニックの小児科を受診することはできません。"},
+        {"id": "M3", "met": true, "quote": "119番または救急相談（#7119 など）に連絡してください。"},
+        {"id": "M4", "met": false, "quote": ""},
+        {"id": "M5", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "明日の午後が院内研修で休診である旨（M4）および電話番号・現在つながるか不明である点（M5）の記載がない。"
+    },
+    {
+      "id": "N21",
+      "must": [
+        {"id": "M1", "met": true, "quote": "今日1月30日（土）は第5週なので、内科の午後枠"},
+        {"id": "M2", "met": true, "quote": "第2・第4土曜の14:00〜16:00、再診の方の予約制）には当たりません。"},
+        {"id": "M3", "met": false, "quote": ""},
+        {"id": "M4", "met": false, "quote": ""},
+        {"id": "M5", "met": true, "quote": "急ぐときや状態が悪くなるときは、#7119などの救急相談"},
+        {"id": "M6", "met": true, "quote": "当番医・ほかの医療機関にも相談してください。"}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "土曜午前の窓口受付時間08:45〜12:00（M3）および電話番号03-0000-0000（M4）の記載がない。"
+    },
+    {
+      "id": "N22",
+      "must": [
+        {"id": "M1", "met": true, "quote": "この枠の受付開始・締め切りはファイルに書かれていないため、15時前に着けばよいとは言えません。"},
+        {"id": "M2", "met": false, "quote": ""},
+        {"id": "M3", "met": true, "quote": "14〜15時は、**小児科の予防接種・健診の予約枠**です。"}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "確認先の電話番号（03-0000-0000）の記載がなくM2を満たさない。"
+    },
+    {
+      "id": "N23",
+      "must": [
+        {"id": "M1", "met": true, "quote": "12時15分に着いてそのまま診てもらえるとは言えません。"},
+        {"id": "M2", "met": true, "quote": "地域の一覧では13:00〜17:00ですが、クリニックの臨時情報にある9:00〜17:00とは食い違う"},
+        {"id": "M3", "met": false, "quote": ""},
+        {"id": "M4", "met": false, "quote": ""},
+        {"id": "M5", "met": true, "quote": "発熱があるため、来院前に電話で到着時刻も伝えてください。"}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "電話番号（03-0000-0000）の記載がなく（M3）、当番枠を含めた受付締め切り未記載への注意（M4）も不足している。"
+    },
+    {
+      "id": "N24",
+      "must": [
+        {"id": "M1", "met": true, "quote": "18時15分ごろに窓口へ着くと、受付の締め切り18時を過ぎています。"},
+        {"id": "M2", "met": true, "quote": "今の待ち人数は分かりません。今の順番・状況は https://example.com/now で確認できます。"},
+        {"id": "M3", "met": false, "quote": ""},
+        {"id": "M4", "met": true, "quote": "当番医やほかの医療機関への相談も検討してください。"},
+        {"id": "M5", "met": true, "quote": "急ぐ場合や腹痛が悪化する場合は、救急相談（#7119など）へ。"},
+        {"id": "M6", "met": false, "quote": ""}
+      ],
+      "mustNot": [
+        {"id": "N1", "hit": false, "quote": ""},
+        {"id": "N2", "hit": false, "quote": ""}
+      ],
+      "verdict": "△",
+      "note": "電話番号（03-0000-0000）（M3）および駐車場3台（M6）の記載がない。"
+    }
+  ]
+}
