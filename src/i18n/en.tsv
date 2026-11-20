@@ -87,7 +87,7 @@ placeholder: "初診は電話のみ など"	placeholder: "e.g. new patients by p
 "この欄は変えられません。このファイルを読む AI は、病名の推定や診断をしません。"	"This cannot be changed. AI reading this file does not guess diseases or diagnose."
 "緊急時の案内"	"Emergency message"
 "予約より先に救急へ（目安の症状・おとな／年代がわからないとき）"	"Call emergency services before booking (warning signs: adults / age unknown)"
-"1行に1つ。減らすときは医師に確認してください。"	"One per line. Check with a doctor before removing any."
+"1行に1つ。足すことはできます。減らしても、読む AI は地域プロファイルの一覧を合わせて使います。変えるときは医師に確認してください。"	"One per line. You can add items. Removing items has no effect on reading AI, which also uses the regional profile's list. Check with a doctor before changing anything."
 `${g.label || k}の目安`	`Warning signs: ${g.label || k}`
 "目安の出典"	"Source of warning signs"
 "（" + s.redFlagsSource.edition + "）"	" (" + s.redFlagsSource.edition + ")"
@@ -285,6 +285,9 @@ availability は配列（[ ]）にしてください。	availability must be an 
 `priorities は ${P.join(", ")} から、重ならないように選んでください。`	`priorities must be chosen from ${P.join(", ")}, without duplicates.`
 `${k} は配列（[ ]）にしてください。`	`${k} must be an array ([ ]).`
 "かかりつけ " + (i + 1)	"Regular clinic " + (i + 1)
+得意分野 ${i+1}: 内容が10件を超えています。主なものに絞ってください。数の多さは有利になりません。	Area of focus ${i+1}: more than 10 items. Keep to the main ones; listing more gives no advantage.
+主に診ている症状が30件を超えています。主なものに絞ってください。数の多さは有利になりません。	More than 30 symptoms usually seen. Keep to the main ones; listing more gives no advantage.
+priorities の reputation（評判）は非推奨です。読む AI は、評判を候補を並べる材料にしません。	reputation in priorities is deprecated. Reading AI does not use reputation to order clinics.
 pastClinics（過去の医療機関）は、この形式では扱いません。よかったところは regularClinics（かかりつけ）に登録してください。	pastClinics (past clinics) is not part of this format. Register clinics you were happy with in regularClinics instead.
 `${label}: 医療機関の名前（name）が空です。`	`${label}: the clinic name (name) is empty.`
 `${label}: 「${f}」があります。医療機関への評価や感想は、この形式では扱いません。消してください。`	`${label}: "${f}" is present. Evaluations of or comments about clinics are not part of this format; please remove it.`
@@ -451,7 +454,7 @@ ${qi+1} 番目の問診票	Questionnaire ${qi+1}
 href="AI_INSTRUCTIONS_PERSONAL.md" download="AI_INSTRUCTIONS_PERSONAL.md">指示書をダウンロード</a>	href="AI_INSTRUCTIONS_PERSONAL.en.md" download="AI_INSTRUCTIONS_PERSONAL.en.md">Download the instructions</a>
 「作るとき」のCopy instructions	Copy instructions (creating)
 「体調が悪いとき」のCopy instructions	Copy instructions (when unwell)
-段階1　受診先の好み<small>健康の情報は含みません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small>	Stage 1: clinic preferences<small>No health information. Used by an AI when looking for a clinic. Updating it with an AI after each visit makes suggestions fit you better.</small>
+段階1　受診先の好み<small>持病や薬は書きません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small>	Stage 1: clinic preferences<small>No conditions or medicines. Used by an AI when looking for a clinic. Updating it with an AI after each visit makes suggestions fit you better.</small>
 段階2　健康の情報<small>書きたい人だけ。体調が悪いときの相談や、受診用シートに使います。</small>	Stage 2: health information<small>Only if you want to. Used when asking for help while unwell, and for the visit sheet.</small>
 >受診用シート<	>Visit sheet<
 >読み込み<	>Load<
@@ -534,7 +537,8 @@ text: "重視すること（大事な順）"	text: "What matters most (in order)
 `${label(PRIOS, k)} を外す`	`Remove ${label(PRIOS, k)}`
 "aria-label": "重視することを足す"	"aria-label": "Add what matters"
 text: "＋ 重視することを足す"	text: "+ Add what matters"
-"評判は、この形式では提供しません。AI がネットの口コミなどを参考にするときは、出どころと「確かめられた情報ではない」ことを添えます。"	"This format does not provide reputation information. If an AI refers to online reviews, it states the source and that the information is not verified."
+"評判は非推奨です。読む AI は、評判を候補を並べる材料にしません。外すことをおすすめします。"	"Reputation is deprecated. Reading AI does not use reputation to order clinics. We suggest removing it."
+<p class="small">「体調が悪いとき」の指示文は、医師・弁護士の確認がまだ済んでいない草案です。命に関わるかもしれない症状があるときは、AI に相談する前に、すぐ救急に電話してください。</p>	<p class="small">The "when unwell" instructions are a draft not yet reviewed by doctors or lawyers. If you may have a life-threatening symptom, call emergency services now, before asking an AI.</p>
 "受診のときに使いたい言語（コード）"	"Languages for the visit (codes)"
 "例: ja")),	"e.g. en")),
 "必要な配慮（1行に1つ）"	"Support needed (one per line)"

@@ -167,11 +167,12 @@ body.showing #exitShow { display: inline-flex !important; position: fixed; top: 
             <button class="btn ghost" type="button" id="copyUse">「体調が悪いとき」の指示文をコピー</button>
             <span class="toast" id="promptToast" role="status"></span>
           </div>
+          <p class="small">「体調が悪いとき」の指示文は、医師・弁護士の確認がまだ済んでいない草案です。命に関わるかもしれない症状があるときは、AI に相談する前に、すぐ救急に電話してください。</p>
           <pre class="prompt" id="promptMake"><!--PROMPT_MAKE--></pre>
           <pre class="prompt" id="promptUse" hidden><!--PROMPT_USE--></pre>
         </div>
       </details>
-      <h2 class="stagehead">段階1　受診先の好み<small>健康の情報は含みません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small></h2>
+      <h2 class="stagehead">段階1　受診先の好み<small>持病や薬は書きません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small></h2>
       <section class="card" id="sec-pref"></section>
       <h2 class="stagehead">段階2　健康の情報<small>書きたい人だけ。体調が悪いときの相談や、受診用シートに使います。</small></h2>
       <section class="card" id="sec-person"></section>
@@ -331,9 +332,9 @@ function renderPref() {
     h("ol", { class: "prio" }, pr.map((k, i) => h("li", {}, h("span", { text: label(PRIOS, k) }),
       h("button", { type: "button", class: "icon-btn", style: "color:var(--ink)", "aria-label": "上へ", disabled: i === 0 || null, onclick: () => { [pr[i - 1], pr[i]] = [pr[i], pr[i - 1]]; renderPref(); changed(); } }, "↑"),
       h("button", { type: "button", class: "icon-btn", "aria-label": `${label(PRIOS, k)} を外す`, onclick: () => { pr.splice(i, 1); renderPref(); changed(); } }, "×")))),
-    !PRIOS.some(([k]) => !pr.includes(k)) ? "" : h("div", { class: "actions" }, h("select", { id: "pr-add", style: "width:auto", "aria-label": "重視することを足す", onchange: e => { if (e.target.value) { pr.push(e.target.value); renderPref(); changed(); } } },
-      h("option", { value: "", text: "＋ 重視することを足す" }), PRIOS.filter(([k]) => !pr.includes(k)).map(([k, n]) => h("option", { value: k, text: n })))),
-    !pr.includes("reputation") ? "" : h("p", { class: "small", style: "margin:0", text: "評判は、この形式では提供しません。AI がネットの口コミなどを参考にするときは、出どころと「確かめられた情報ではない」ことを添えます。" }),
+    !PRIOS.some(([k]) => k !== "reputation" && !pr.includes(k)) ? "" : h("div", { class: "actions" }, h("select", { id: "pr-add", style: "width:auto", "aria-label": "重視することを足す", onchange: e => { if (e.target.value) { pr.push(e.target.value); renderPref(); changed(); } } },
+      h("option", { value: "", text: "＋ 重視することを足す" }), PRIOS.filter(([k]) => k !== "reputation" && !pr.includes(k)).map(([k, n]) => h("option", { value: k, text: n })))),
+    !pr.includes("reputation") ? "" : h("p", { class: "small", style: "margin:0", text: "評判は非推奨です。読む AI は、評判を候補を並べる材料にしません。外すことをおすすめします。" }),
     h("div", { class: "grid" },
       field("pr-lang", "受診のときに使いたい言語（コード）", input("pr-lang", () => (P.languages || []).join(", "), v => { const a = v.split(/[,\s\u3001]+/).filter(Boolean); if (a.length) P.languages = a; else delete P.languages; }, "例: ja")),
       field("pr-needs", "必要な配慮（1行に1つ）", h("textarea", { id: "pr-needs", rows: 2, value: (P.needs || []).join("\n"), placeholder: "例: 車椅子で入れる", oninput: e => { const a = e.target.value.split("\n").map(x => x.trim()).filter(Boolean); if (a.length) P.needs = a; else delete P.needs; changed(); } }))),

@@ -355,7 +355,11 @@ function normalize(doc) {
   s.noDiagnosis = true;
   const dprof = profileById(d.profile && (d.profile.id || d.profile)) || profileById(LOCALE.defaultProfile) || {};
   if (typeof s.emergency !== "string") s.emergency = dprof.emergency ? dprof.emergency.message : "";
-  s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : (dprof.redFlags || []).slice();
+  if (!Array.isArray(s.redFlags)) {   // 救急の目安がないファイル（AI と作ったもの）は、地域プロファイルから年代の一覧と出典も入れる
+    const b = blankSafety(dprof); s.redFlags = b.redFlags;
+    if (b.redFlagsByAge && s.redFlagsByAge === undefined) s.redFlagsByAge = b.redFlagsByAge;
+    if (b.redFlagsSource && s.redFlagsSource === undefined) s.redFlagsSource = b.redFlagsSource;
+  } else s.redFlags = s.redFlags.filter(x => typeof x === "string");
   if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
   if (!(s.redFlagsByAge && typeof s.redFlagsByAge === "object")) delete s.redFlagsByAge;
   else for (const g of Object.values(s.redFlagsByAge)) if (g && typeof g === "object" && !Array.isArray(g.items)) g.items = [];
@@ -570,7 +574,7 @@ function renderSafety() {
     h("p", { class: "lead" }, "患者さんの AI は、問診の前にここを確かめます。初期値は、選んだ地域プロファイルのもの（その地域の公的な資料から書き写したもの。出典は下）です。医師の確認はまだです。", h("strong", { text: "公開の前に必ず医師に見てもらってください。" })),
     h("div", { class: "field" }, h("div", { class: "label" }, "診断をしない", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "この欄は変えられません。このファイルを読む AI は、病名の推定や診断をしません。" })),
     field("f-emerg", "緊急時の案内", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
-    field("f-red", "予約より先に救急へ（目安の症状・おとな／年代がわからないとき）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。減らすときは医師に確認してください。" }),
+    field("f-red", "予約より先に救急へ（目安の症状・おとな／年代がわからないとき）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。足すことはできます。減らしても、読む AI は地域プロファイルの一覧を合わせて使います。変えるときは医師に確認してください。" }),
     s.redFlagsByAge && h("div", { class: "grid" }, Object.entries(s.redFlagsByAge).map(([k, g]) => field("f-red-" + k, `${g.label || k}の目安`, `redFlagsByAge.${k}`, lines("f-red-" + k, () => g.items, v => g.items = v, { rows: 8 }), { hint: g.note || "" }))),
     s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "目安の出典", h("span", { class: "k", text: "redFlagsSource" })),
       h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}「${s.redFlagsSource.title || ""}」${s.redFlagsSource.edition ? "（" + s.redFlagsSource.edition + "）" : ""}${s.redFlagsSource.pages ? " " + s.redFlagsSource.pages : ""}`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "原文（PDF）" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),

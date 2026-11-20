@@ -78,6 +78,10 @@ for (const [code, breakIt] of sbroken) { const d = sbase(); breakIt(d); const r 
   ok(Array.isArray(d.clinic.focus) && d.clinic.focus.length > 0, "v0.2 の例に得意分野がある");
   d.clinic.focus[0].areas = []; ok(codes(validate(d)).includes("E13"), "得意分野の内容が空なら E13");
   d.clinic.focus = [{ department: "眼科", areas: ["白内障"] }]; const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W14"), "診療科の一覧にない科は注意（W14）"); }
+{ const d = JSON.parse(fs.readFileSync("examples/v0.3/clinic-intake.json", "utf8"));
+  ok(!validate(d).W.some(w => w.code === "W17"), "例は W17 にならない");
+  d.clinic.handles = Array.from({ length: 31 }, (_, i) => "症状" + i); let r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W17"), "診ている症状が30件を超えると注意（W17）");
+  d.clinic.handles = ["発熱"]; d.clinic.focus = [{ areas: Array.from({ length: 11 }, (_, i) => "分野" + i) }]; r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "W17"), "得意分野が10件を超えると注意（W17）"); }
 
 // 使い方の決まり（policy）
 { const d = JSON.parse(fs.readFileSync("examples/v0.2/clinic-intake.json", "utf8"));
@@ -110,12 +114,23 @@ for (const f of fs.readdirSync("profiles").filter(f => f.endsWith(".json"))) { c
   d = base(); d.preferences.regularClinics[0].rating = 3; ok(validate(d).W.some(w => w.code === "H10"), "かかりつけに評価があれば H10");
   d = base(); d.preferences.pastClinics = [{ name: "x", rating: 2 }]; ok(validate(d).W.some(w => w.code === "H10"), "過去の医療機関の欄があれば H10");
   d = base(); d.preferences.priorities.push("price"); ok(codes(validate(d)).includes("H9"), "決まっていない重視することは H9");
+  d = base(); d.preferences.priorities = ["near", "reputation"]; { const r = validate(d); ok(r.E.length === 0 && r.W.some(w => w.code === "H11"), "reputation は読めるが非推奨（H11）"); }
   d = base(); d.preferences.availability[0].from = "13:00"; d.preferences.availability[0].to = "12:00"; ok(codes(validate(d)).includes("H9"), "時間帯の前後が逆なら H9");
   d = base(); d.preferences.homeArea.streetAddress = "1-2-3"; ok(validate(d).W.some(w => w.code === "H7"), "番地を書けば H7"); }
 
 // 新しい版・知らないキーはエラーにしない
 { const d = base(); d.specVersion = "0.9"; d.futureKey = { a: 1 }; d.clinic.futureField = "x"; const r = validate(d);
   ok(r.E.length === 0 && r.W.some(w => w.code === "W6"), "新しい版と知らないキーは注意（W6）だけ", JSON.stringify(r)); }
+
+// 指示書（体調が悪いとき）の救急の目安が、日本のプロファイルと1行も違わない
+{ const md = fs.readFileSync("AI_INSTRUCTIONS_PERSONAL.md", "utf8"), p = JSON.parse(fs.readFileSync("profiles/jp.json", "utf8"));
+  const part = (from, to) => { const a = md.indexOf(from), b = md.indexOf(to, a + from.length); return a < 0 || b < 0 ? null : md.slice(a + from.length, b).split("\n").filter(l => l.startsWith("- ")).map(l => l.slice(2)); };
+  const same = (x, y) => Array.isArray(x) && JSON.stringify(x) === JSON.stringify(y);
+  ok(same(part("\nおとな:\n", "\n高齢者（"), p.redFlags), "指示書の救急の目安（おとな）がプロファイルと同じ");
+  ok(same(part("\n高齢者（おとなの一覧に加えて）:\n", "\nこども（"), p.redFlagsByAge.older.items), "指示書の救急の目安（高齢者）がプロファイルと同じ");
+  ok(same(part("\nこども（15歳以下。おとなの一覧に加えて）:\n", "\n### 2."), p.redFlagsByAge.child.items), "指示書の救急の目安（こども）がプロファイルと同じ");
+  // 医療機関の側の指示書は、AI に救急の目安を書かせない
+  for (const f of ["AI_INSTRUCTIONS.md", "AI_INSTRUCTIONS.en.md"]) ok(!fs.readFileSync(f, "utf8").includes('"redFlags"'), f + " は救急の目安を AI に書かせない"); }
 
 // 3. docs/ が最新
 try { execFileSync(process.execPath, ["tools/build.mjs", "--check"], { stdio: "pipe" }); ok(true, "docs/ が最新"); }

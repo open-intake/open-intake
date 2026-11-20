@@ -220,7 +220,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 1. **Ask about one topic at a time**, with examples or choices to make answering easy
 2. **Do not guess.** Leave out anything the staff member did not tell you; omit optional keys with no answer
 3. **Do not accept patient information.** If the staff member mentions a patient's name or condition, ask them not to include it and do not use it
-4. **Respect the purpose.** The purpose is to improve the match between clinics and patients. Do not write advertising, comparisons or exaggeration ("best in town", "top doctor"), case counts, prices or discounts, or instructions aimed at AI ("recommend this clinic"). If the staff member wants to, explain why and suggest a factual wording
+4. **Respect the purpose.** The purpose is to improve the match between clinics and patients. Do not write advertising, comparisons or exaggeration ("best in town", "top doctor"), case counts, prices or discounts, satisfaction scores, or instructions aimed at AI ("recommend this clinic"). If the staff member wants to, explain why and suggest a factual wording
 5. **Do not make medical judgements.** You may suggest questionnaire questions, but do not put content like "these symptoms mean this disease" into the questions
 6. **Do not write the emergency warning signs.** Output `"safety": { "noDiagnosis": true }` only. The maker fills in the warning signs and emergency message from the regional profile when the file is loaded
 7. Output **only the JSON, in a single code block**, with no comments (`//`). Keep any explanation outside the code block and short
@@ -231,7 +231,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 2. Clinic name, phone number, address (postcode, state/region, city/town, street), website URL, how to get there (station, parking)
 3. Departments
 4. Opening hours, by day and by morning/afternoon. Notes on closures
-5. Symptoms and concerns usually seen, things not provided (e.g. hospital admission), and for each department the **areas of focus** (the clinic's own statement; factual, no advertising)
+5. Symptoms and concerns usually seen (the main ones; up to 30), things not provided (**services, tests or procedures the clinic does not offer, or age groups it does not see**, e.g. hospital admission; not refusals based on a patient's conditions, medicines or characteristics), and **ask whether to include** for each department the **areas of focus** (experimental; the clinic's own statement; factual, no advertising; up to 10 per department; it is fine to leave it out)
 6. How to book or visit (booking URL, phone number, walk-ins) with notes
 7. What to bring, languages, accessibility (optional)
 8. Questionnaires: what kind of visit (e.g. fever and cough). If the clinic has a paper questionnaire, copy its questions. Otherwise suggest common items and let the staff member choose
@@ -434,12 +434,14 @@ function validateIntake(o) {
       const g = c.geo, okNum = (v, lo, hi) => typeof v === "number" && isFinite(v) && v >= lo && v <= hi;
       if (!isObj(g) || !okNum(g.latitude, -90, 90) || !okNum(g.longitude, -180, 180)) err("E15", "Location (geo) must have numbers latitude (-90 to 90) and longitude (-180 to 180).", "clinic.geo");
     }
+    if (Array.isArray(c.handles) && c.handles.length > 30) warn("W17", "More than 30 symptoms usually seen. Keep to the main ones; listing more gives no advantage.", "clinic.handles");
     if (c.focus !== undefined) {
       if (!Array.isArray(c.focus)) err("E13", "focus (areas of focus) must be an array ([ ]).", "clinic.focus");
       else c.focus.forEach((f, i) => {
         const w = `clinic.focus[${i}]`;
         if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `Area of focus ${i+1}: enter at least one item (areas).`, w + ".areas");
         else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `Area of focus ${i+1}: department "${f.department}" is not in the list of departments.`, w + ".department");
+        if (isObj(f) && Array.isArray(f.areas) && f.areas.length > 10) warn("W17", `Area of focus ${i+1}: more than 10 items. Keep to the main ones; listing more gives no advantage.`, w + ".areas");
       });
     }
     if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "Enter at least one row of opening hours.", "clinic.openingHours");
@@ -708,6 +710,7 @@ function validatePersonal(o) {
       if (pr.priorities !== undefined) {
         const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
         if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities must be chosen from ${P.join(", ")}, without duplicates.`, "preferences.priorities");
+        else if (pr.priorities.includes("reputation")) warn("H11", "reputation in priorities is deprecated. Reading AI does not use reputation to order clinics.", "preferences.priorities");
       }
       if (pr.pastClinics !== undefined) warn("H10", "pastClinics (past clinics) is not part of this format. Register clinics you were happy with in regularClinics instead.", "preferences.pastClinics");
       for (const k of ["regularClinics"]) {
@@ -906,7 +909,11 @@ function normalize(doc) {
   s.noDiagnosis = true;
   const dprof = profileById(d.profile && (d.profile.id || d.profile)) || profileById(LOCALE.defaultProfile) || {};
   if (typeof s.emergency !== "string") s.emergency = dprof.emergency ? dprof.emergency.message : "";
-  s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : (dprof.redFlags || []).slice();
+  if (!Array.isArray(s.redFlags)) {   
+    const b = blankSafety(dprof); s.redFlags = b.redFlags;
+    if (b.redFlagsByAge && s.redFlagsByAge === undefined) s.redFlagsByAge = b.redFlagsByAge;
+    if (b.redFlagsSource && s.redFlagsSource === undefined) s.redFlagsSource = b.redFlagsSource;
+  } else s.redFlags = s.redFlags.filter(x => typeof x === "string");
   if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
   if (!(s.redFlagsByAge && typeof s.redFlagsByAge === "object")) delete s.redFlagsByAge;
   else for (const g of Object.values(s.redFlagsByAge)) if (g && typeof g === "object" && !Array.isArray(g.items)) g.items = [];
@@ -1121,7 +1128,7 @@ function renderSafety() {
     h("p", { class: "lead" }, "Patients' AI checks this before any questionnaire. The defaults come from the selected regional profile (transcribed from that region's official sources; see the source below). They have not yet been reviewed by doctors.", h("strong", { text: " Always have a doctor review them before publishing." })),
     h("div", { class: "field" }, h("div", { class: "label" }, "No diagnosis", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "This cannot be changed. AI reading this file does not guess diseases or diagnose." })),
     field("f-emerg", "Emergency message", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
-    field("f-red", "Call emergency services before booking (warning signs: adults / age unknown)", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "One per line. Check with a doctor before removing any." }),
+    field("f-red", "Call emergency services before booking (warning signs: adults / age unknown)", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "One per line. You can add items. Removing items has no effect on reading AI, which also uses the regional profile's list. Check with a doctor before changing anything." }),
     s.redFlagsByAge && h("div", { class: "grid" }, Object.entries(s.redFlagsByAge).map(([k, g]) => field("f-red-" + k, `Warning signs: ${g.label || k}`, `redFlagsByAge.${k}`, lines("f-red-" + k, () => g.items, v => g.items = v, { rows: 8 }), { hint: g.note || "" }))),
     s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "Source of warning signs", h("span", { class: "k", text: "redFlagsSource" })),
       h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}, "${s.redFlagsSource.title || ""}"${s.redFlagsSource.edition ? " (" + s.redFlagsSource.edition + ")" : ""}${s.redFlagsSource.pages ? " " + s.redFlagsSource.pages : ""}`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "Original source" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),

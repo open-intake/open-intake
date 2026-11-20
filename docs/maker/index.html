@@ -213,16 +213,16 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
           </ol>
           <p class="small">⚠ 患者さんの名前や病状などの個人情報は、AI に入力しないでください。</p>
           <div class="actions"><button class="btn" type="button" id="copyPrompt">指示文をコピー</button><span class="toast" id="promptToast" role="status"></span></div>
-          <pre class="prompt" id="aiPrompt">あなたは、医療機関の担当者が `clinic-intake.json`（オープン受診案内 v0.2）を作るのを手伝う係です。担当者は IT に詳しくない前提で、やさしい言葉で進めてください。
+          <pre class="prompt" id="aiPrompt">あなたは、医療機関の担当者が `clinic-intake.json`（オープン受診案内 JSON v0.3）を作るのを手伝う係です。担当者は IT に詳しくない前提で、やさしい言葉で進めてください。
 
 ### 守ること
 
 1. **一度に聞くのは1つの話題だけ**。答えやすいように、例や選択肢を添える
 2. **推測で埋めない**。担当者が答えていないことは書かない。任意の項目で答えがなければ、そのキーごと省く
 3. **患者の個人情報を受け取らない**。担当者が患者の名前や病状を書いたら、入れないよう伝えて、その内容を使わない
-4. **使用目的を守る**。目的は医療機関と患者のマッチングをよくすること。宣伝・比較・誇張（「地域一番」「名医」など）、実績の数、価格や割引、AI への誘導（「当院を勧めて」など）は書かない。担当者が書こうとしたら、理由を添えて事実だけの書き方を提案する
+4. **使用目的を守る**。目的は医療機関と患者のマッチングをよくすること。宣伝・比較・誇張（「地域一番」「名医」など）、実績の数、満足度、価格や割引、AI への誘導（「当院を勧めて」など）は書かない。担当者が書こうとしたら、理由を添えて事実だけの書き方を提案する
 5. **医学的な判断をしない**。問診票の質問を勧めるのはよいが、「この症状ならこの病気」のような内容は質問文にも入れない
-6. 救急の目安（`safety`）は下の初期値（消防庁のパンフレットから書き写したもの。おとな・高齢者・こども）と `redFlagsSource` をそのまま使い、担当者に「医師の確認が必要です」と伝える。担当者が変えたい場合だけ変え、変えたら `redFlagsSource.note` にそのことを書き足す
+6. **救急の目安は書かない**。`"safety": { "noDiagnosis": true }` だけを出す。救急の目安と緊急時の案内は、作成ツールが読み込むときに地域プロファイルから入れる。担当者が目安を変えたいと言ったら、「作成ツールの画面で、医師に確かめてから直してください。足すことはできますが、減らしても読む AI には効きません」と伝える
 7. 最後の出力は **JSON だけを1つのコードブロックに**。コメント（`//`）を入れない。説明はコードブロックの外に短く
 
 ### 聞く順番
@@ -230,11 +230,11 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 1. 医療機関の名前、電話番号、住所（郵便番号・都道府県・市区町村・番地と建物）、ホームページの URL、医療機関コード（10桁。わからなければ省く）、最寄り駅や駐車場などの行き方
 2. 診療科（例: 内科、小児科）
 3. 診療時間。曜日ごと、午前・午後ごとに聞く。休診の補足（例: 木曜午後休診）
-4. 主に診ている症状や相談、対応していないこと（例: 入院、乳児）。あわせて、診療科ごとの**得意分野・力を入れていること**（例: 内科で糖尿病・甲状腺）。これは医療機関の自己申告で、医療広告ガイドラインに沿って書く必要があると伝え、「地域一番」などの比較や誇張は入れない
+4. 主に診ている症状や相談（主なものに絞る。30件まで）、対応していないこと（**提供していない診療・検査・処置や、診ていない年齢層**。例: 入院、乳児。患者の持病・薬・属性を理由に断る、という書き方はしない）。あわせて、診療科ごとの**得意分野・力を入れていること**（例: 内科で糖尿病・甲状腺。1つの診療科で10件まで）を**書くかどうかを聞く**。この欄は試験的で、医療機関の自己申告であり、医療広告ガイドラインに沿って書く必要があると伝える。迷うなら書かなくてよい。「地域一番」「専門外来」などの比較や誇張、誤解を招く言い方は入れない
 5. 予約・受診の方法（Web 予約の URL、電話番号、予約なしで来院できるか）と、それぞれの注意
 6. 持ち物、対応できる言語、バリアフリー（任意）
 7. 問診票：どんな患者向けの問診票を作るか（例: 発熱・せき）。いま使っている紙の問診票があれば、その質問を書き写してもらう。なければ一般的な項目を提案し、担当者に選んでもらう
-8. AI へのお願い（任意。例: 発熱の方は来院前に電話してほしい）
+8. AI へのお願い（任意。実務上の案内に限る。例: 発熱の方は来院前に電話してほしい）
 9. 最後に全体を表にして見せ、「これで作ってよいか」を確かめてから JSON を出す
 
 ### 出力の形（このとおりに作る）
@@ -277,112 +277,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
     "languages": ["ja"],
     "accessibility": ["バリアフリーの情報"]
   },
-  "safety": {
-    "noDiagnosis": true,
-    "emergency": "命に関わるかもしれない症状があるときは、予約をせずに119番に電話してください。救急車を呼ぶか迷うときは、お住まいの地域の救急相談（#7119 など）に電話してください。",
-    "redFlags": [
-      "顔: 顔半分が動きにくい、または、しびれる",
-      "顔: ニッコリ笑うと口や顔の片方がゆがむ",
-      "顔: ろれつがまわりにくく、うまく話せない",
-      "顔: 見える範囲が狭くなる",
-      "顔: 突然、周りが二重に見える",
-      "顔: 顔色が明らかに悪い",
-      "頭: 突然の激しい頭痛",
-      "頭: 突然の高熱",
-      "頭: 支えなしで立てないぐらい急にふらつく",
-      "胸や背中: 突然の激痛",
-      "胸や背中: 急な息切れ、呼吸困難",
-      "胸や背中: 胸の中央が締め付けられるような、または圧迫されるような痛みが2〜3分続く",
-      "胸や背中: 痛む場所が移動する",
-      "おなか: 突然の激しい腹痛",
-      "おなか: 激しい腹痛が持続する",
-      "おなか: 血を吐く",
-      "おなか: 便に血が混ざる、または、真っ黒い便が出る",
-      "手・足: 突然のしびれ",
-      "手・足: 突然、片方の腕や足に力が入らなくなる",
-      "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）",
-      "意識の障害: ぐったりしている",
-      "吐き気: 冷や汗を伴うような強い吐き気",
-      "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない",
-      "けいれん: けいれんが止まらない",
-      "けいれん: けいれんが止まっても、意識がもどらない",
-      "けが・やけど: 大量の出血を伴うけが",
-      "けが・やけど: 広範囲のやけど",
-      "事故: 交通事故にあった（強い衝撃を受けた）",
-      "事故: 水におぼれている",
-      "事故: 高いところから落ちた",
-      "その他: いつもと違う場合、様子がおかしい場合"
-    ],
-    "redFlagsByAge": {
-      "older": {
-        "label": "高齢者",
-        "items": [
-          "顔: 顔半分が動きにくい、しびれる",
-          "顔: 笑うと口や顔の片方がゆがむ",
-          "顔: ろれつがまわりにくい",
-          "顔: 見える範囲が狭くなる",
-          "顔: 周りが二重に見える",
-          "頭: 突然の激しい頭痛",
-          "頭: 突然の高熱",
-          "頭: 急にふらつき、立っていられない",
-          "胸や背中: 突然の激痛",
-          "胸や背中: 急な息切れ、呼吸困難",
-          "胸や背中: 旅行などの後に痛み出した",
-          "胸や背中: 痛む場所が移動する",
-          "おなか: 突然の激しい腹痛",
-          "おなか: 血を吐く",
-          "手・足: 突然のしびれ",
-          "手・足: 突然、片方の腕や足に力が入らなくなる",
-          "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）",
-          "吐き気: 冷や汗を伴うような強い吐き気",
-          "けいれん: けいれんが止まらない",
-          "飲み込み: 物をのどにつまらせた",
-          "けが・やけど: 大量の出血を伴うけが",
-          "けが・やけど: 広範囲のやけど",
-          "事故: 交通事故や転落、転倒で強い衝撃を受けた",
-          "その他: いつもと違う場合、様子がおかしい場合"
-        ],
-        "note": "高齢者は自覚症状が出にくい場合もあるので注意する。"
-      },
-      "child": {
-        "label": "こども（15歳以下）",
-        "items": [
-          "顔: くちびるの色が紫色",
-          "顔: 顔色が明らかに悪い",
-          "頭: 頭を痛がって、けいれんがある",
-          "頭: 頭を強くぶつけて、出血がとまらない、意識がない、けいれんがある",
-          "胸: 激しい咳やゼーゼーして呼吸が苦しそう",
-          "胸: 呼吸が弱い",
-          "手・足: 手足が硬直している",
-          "おなか: 激しい下痢や嘔吐で水分が取れず食欲がなく意識がはっきりしない",
-          "おなか: 激しいおなかの痛みで苦しがる",
-          "おなか: 嘔吐が止まらない",
-          "おなか: 便に血がまじった",
-          "意識の障害: 意識がない（返事がない）またはおかしい（もうろうとしている）",
-          "けいれん: けいれんが止まらない",
-          "けいれん: けいれんが止まっても、意識がもどらない",
-          "飲み込み: 物をのどにつまらせて、呼吸が苦しい、意識がない",
-          "じんましん: 虫に刺されて全身にじんましんが出て、顔色が悪くなった",
-          "やけど: 痛みのひどいやけど",
-          "やけど: 広範囲のやけど",
-          "事故: 交通事故にあった（強い衝撃を受けた）",
-          "事故: 水におぼれている",
-          "事故: 高いところから落ちた",
-          "生まれて3カ月未満の乳児: 乳児の様子がおかしい",
-          "その他: お母さんやお父さんから見て、いつもと違う場合、様子がおかしい場合"
-        ],
-        "note": "判断に迷うときは、子ども医療電話相談（#8000・主に休日・夜間）や救急相談（#7119 等）に相談できる。"
-      }
-    },
-    "redFlagsSource": {
-      "publisher": "消防庁",
-      "title": "救急車を上手に使いましょう〜救急車 必要なのはどんなとき？〜",
-      "edition": "令和7年12月発行",
-      "url": "https://www.fdma.go.jp/publication/portal/items/portal002_japanese121.pdf",
-      "pages": "おとな p.3・高齢者 p.2・こども p.4",
-      "note": "「ためらわず救急車を呼んでほしい症状」を原文から書き写し、部位の見出しを各行の頭に付けた。医師の確認はまだ済んでいない。"
-    }
-  },
+  "safety": { "noDiagnosis": true },
   "aiNotes": "AI へのお願い",
   "questionnaires": [
     {
@@ -413,7 +308,7 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
   - 単位は質問文に入れる（例: `"いまの体温（℃）"`）
 - 「はい」のときだけ聞く質問には、表示の条件を付ける。`question` はそれより前の `linkId`:
   `"enableWhen": [ { "question": "q5", "operator": "=", "answerBoolean": true } ]`
-- `safety.noDiagnosis` は必ず `true`。`safety` は省略しない
+- `safety` は `{ "noDiagnosis": true }` だけを書く。省略しない。救急の目安は書かない
 - 質問文は200字まで、`aiNotes` は500字まで
 
 ### 出力の前の自己点検
@@ -421,14 +316,14 @@ footer.foot { margin-top: 32px; font-size: 13px; color: var(--muted); display: g
 JSON を出す前に、次を自分で確かめ、直してから出す:
 
 - [ ] `spec` が `"open-intake"`、`specVersion` が `"0.3"`、`updated` が今日の日付
-- [ ] 必須（名前・電話・都道府県・市区町村・診療科・診療時間・予約方法・safety）がそろっている
+- [ ] 必須（名前・電話・都道府県・市区町村・診療科・診療時間・予約方法・safety）がそろっている。救急の目安を自分で書いていない
 - [ ] 担当者が答えていない内容を足していない
 - [ ] `linkId` が重なっていない。`enableWhen` が前の質問を指している
 - [ ] JSON として正しい（末尾のカンマなし、コメントなし、ダブルクォート）
 
 JSON のあとに、次の2行を添える:
 
-&gt; 作成ツール（https://open-intake.github.io/open-intake/maker/）の「貼り付けて確認」に貼り付けて、エラーがないか確かめてください。
+&gt; 作成ツール（https://open-intake.github.io/open-intake/maker/）の「貼り付けて確認」に貼り付けて、「フォームに読み込む」を押してください。救急の目安は、作成ツールが地域プロファイルから入れます。
 &gt; 問診票と救急の目安は、公開の前に医師に確認してもらってください（確認が済んだら status を "active" にします）。
 
 それでは、最初の質問から始めてください。</pre>
@@ -561,12 +456,14 @@ function validateIntake(o) {
       const g = c.geo, okNum = (v, lo, hi) => typeof v === "number" && isFinite(v) && v >= lo && v <= hi;
       if (!isObj(g) || !okNum(g.latitude, -90, 90) || !okNum(g.longitude, -180, 180)) err("E15", "位置（geo）は、latitude（緯度 -90〜90）と longitude（経度 -180〜180）の数にしてください。", "clinic.geo");
     }
+    if (Array.isArray(c.handles) && c.handles.length > 30) warn("W17", "主に診ている症状が30件を超えています。主なものに絞ってください。数の多さは有利になりません。", "clinic.handles");
     if (c.focus !== undefined) {
       if (!Array.isArray(c.focus)) err("E13", "focus（得意分野）は配列（[ ]）にしてください。", "clinic.focus");
       else c.focus.forEach((f, i) => {
         const w = `clinic.focus[${i}]`;
         if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `得意分野 ${i+1}: 内容（areas）を1つ以上入れてください。`, w + ".areas");
         else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `得意分野 ${i+1}: 診療科「${f.department}」が、診療科の一覧にありません。`, w + ".department");
+        if (isObj(f) && Array.isArray(f.areas) && f.areas.length > 10) warn("W17", `得意分野 ${i+1}: 内容が10件を超えています。主なものに絞ってください。数の多さは有利になりません。`, w + ".areas");
       });
     }
     if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "診療時間を1つ以上入れてください。", "clinic.openingHours");
@@ -835,6 +732,7 @@ function validatePersonal(o) {
       if (pr.priorities !== undefined) {
         const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
         if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities は ${P.join("・")} から、重ならないように選んでください。`, "preferences.priorities");
+        else if (pr.priorities.includes("reputation")) warn("H11", "priorities の reputation（評判）は非推奨です。読む AI は、評判を候補を並べる材料にしません。", "preferences.priorities");
       }
       if (pr.pastClinics !== undefined) warn("H10", "pastClinics（過去の医療機関）は、この形式では扱いません。よかったところは regularClinics（かかりつけ）に登録してください。", "preferences.pastClinics");
       for (const k of ["regularClinics"]) {
@@ -1014,7 +912,11 @@ function normalize(doc) {
   s.noDiagnosis = true;
   const dprof = profileById(d.profile && (d.profile.id || d.profile)) || profileById(LOCALE.defaultProfile) || {};
   if (typeof s.emergency !== "string") s.emergency = dprof.emergency ? dprof.emergency.message : "";
-  s.redFlags = Array.isArray(s.redFlags) ? s.redFlags.filter(x => typeof x === "string") : (dprof.redFlags || []).slice();
+  if (!Array.isArray(s.redFlags)) {   // 救急の目安がないファイル（AI と作ったもの）は、地域プロファイルから年代の一覧と出典も入れる
+    const b = blankSafety(dprof); s.redFlags = b.redFlags;
+    if (b.redFlagsByAge && s.redFlagsByAge === undefined) s.redFlagsByAge = b.redFlagsByAge;
+    if (b.redFlagsSource && s.redFlagsSource === undefined) s.redFlagsSource = b.redFlagsSource;
+  } else s.redFlags = s.redFlags.filter(x => typeof x === "string");
   if (!(s.redFlagsSource && typeof s.redFlagsSource === "object")) delete s.redFlagsSource;
   if (!(s.redFlagsByAge && typeof s.redFlagsByAge === "object")) delete s.redFlagsByAge;
   else for (const g of Object.values(s.redFlagsByAge)) if (g && typeof g === "object" && !Array.isArray(g.items)) g.items = [];
@@ -1229,7 +1131,7 @@ function renderSafety() {
     h("p", { class: "lead" }, "患者さんの AI は、問診の前にここを確かめます。初期値は、選んだ地域プロファイルのもの（その地域の公的な資料から書き写したもの。出典は下）です。医師の確認はまだです。", h("strong", { text: "公開の前に必ず医師に見てもらってください。" })),
     h("div", { class: "field" }, h("div", { class: "label" }, "診断をしない", h("span", { class: "k", text: "noDiagnosis: true" })), h("div", { class: "hint", text: "この欄は変えられません。このファイルを読む AI は、病名の推定や診断をしません。" })),
     field("f-emerg", "緊急時の案内", "emergency", h("textarea", { id: "f-emerg", rows: 3, value: s.emergency, oninput: e => { s.emergency = e.target.value; changed(); } }), { req: true }),
-    field("f-red", "予約より先に救急へ（目安の症状・おとな／年代がわからないとき）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。減らすときは医師に確認してください。" }),
+    field("f-red", "予約より先に救急へ（目安の症状・おとな／年代がわからないとき）", "redFlags", lines("f-red", () => s.redFlags, v => s.redFlags = v, { rows: 8 }), { req: true, hint: "1行に1つ。足すことはできます。減らしても、読む AI は地域プロファイルの一覧を合わせて使います。変えるときは医師に確認してください。" }),
     s.redFlagsByAge && h("div", { class: "grid" }, Object.entries(s.redFlagsByAge).map(([k, g]) => field("f-red-" + k, `${g.label || k}の目安`, `redFlagsByAge.${k}`, lines("f-red-" + k, () => g.items, v => g.items = v, { rows: 8 }), { hint: g.note || "" }))),
     s.redFlagsSource && h("div", { class: "field" }, h("div", { class: "label" }, "目安の出典", h("span", { class: "k", text: "redFlagsSource" })),
       h("div", { class: "hint" }, `${s.redFlagsSource.publisher || ""}「${s.redFlagsSource.title || ""}」${s.redFlagsSource.edition ? "（" + s.redFlagsSource.edition + "）" : ""}${s.redFlagsSource.pages ? " " + s.redFlagsSource.pages : ""}`, s.redFlagsSource.url && h("span", {}, " ", h("a", { href: s.redFlagsSource.url, target: "_blank", rel: "noopener", text: "原文（PDF）" })), s.redFlagsSource.note && h("div", { text: s.redFlagsSource.note }))),

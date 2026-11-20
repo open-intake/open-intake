@@ -60,12 +60,14 @@ function validateIntake(o) {
       const g = c.geo, okNum = (v, lo, hi) => typeof v === "number" && isFinite(v) && v >= lo && v <= hi;
       if (!isObj(g) || !okNum(g.latitude, -90, 90) || !okNum(g.longitude, -180, 180)) err("E15", "位置（geo）は、latitude（緯度 -90〜90）と longitude（経度 -180〜180）の数にしてください。", "clinic.geo");
     }
+    if (Array.isArray(c.handles) && c.handles.length > 30) warn("W17", "主に診ている症状が30件を超えています。主なものに絞ってください。数の多さは有利になりません。", "clinic.handles");
     if (c.focus !== undefined) {
       if (!Array.isArray(c.focus)) err("E13", "focus（得意分野）は配列（[ ]）にしてください。", "clinic.focus");
       else c.focus.forEach((f, i) => {
         const w = `clinic.focus[${i}]`;
         if (!isObj(f) || !Array.isArray(f.areas) || !f.areas.filter(isStr).length) err("E13", `得意分野 ${i+1}: 内容（areas）を1つ以上入れてください。`, w + ".areas");
         else if (isStr(f.department) && Array.isArray(c.departments) && !c.departments.includes(f.department)) warn("W14", `得意分野 ${i+1}: 診療科「${f.department}」が、診療科の一覧にありません。`, w + ".department");
+        if (isObj(f) && Array.isArray(f.areas) && f.areas.length > 10) warn("W17", `得意分野 ${i+1}: 内容が10件を超えています。主なものに絞ってください。数の多さは有利になりません。`, w + ".areas");
       });
     }
     if (!Array.isArray(c.openingHours) || !c.openingHours.length) err("E5", "診療時間を1つ以上入れてください。", "clinic.openingHours");
@@ -334,6 +336,7 @@ function validatePersonal(o) {
       if (pr.priorities !== undefined) {
         const P = ["regularDoctor","near","shortWait","openNow","specialty","reputation","language","accessibility"];
         if (!Array.isArray(pr.priorities) || pr.priorities.some(x => !P.includes(x)) || new Set(pr.priorities).size !== pr.priorities.length) err("H9", `priorities は ${P.join("・")} から、重ならないように選んでください。`, "preferences.priorities");
+        else if (pr.priorities.includes("reputation")) warn("H11", "priorities の reputation（評判）は非推奨です。読む AI は、評判を候補を並べる材料にしません。", "preferences.priorities");
       }
       if (pr.pastClinics !== undefined) warn("H10", "pastClinics（過去の医療機関）は、この形式では扱いません。よかったところは regularClinics（かかりつけ）に登録してください。", "preferences.pastClinics");
       for (const k of ["regularClinics"]) {
