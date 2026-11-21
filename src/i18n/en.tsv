@@ -444,8 +444,9 @@ ${qi+1} 番目の問診票	Questionnaire ${qi+1}
 持病・薬・アレルギーなどを、自分の責任で手元にまとめる my-health.json（自分の健康メモ）の作成ツール。受診のときに印刷したり画面で見せたりできます。	A tool to create my-health.json (my health summary): your conditions, medicines and allergies, kept by you on your own device. Print it or show it on screen at a visit.
 <a href="../">← About Open Intake</a> · my-health.json · 自分の健康メモ v0.1 草案 · <a href="../en/me/" hreflang="en" lang="en">English</a>	<a href="../">← About Open Intake</a> · my-health.json · My health summary v0.1 draft · <a href="../../me/" hreflang="ja" lang="ja">&#26085;&#26412;&#35486;</a>
 <h1>自分の健康メモ</h1>	<h1>My health summary</h1>
-<p>持病・飲んでいる薬・アレルギーなどを、<strong>自分の責任で</strong>まとめる <code>my-health.json</code> を作ります。体調が悪いときに AI へ今の症状と一緒に渡したり、受診のときに印刷したり画面で見せたりできます。<strong>入力はこのブラウザの外には送りません。</strong></p>	<p>Create <code>my-health.json</code>, a summary of your conditions, medicines and allergies that you keep <strong>on your own responsibility</strong>. When you are unwell, give it to an AI together with your current symptoms; at a visit, print it or show it on screen. <strong>Nothing you enter is sent outside this browser.</strong></p>
+<p>持病・飲んでいる薬・アレルギーなどを、<strong>自分の責任で</strong>まとめる <code>my-health.json</code> の<strong>見本</strong>です。受診のときに印刷したり、画面で見せたりできます。<strong>入力はこのブラウザの外には送りません。</strong></p>	<p>A <strong>sample</strong> of <code>my-health.json</code>, a summary of your conditions, medicines and allergies that you keep <strong>on your own responsibility</strong>. You can print it or show it on screen at a visit. <strong>Nothing you enter is sent outside this browser.</strong></p>
 <strong>はじめに</strong>	<strong>Before you start</strong>
+<span>・<strong>これは見本です。</strong>オープン受診案内の最初の実装には含めず、議論のために公開しています。医師・弁護士の確認はまだ済んでいません。</span>	<span>• <strong>This is a sample.</strong> It is not part of the first implementation of Open Intake and is published for discussion. It has not yet been reviewed by doctors or lawyers.</span>
 <span>・ここに書くのは<strong>ご自身の申告</strong>です。正しいかどうかは、ご自身で確かめてください。医療記録の代わりにはなりません。</span>	<span>• What you write here is <strong>your own statement</strong>. Check that it is correct yourself. It does not replace medical records.</span>
 <span>・<strong>氏名・住所・電話番号・保険証やマイナンバーなどの番号は書かないでください。</strong></span>	<span>• <strong>Do not write your name, address, phone number, insurance or ID numbers.</strong></span>
 <span>・このツールは診断をしません。命に関わるかもしれない症状があるときは、すぐ救急（日本は119）に電話してください。</span>	<span>• This tool does not diagnose. If you may have a life-threatening symptom, call emergency services now (911 in the US).</span>
@@ -453,9 +454,8 @@ ${qi+1} 番目の問診票	Questionnaire ${qi+1}
 <p class="small">指示書を AI に渡すと、AI が1つずつ質問して my-health.json を作ります。お薬手帳・薬袋・領収書の写真から書き起こしてもらうこともできます（AI は読み間違えることがあるので、原本と見比べてください）。写真を送るときは、氏名や番号が写らないようにしてください。</p>	<p class="small">Give the instructions to an AI and it will ask one question at a time and create my-health.json. It can also transcribe from photos of medicine records, medicine labels or receipts (AI can misread, so compare with the originals). When sending photos, make sure your name and numbers are not visible.</p>
 href="AI_INSTRUCTIONS_PERSONAL.md" download="AI_INSTRUCTIONS_PERSONAL.md">指示書をダウンロード</a>	href="AI_INSTRUCTIONS_PERSONAL.en.md" download="AI_INSTRUCTIONS_PERSONAL.en.md">Download the instructions</a>
 「作るとき」のCopy instructions	Copy instructions (creating)
-「体調が悪いとき」のCopy instructions	Copy instructions (when unwell)
 段階1　受診先の好み<small>持病や薬は書きません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small>	Stage 1: clinic preferences<small>No conditions or medicines. Used by an AI when looking for a clinic. Updating it with an AI after each visit makes suggestions fit you better.</small>
-段階2　健康の情報<small>書きたい人だけ。体調が悪いときの相談や、受診用シートに使います。</small>	Stage 2: health information<small>Only if you want to. Used when asking for help while unwell, and for the visit sheet.</small>
+段階2　健康の情報<small>書きたい人だけ。受診用シートに使います。</small>	Stage 2: health information<small>Only if you want to. Used for the visit sheet.</small>
 >受診用シート<	>Visit sheet<
 >読み込み<	>Load<
 <summary>今回の症状を整理する（ファイルには保存しません。印刷と画面にだけ出ます）</summary>	<summary>Organise today's symptoms (not saved in the file; only printed or shown on screen)</summary>
@@ -468,7 +468,7 @@ href="AI_INSTRUCTIONS_PERSONAL.md" download="AI_INSTRUCTIONS_PERSONAL.md">指示
 >⚠ AI に渡すのは、その相談に必要な範囲だけにしましょう。受診先を探すだけなら「段階1だけ」で足ります。<	>⚠ Give an AI only what it needs for the question. To look for a clinic, "Stage 1 only" is enough.<
 id="saveJson">保存<	id="saveJson">Save<
 id="copyJson">コピー<	id="copyJson">Copy<
->保存したファイルは、ご自身の端末に置いてください。体調が悪いときは、このファイルを AI に添付し、今の症状を伝えます。<	>Keep the saved file on your own device. When you are unwell, attach it to an AI and describe your current symptoms.<
+>保存したファイルは、ご自身の端末に置いてください。<	>Keep the saved file on your own device.<
 >前に保存した my-health.json や、AI が作った JSON を読み込みます。<	>Load a my-health.json you saved before, or JSON created by an AI.<
 aria-label="JSON を貼り付け"	aria-label="Paste JSON"
 >読み込む<	>Load<
@@ -538,7 +538,6 @@ text: "重視すること（大事な順）"	text: "What matters most (in order)
 "aria-label": "重視することを足す"	"aria-label": "Add what matters"
 text: "＋ 重視することを足す"	text: "+ Add what matters"
 "評判は非推奨です。読む AI は、評判を候補を並べる材料にしません。外すことをおすすめします。"	"Reputation is deprecated. Reading AI does not use reputation to order clinics. We suggest removing it."
-<p class="small">「体調が悪いとき」の指示文は、医師・弁護士の確認がまだ済んでいない草案です。命に関わるかもしれない症状があるときは、AI に相談する前に、すぐ救急に電話してください。</p>	<p class="small">The "when unwell" instructions are a draft not yet reviewed by doctors or lawyers. If you may have a life-threatening symptom, call emergency services now, before asking an AI.</p>
 "受診のときに使いたい言語（コード）"	"Languages for the visit (codes)"
 "例: ja")),	"e.g. en")),
 "必要な配慮（1行に1つ）"	"Support needed (one per line)"

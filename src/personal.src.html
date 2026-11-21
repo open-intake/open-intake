@@ -143,11 +143,12 @@ body.showing #exitShow { display: inline-flex !important; position: fixed; top: 
   <header class="top">
     <div class="eyebrow"><a href="../">← オープン受診案内とは</a> · my-health.json · 自分の健康メモ v0.1 草案 · <a href="../en/me/" hreflang="en" lang="en">English</a></div>
     <h1>自分の健康メモ</h1>
-    <p>持病・飲んでいる薬・アレルギーなどを、<strong>自分の責任で</strong>まとめる <code>my-health.json</code> を作ります。体調が悪いときに AI へ今の症状と一緒に渡したり、受診のときに印刷したり画面で見せたりできます。<strong>入力はこのブラウザの外には送りません。</strong></p>
+    <p>持病・飲んでいる薬・アレルギーなどを、<strong>自分の責任で</strong>まとめる <code>my-health.json</code> の<strong>見本</strong>です。受診のときに印刷したり、画面で見せたりできます。<strong>入力はこのブラウザの外には送りません。</strong></p>
   </header>
 
   <div class="caution">
     <strong>はじめに</strong>
+    <span>・<strong>これは見本です。</strong>オープン受診案内の最初の実装には含めず、議論のために公開しています。医師・弁護士の確認はまだ済んでいません。</span>
     <span>・ここに書くのは<strong>ご自身の申告</strong>です。正しいかどうかは、ご自身で確かめてください。医療記録の代わりにはなりません。</span>
     <span>・<strong>氏名・住所・電話番号・保険証やマイナンバーなどの番号は書かないでください。</strong></span>
     <span>・このツールは診断をしません。命に関わるかもしれない症状があるときは、すぐ救急（日本は119）に電話してください。</span>
@@ -164,17 +165,14 @@ body.showing #exitShow { display: inline-flex !important; position: fixed; top: 
           <div class="actions">
             <a class="btn" href="AI_INSTRUCTIONS_PERSONAL.md" download="AI_INSTRUCTIONS_PERSONAL.md">指示書をダウンロード</a>
             <button class="btn ghost" type="button" id="copyMake">「作るとき」の指示文をコピー</button>
-            <button class="btn ghost" type="button" id="copyUse">「体調が悪いとき」の指示文をコピー</button>
             <span class="toast" id="promptToast" role="status"></span>
           </div>
-          <p class="small">「体調が悪いとき」の指示文は、医師・弁護士の確認がまだ済んでいない草案です。命に関わるかもしれない症状があるときは、AI に相談する前に、すぐ救急に電話してください。</p>
           <pre class="prompt" id="promptMake"><!--PROMPT_MAKE--></pre>
-          <pre class="prompt" id="promptUse" hidden><!--PROMPT_USE--></pre>
         </div>
       </details>
       <h2 class="stagehead">段階1　受診先の好み<small>持病や薬は書きません。AI が受診先を探すときに使います。受診のたびに AI と話して更新していくと、提案があなたに合ったものになります。</small></h2>
       <section class="card" id="sec-pref"></section>
-      <h2 class="stagehead">段階2　健康の情報<small>書きたい人だけ。体調が悪いときの相談や、受診用シートに使います。</small></h2>
+      <h2 class="stagehead">段階2　健康の情報<small>書きたい人だけ。受診用シートに使います。</small></h2>
       <section class="card" id="sec-person"></section>
       <section class="card" id="sec-allergies"></section>
       <section class="card" id="sec-medications"></section>
@@ -217,7 +215,7 @@ body.showing #exitShow { display: inline-flex !important; position: fixed; top: 
           <span class="toast" id="jsonToast" role="status"></span>
         </div>
         <pre class="json" id="json" tabindex="0"></pre>
-        <p class="small">保存したファイルは、ご自身の端末に置いてください。体調が悪いときは、このファイルを AI に添付し、今の症状を伝えます。</p>
+        <p class="small">保存したファイルは、ご自身の端末に置いてください。</p>
       </div>
       <div class="panel" id="panel-issues" role="tabpanel" hidden><ul class="issues" id="issues"></ul></div>
       <div class="panel" id="panel-load" role="tabpanel" hidden>
@@ -496,8 +494,7 @@ function copy(text, toast, el) {
 }
 $("copyJson").addEventListener("click", () => copy(JSON.stringify(scoped(out), null, 2) + "\n", $("jsonToast"), $("json")));
 $("scope").addEventListener("change", () => { $("saveJson").textContent = fileName() + " を保存"; changed(); });
-$("copyMake").addEventListener("click", () => { $("promptUse").hidden = true; $("promptMake").hidden = false; copy($("promptMake").textContent.trim() + "\n", $("promptToast"), $("promptMake")); });
-$("copyUse").addEventListener("click", () => { $("promptMake").hidden = true; $("promptUse").hidden = false; copy($("promptUse").textContent.trim() + "\n", $("promptToast"), $("promptUse")); });
+$("copyMake").addEventListener("click", () => { copy($("promptMake").textContent.trim() + "\n", $("promptToast"), $("promptMake")); });
 $("saveJson").addEventListener("click", () => {
   const b = new Blob([JSON.stringify(scoped(out), null, 2) + "\n"], { type: "application/json" });
   const a = h("a", { href: URL.createObjectURL(b), download: fileName() }); document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);

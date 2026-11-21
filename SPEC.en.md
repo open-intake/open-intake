@@ -79,7 +79,7 @@ This project **starts light and within a safe scope**. Fields are grouped into f
 | **Core** | Name, contact details, departments, hours, temporary closures, how to book, things not provided (`notHandled`), what to bring, languages, accessibility | **Plain facts.** Can be used first |
 | **Areas of focus** | `focus` (the clinic's own statement) | **Experimental.** Its relation to rules on medical advertising is being checked with a lawyer. Until then, clinics should decide carefully whether to write it |
 | **Warning signs and questionnaires** | `safety.redFlags`, `redFlagsByAge`, `questionnaires` | **Draft.** Not yet reviewed by doctors. Clinics must have a doctor review them before publishing |
-| **Patient side** | Personal health summary ([PERSONAL.md](PERSONAL.md), Japanese) and its instructions | **Draft, not part of the first implementation.** Published for discussion. Stage 2 and the "when unwell" instructions are not yet reviewed |
+| **Patient side** | Personal health summary ([PERSONAL.md](PERSONAL.md), Japanese) and its instructions | **Draft sample, not part of the first implementation.** Published for discussion. The "when unwell" instructions are a draft for review and are not offered in the creation tool |
 
 Reading AI follows §1b and §5 for information in every layer.
 

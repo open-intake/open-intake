@@ -56,14 +56,16 @@ outputs.set("docs/en/maker/index.html", page(makeMaker("en"), "en"));   // 作�
   const md = read("AI_INSTRUCTIONS_PERSONAL.md");
   const pick = name => { const r = new RegExp(`## ここから（${name}）\\n([\\s\\S]*?)\\n## ここまで（${name}）`).exec(md); if (!r) throw new Error(`AI_INSTRUCTIONS_PERSONAL.md に「ここから（${name}）」がありません`); return esc(r[1].trim()); };
   const ps = read("src/personal.src.html");
-  for (const mark of ["<!--PROMPT_MAKE-->", "<!--PROMPT_USE-->", "/*VALIDATE*/"]) if (!ps.includes(mark)) throw new Error(`src/personal.src.html に ${mark} がありません`);
-  outputs.set("docs/me/index.html", page(ps.replace("<!--PROMPT_MAKE-->", () => pick("作るとき")).replace("<!--PROMPT_USE-->", () => pick("体調が悪いとき")).replace("/*VALIDATE*/", () => validateJs)));
+  for (const mark of ["<!--PROMPT_MAKE-->", "/*VALIDATE*/"]) if (!ps.includes(mark)) throw new Error(`src/personal.src.html に ${mark} がありません`);
+  outputs.set("docs/me/index.html", page(ps.replace("<!--PROMPT_MAKE-->", () => pick("作るとき")).replace("/*VALIDATE*/", () => validateJs)));
   outputs.set("docs/me/AI_INSTRUCTIONS_PERSONAL.md", md);
   // 英語版: 画面の文は対訳表（src/i18n/en.tsv）で、指示文は AI_INSTRUCTIONS_PERSONAL.en.md から
   const mdEn = read("AI_INSTRUCTIONS_PERSONAL.en.md");
   const pickEn = name => { const r = new RegExp(`## Start \\(${name}\\)\\n([\\s\\S]*?)\\n## End \\(${name}\\)`).exec(mdEn); if (!r) throw new Error(`AI_INSTRUCTIONS_PERSONAL.en.md に「Start (${name})」がありません`); return esc(r[1].trim()); };
-  const psEn = translate(ps.replace("<!--PROMPT_MAKE-->", "@@PM@@").replace("<!--PROMPT_USE-->", "@@PU@@"), table, "src/personal.src.html");
-  outputs.set("docs/en/me/index.html", page(psEn.replace("@@PM@@", () => pickEn("creating")).replace("@@PU@@", () => pickEn("unwell")).replace("/*VALIDATE*/", () => translate(validateJs, table, "src/validate.js")), "en"));
+  // 「体調が悪いとき」の指示文は作成ツールに載せない（確認のための草案。指示書のファイルにだけ残す）
+  pick("体調が悪いとき"); pickEn("unwell");
+  const psEn = translate(ps.replace("<!--PROMPT_MAKE-->", "@@PM@@"), table, "src/personal.src.html");
+  outputs.set("docs/en/me/index.html", page(psEn.replace("@@PM@@", () => pickEn("creating")).replace("/*VALIDATE*/", () => translate(validateJs, table, "src/validate.js")), "en"));
   outputs.set("docs/en/me/AI_INSTRUCTIONS_PERSONAL.en.md", mdEn);
 }
 outputs.set("docs/index.html", page(read("src/index.src.html")));   // トップ（取り組みの説明）

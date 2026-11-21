@@ -1,6 +1,6 @@
 # Instructions for AI: my health summary (my-health.json)
 
-Use these when creating your health summary ([PERSONAL.md](PERSONAL.md), Japanese) with an AI, when you are unwell, and after a visit. Copy the part between "Start" and "End" for the situation and paste it into the AI you usually use.
+Use these when creating your health summary ([PERSONAL.md](PERSONAL.md), Japanese) with an AI, and when updating it after a visit. **The patient side is a sample and is not part of the first implementation.** "B. When you are unwell" is a draft for review by doctors and lawyers, not for use. Copy the part between "Start" and "End" for the situation and paste it into the AI you usually use.
 
 ⚠ **Do not give the AI your name, address, phone number, insurance or ID numbers.** When sending photos of medicine records, make sure these are not visible, or cover them. Whether to send photos or text to an AI service is your decision.
 
@@ -96,9 +96,9 @@ Please start with the first question.
 
 ## B. When you are unwell
 
-⚠ **These instructions are a draft that has not yet been reviewed by doctors or lawyers.** If you try them, do so with that in mind. If you may have a life-threatening symptom, call emergency services now, before asking an AI.
+⚠ **Draft for review. Do not use.** It is published so that doctors and lawyers can review it, and is not offered in the creation tool. If you may have a life-threatening symptom, do not ask an AI: call emergency services now. If unsure, call your local health advice line.
 
-Attach my-health.json (or paste its content), then describe your current symptoms and send. If you only want to find a clinic, stage 1 (clinic preferences) is enough.
+(Intended use once reviewed: attach my-health.json or paste its content, then describe the current symptoms. Stage 1 alone is enough for finding a clinic.)
 
 ## Start (unwell)
 
