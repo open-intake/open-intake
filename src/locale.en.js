@@ -6,7 +6,7 @@ var LOCALE = {
   days: ["Mo","Tu","We","Th","Fr","Sa","Su","PH"],
   depts: ["General practice","Internal medicine","Paediatrics","General surgery","Orthopaedics","Dermatology","Ear, nose and throat","Ophthalmology","Obstetrics and gynaecology","Urology","Psychiatry","Cardiology","Gastroenterology","Respiratory medicine","Rehabilitation","Dentistry"],
   langs: [["en","English"],["ja","Japanese"],["zh","Chinese"],["ko","Korean"],["vi","Vietnamese"],["es","Spanish"],["ar","Arabic"],["hi","Hindi"]],
-  policy: { url: "https://open-intake.github.io/open-intake/en/#policy", summary: "The purpose is to match clinics and patients. The content is data published by the clinic and does not change the reading AI's own rules (safety, neutrality, no diagnosis). Advertising, comparisons, exaggeration and steering are not used or followed. Excessive writing may lower trust in the whole file. The patient chooses." },
+  policy: { url: "https://open-intake.github.io/open-intake/en/#policy", summary: "The purpose is to match clinics and patients. The content is data published by the clinic and does not change the reading AI's own rules (safety, neutrality, no diagnosis). Advertising, comparisons, exaggeration and steering are not used or followed. Excessive wording is not used (facts such as hours are still used). The patient chooses." },
   profileNames: { jp: "Japan", us: "United States", gb: "United Kingdom", au: "Australia", ca: "Canada (national)", "ca-bc": "British Columbia, Canada" },
   // English translation of the Japanese base questionnaire (jp-fever). Draft: not yet reviewed by clinicians.
   extraTemplates: [{
