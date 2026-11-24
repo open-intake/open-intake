@@ -74,6 +74,7 @@
 | `round36/` | 36回目 | holdout29 で見つかった足りないところを足して、20問すべてを3回ずつ。Luna の `judge2/` は Fable の判定 |
 | `holdout30/` | 未見の問の30組目 | 36回目のまとめで、見ていない12問（H349〜H360）。1回だけ使った。Luna の `judge2/` は Fable の判定 |
 | `final-check/` | 最後の36問 | まとめを固めて、設計表に沿った新しい36問（N01〜N36、`final36.json`）で一度だけ。判定役は Haiku が Astra・Carbon、Luna が Carbon・Claude。`score.py` で集計、`by_rule.py` で問ごと |
+| `round37/` | 37回目 | 医師の意見を受けて救急の目安の使い方（二段に分ける・家族の相談の年代の一覧）を決まりの要点とまとめに足し、20問すべてを Haiku で3回ずつ。判定は Fable だけ（`judge/`）。別の系統の判定役（`judge2/`）と Luna はまだ |
 
 各回のフォルダの中:
 
