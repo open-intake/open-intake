@@ -3135,3 +3135,16 @@ The judges agreed on 67 of 72 (Haiku 33/36, Luna 34/36).
 - Decide whether to automate judging (two judges, with the disagreements read by a person)
 
 The full answers, prompts and judging records are published in [`runs/2026-11/`](https://github.com/open-intake/open-intake/tree/main/runs/2026-11) (from 13 November 2026; until then they were kept by the author).
+
+## 37回目（2026-11-24）: 救急の目安の使い方を直したあと
+
+医師の意見（救急の目安に当てはまらない・判断できないときに「急がなくてよい」と案内しない、明らかに緊急なら問診を続けずに119番、迷うときは救急相談）を受けて、決まりの要点とまとめに「二段に分ける」「家族の相談で年代の一覧の項目に当たれば、それだけで救急の目安」を足した。まとめが変わったので、20問を解かせ直した。
+
+| モデル | 判定役 | 1回目 | 2回目 | 3回目 |
+|---|---|---|---|---|
+| Haiku | Fable | ○20 | ○20 | ○20 |
+
+- 36回目の Haiku（判定役 Claude）は ○19・20・19（C01 が △）だった。判定役が違うので、そのまま比べられない
+- **別の系統の判定役（`judge2/`）と、Luna はまだ。** 基準（`criteria.md` の 5）は、別の系統の AI 二つでの判定を求めている。これがそろうまで、37回目は基準を満たしたとは書かない
+- 記録は `runs/2026-11/round37/`
+
